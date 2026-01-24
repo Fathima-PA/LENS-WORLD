@@ -1,0 +1,51 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+
+export const loadAdminThunk = createAsyncThunk(
+  "adminAuth/loadAdmin",
+  async (_, thunkAPI) => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/admin/me", {
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
+    }
+  }
+);
+
+const adminAuthSlice = createSlice({
+  name: "adminAuth",
+  initialState: {
+    admin: null,
+    isLoading: false,
+  },
+  reducers: {
+    // ✅ ADD THIS
+    adminLogout: (state) => {
+      state.admin = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadAdminThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(loadAdminThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.admin = action.payload;
+      })
+      .addCase(loadAdminThunk.rejected, (state) => {
+        state.isLoading = false;
+        state.admin = null;
+      });
+  },
+});
+
+// ✅ EXPORT THIS
+export const { adminLogout } = adminAuthSlice.actions;
+
+export default adminAuthSlice.reducer;
