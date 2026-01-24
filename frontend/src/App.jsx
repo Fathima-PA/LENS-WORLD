@@ -62,7 +62,7 @@ useEffect(() => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={user ? <Profile /> : <Login />} />
 
-          {/* ADMIN ROUTES */}
+  
           <Route
             path="/admin/login"
             element={admin ? <Navigate to="/admin/dashboard" /> : <AdminLogin />}

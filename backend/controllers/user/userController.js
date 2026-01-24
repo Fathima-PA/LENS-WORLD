@@ -38,6 +38,7 @@ export const registerUser = async (req, res) => {
 
 // ✅ LOGIN (SET COOKIES)
 export const loginUser = async (req, res) => {
+  console.log("login");
   try {
     const { email, password } = req.body;
 
