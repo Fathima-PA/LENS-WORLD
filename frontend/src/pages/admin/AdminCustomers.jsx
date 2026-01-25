@@ -31,7 +31,7 @@ const AdminCustomers = () => {
   const [toastType, setToastType] = useState("success");
 
   const [showConfirm, setShowConfirm] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // user object
+  const [selectedUser, setSelectedUser] = useState(null); 
 
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
