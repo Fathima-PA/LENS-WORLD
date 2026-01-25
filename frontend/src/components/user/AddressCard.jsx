@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, Button } from "react-bootstrap";
-import api from "../../api"; // ✅ interceptor axios
+import api from "../../api"; 
 
 const AddressCard = ({ setActiveTab }) => {
   const [addresses, setAddresses] = useState([]);

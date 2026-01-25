@@ -25,10 +25,10 @@ const Login = () => {
     (state) => state.auth
   );
 
-  // ✅ Toast state
+  
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger
+  const [toastType, setToastType] = useState("success"); 
 
 
   const [errors, setErrors] = useState({});
@@ -61,13 +61,22 @@ const Login = () => {
 
   setErrors(newErrors);
 
-  return Object.keys(newErrors).length === 0; // ✅ true means no errors
+  return Object.keys(newErrors).length === 0; 
 };
 
 
-  /* ===============================
-     HANDLE LOGIN RESULT
-  ================================ */
+useEffect(() => {
+  const msg = localStorage.getItem("blockedMsg");
+  if (msg) {
+    showMessage(msg, "danger");
+    localStorage.removeItem("blockedMsg");
+  }
+}, []);
+
+
+
+    //  HANDLE LOGIN RESULT
+  
   useEffect(() => {
     if (isError) {
       showMessage(message || "Login failed ❌", "danger");
@@ -79,13 +88,14 @@ const Login = () => {
 
       setTimeout(() => {
        navigate("/home", { replace: true });
+        dispatch(reset());
       }, 1000);
     }
   }, [isError, isSuccess, user, message, navigate, dispatch]);
 
-  /* ===============================
-     FORM HANDLERS
-  ================================ */
+  
+    //  FORM HANDLERS
+  
   const onChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -103,9 +113,9 @@ const Login = () => {
     dispatch(googleLogin());
   };
 
-  /* ===============================
-     FORGOT PASSWORD
-  ================================ */
+  
+    //  FORGOT PASSWORD
+  
   const forgotPasswordHandler = async () => {
     if (!email.trim()) {
       showMessage("Please enter your email first ❗", "danger");
@@ -139,10 +149,6 @@ const Login = () => {
       showMessage(error.response?.data?.message || "Something went wrong ❌", "danger");
     }
   };
-
-  /* ===============================
-     UI
-  ================================ */
   return (
     <>
       <div className="container d-flex justify-content-center align-items-center py-5">
@@ -251,8 +257,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-
-      {/* ✅ Toast popup (Center + Bigger) */}
       <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999 }}>
         <Toast
           show={showToast}

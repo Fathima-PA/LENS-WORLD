@@ -12,15 +12,13 @@ const VerifyOtp = () => {
 
   console.log("VERIFY PAGE STATE:", { email, purpose, role });
 
-  // ✅ fallback role
+
   const finalRole = role || "admin";
 
-  // ✅ Toast State
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success"); // success | danger
 
-  // ✅ Toast function
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
     setToastType(type);
@@ -42,7 +40,7 @@ const VerifyOtp = () => {
 
       showMessage(res.data.message || "OTP verified ✅", "success");
 
-      // ✅ wait a little then navigate
+    
       setTimeout(() => {
         if (purpose === "VERIFY_EMAIL") {
           navigate("/login");
@@ -116,7 +114,7 @@ const VerifyOtp = () => {
         </div>
       </div>
 
-      {/* ✅ Toast popup */}
+     
       <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999 }}>
         <Toast
           show={showToast}

@@ -18,22 +18,18 @@ const Profile = () => {
 
   return (
     <Container fluid className="py-4" style={{ background: "#fafafa" }}>
-      {/* Greeting */}
       <h5 className="text-center fw-semibold mb-4">
         Hello, {user?.username}
       </h5>
 
       <Container>
         <Row>
-          {/* Sidebar */}
           <Col md={3}>
             <ProfileSidebar
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
           </Col>
-
-          {/* Right Content */}
        <Col md={9}>
   {activeTab === "dashboard" && (
     <>
@@ -61,7 +57,7 @@ const Profile = () => {
   {activeTab === "add-address" && (
     <AddAddress setActiveTab={setActiveTab} />
   )}
-    {activeTab === "manage-address" && (   // ✅ ADD THIS
+    {activeTab === "manage-address" && (   
               <ManageAddress setActiveTab={setActiveTab} />
             )}
 

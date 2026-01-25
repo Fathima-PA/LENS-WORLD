@@ -10,11 +10,9 @@ const VerifyOtp = () => {
 
   const { email, purpose } = location.state || {};
 
-  // ✅ Timer states
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
-  // ✅ Toast states
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success"); // success | danger
@@ -25,7 +23,7 @@ const VerifyOtp = () => {
     setShowToast(true);
   };
 
-  // ✅ Timer logic
+
   useEffect(() => {
     if (secondsLeft === 0) {
       setCanResend(true);
@@ -82,7 +80,6 @@ const VerifyOtp = () => {
 
       showMessage("OTP resent successfully ✅", "success");
 
-      // ✅ Reset timer again
       setSecondsLeft(60);
       setCanResend(false);
     } catch (error) {
@@ -123,7 +120,6 @@ const VerifyOtp = () => {
             Verify
           </button>
 
-          {/* ✅ Timer Text */}
           {!canResend ? (
             <p className="text-muted mb-2">
               Resend OTP in <b>{secondsLeft}s</b>
@@ -132,7 +128,6 @@ const VerifyOtp = () => {
             <p className="text-muted mb-2">You can resend OTP now ✅</p>
           )}
 
-          {/* ✅ Resend Button */}
           <button
             className="btn btn-outline-secondary w-100"
             onClick={resendOtp}
@@ -143,7 +138,6 @@ const VerifyOtp = () => {
         </div>
       </div>
 
-      {/* ✅ Toast popup */}
       <ToastContainer
         position="top-center"
         className="p-3"

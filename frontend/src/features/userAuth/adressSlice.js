@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api"; // ✅ adjust path based on your folder
+import api from "../../api"; 
 
 export const getMyAddress = createAsyncThunk(
   "address/getMyAddress",
   async (_, thunkAPI) => {
     try {
-      const res = await api.get("/api/address/my"); // ✅ no need withCredentials
+      const res = await api.get("/api/address/my");
       return res.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

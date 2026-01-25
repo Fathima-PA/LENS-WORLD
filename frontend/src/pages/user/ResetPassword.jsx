@@ -2,23 +2,23 @@ import { useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 
-import { Toast, ToastContainer } from "react-bootstrap"; // ✅ ADD
+import { Toast, ToastContainer } from "react-bootstrap"; 
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // ✅ Toast states
+
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger
+  const [toastType, setToastType] = useState("success"); 
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const email = location.state?.email;
 
-  // ✅ Toast function
+ 
   const showMessage = (message, type = "success") => {
     setToastMsg(message);
     setToastType(type);
@@ -44,7 +44,7 @@ const ResetPassword = () => {
 
       showMessage(res.data.message || "Password reset successful ✅", "success");
 
-      // ✅ wait 1.5 sec then navigate
+    
       setTimeout(() => {
         navigate("/login",{ replace: true });
       }, 1500);
@@ -59,10 +59,10 @@ const ResetPassword = () => {
   return (
     <>
       <div style={{ backgroundColor: "#f6f5f3", minHeight: "100vh" }}>
-        {/* HEADER SPACE */}
+   
         <div style={{ height: "80px" }} />
 
-        {/* CARD */}
+     
         <div className="container d-flex justify-content-center">
           <div
             className="p-4 border"
@@ -120,8 +120,6 @@ const ResetPassword = () => {
             >
               Reset
             </button>
-
-            {/* OR */}
             <div className="text-center text-muted mb-3">OR</div>
 
             {/* Google */}
@@ -151,12 +149,9 @@ const ResetPassword = () => {
             </div>
           </div>
         </div>
-
-        {/* FOOTER SPACE */}
         <div style={{ height: "120px" }} />
       </div>
 
-      {/* ✅ TOAST POPUP */}
       <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999 }}>
         <Toast
           show={showToast}

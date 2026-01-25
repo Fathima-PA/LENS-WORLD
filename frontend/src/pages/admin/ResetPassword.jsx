@@ -12,12 +12,10 @@ const ResetPassword = () => {
 
   const email = location.state?.email;
 
-  // ✅ Toast state
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger
+  const [toastType, setToastType] = useState("success"); 
 
-  // ✅ Toast function
   const showMessage = (message, type = "success") => {
     setToastMsg(message);
     setToastType(type);
@@ -38,13 +36,12 @@ const ResetPassword = () => {
     try {
       const res = await axios.post(
         "http://localhost:3000/api/auth/reset-password",
-        { email, password, role: "admin" }, // ✅ add role for admin
+        { email, password, role: "admin" },
         { withCredentials: true }
       );
 
       showMessage(res.data.message || "Password reset successful ✅", "success");
 
-      // ✅ wait 1 sec then redirect
       setTimeout(() => {
         navigate("/admin/login");
       }, 1200);
@@ -59,10 +56,10 @@ const ResetPassword = () => {
   return (
     <>
       <div style={{ backgroundColor: "#f6f5f3", minHeight: "100vh" }}>
-        {/* HEADER SPACE */}
+     
         <div style={{ height: "80px" }} />
 
-        {/* CARD */}
+        
         <div className="container d-flex justify-content-center">
           <div
             className="p-4 border"
@@ -74,7 +71,7 @@ const ResetPassword = () => {
           >
             <h4 className="fw-semibold mb-4">Reset password</h4>
 
-            {/* Email */}
+          
             <div className="mb-3">
               <label className="form-label text-muted">Email</label>
               <input
@@ -85,7 +82,6 @@ const ResetPassword = () => {
               />
             </div>
 
-            {/* Password */}
             <div className="mb-3">
               <label className="form-label text-muted">Password</label>
               <input
@@ -97,7 +93,6 @@ const ResetPassword = () => {
               />
             </div>
 
-            {/* Confirm Password */}
             <div className="mb-4">
               <label className="form-label text-muted">Confirm password</label>
               <input
@@ -109,7 +104,6 @@ const ResetPassword = () => {
               />
             </div>
 
-            {/* Reset Button */}
             <button
               className="btn w-100 text-white mb-4"
               style={{
@@ -124,7 +118,6 @@ const ResetPassword = () => {
         </div>
       </div>
 
-      {/* ✅ Toast popup center + big */}
       <ToastContainer position="top-center" className="p-3">
         <Toast
           show={showToast}

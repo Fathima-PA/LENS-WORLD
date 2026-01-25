@@ -1,7 +1,7 @@
 import User from "../../models/userModel.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token.js";
 
-// ✅ REGISTER
+//  REGISTER
 export const registerUser = async (req, res) => {
   try {
     const { username, email, phone, password } = req.body;
@@ -36,9 +36,8 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// ✅ LOGIN (SET COOKIES)
+//  LOGIN 
 export const loginUser = async (req, res) => {
-  console.log("login");
   try {
     const { email, password } = req.body;
 
@@ -49,7 +48,6 @@ export const loginUser = async (req, res) => {
     }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
-
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -74,26 +72,23 @@ export const loginUser = async (req, res) => {
         .json({ message: "Please verify your email first" });
     }
 
-    // ✅ generate tokens
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
     // ✅ store refresh token in DB
     user.refreshToken = refreshToken;
     await user.save();
-
-    // ✅ set cookies
    res.cookie("accessToken", accessToken, {
   httpOnly: true,
   secure: false,
-  sameSite: "lax",   // ✅ FIXED
+  sameSite: "lax",   
   maxAge: 15 * 60 * 1000,
 });
 
 res.cookie("refreshToken", refreshToken, {
   httpOnly: true,
   secure: false,
-  sameSite: "lax",   // ✅ FIXED
+  sameSite: "lax",   
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
@@ -115,7 +110,7 @@ res.cookie("refreshToken", refreshToken, {
   }
 };
 
-// ✅ UPDATE PROFILE
+//  UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
     const { name, phone } = req.body;
@@ -139,7 +134,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// ✅ SAVE PENDING EMAIL
+//  SAVE PENDING EMAIL
 export const setPendingEmail = async (req, res) => {
   try {
     const { newEmail } = req.body;
@@ -169,7 +164,7 @@ export const setPendingEmail = async (req, res) => {
   }
 };
 
-// ✅ CONFIRM EMAIL CHANGE
+//  CONFIRM EMAIL CHANGE
 export const confirmEmailChange = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -203,7 +198,7 @@ export const confirmEmailChange = async (req, res) => {
   }
 };
 
-// ✅ CHANGE PASSWORD
+//  CHANGE PASSWORD
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -232,7 +227,7 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// ✅ UPDATE PROFILE PHOTO
+//  UPDATE PROFILE PHOTO
 export const updateProfilePhoto = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -256,7 +251,7 @@ export const updateProfilePhoto = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-// ✅ GET LOGGED IN USER (for frontend refresh)
+// GET LOGGED IN USER 
 export const getMe = async (req, res) => {
   res.status(200).json(req.user);
 };

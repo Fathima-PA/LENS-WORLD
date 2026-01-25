@@ -22,10 +22,9 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
 
   const { address, phone, city, pincode, state } = formData;
 
-  // ✅ Form validation errors
   const [errors, setErrors] = useState({});
 
-  // ✅ Toast State
+
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -44,14 +43,12 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
       [name]: value,
     }));
 
-    // ✅ clear error when typing
     setErrors((prev) => ({
       ...prev,
       [name]: "",
     }));
   };
 
-  // ✅ Validation function
   const validateForm = () => {
     let newErrors = {};
 
@@ -79,7 +76,6 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ validate first
     const isValid = validateForm();
     if (!isValid) {
       showPopup("Please fix the errors ❗", "danger");
@@ -113,7 +109,7 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
 
   return (
     <>
-      {/* ✅ TOAST POPUP */}
+    
       <ToastContainer position="top-center" className="p-3">
         <Toast
           show={showToast}
@@ -135,7 +131,6 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
             ADD SHIPPING ADDRESS
           </h6>
 
-          {/* ✅ Prevent browser autofill popup */}
           <Form onSubmit={handleSubmit} autoComplete="off">
             <Row className="mb-4">
               <Col md={6}>

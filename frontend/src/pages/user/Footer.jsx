@@ -4,7 +4,6 @@ const Footer = () => {
       <div className="container py-5">
         <div className="row text-muted small">
 
-          {/* Left */}
           <div className="col-md-4">
             <h6 className="fw-semibold mb-3">SITES & STORES</h6>
             <p className="mb-1">About Us</p>
@@ -12,7 +11,6 @@ const Footer = () => {
             <p className="mb-1">Terms and Condition</p>
           </div>
 
-          {/* Center */}
           <div className="col-md-4 text-center">
             <h5 className="fw-semibold">LENS WORLD</h5>
             <p className="mb-2">Sunglasses & Eyewear Store</p>
@@ -24,7 +22,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Right */}
           <div className="col-md-4 text-end">
             <h6 className="fw-semibold mb-3">SHOP</h6>
             <p className="mb-1">Sunglass</p>

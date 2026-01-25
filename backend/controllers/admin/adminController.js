@@ -34,7 +34,6 @@ export const adminLogin = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // ✅ set cookie like userLogin
     res.cookie("adminToken", adminToken, {
       httpOnly: true,
       secure: false,
@@ -58,16 +57,15 @@ export const adminLogin = async (req, res) => {
 };
 
 export const adminLogout = (req, res) => {
-  res.cookie("adminToken", "", {
-    httpOnly: true,
-    expires: new Date(0),
-  });
+ 
+   res.clearCookie("adminToken");
+
 
   res.json({ message: "Admin logged out ✅" });
 };
 
 
-// ✅ GET USERS (admin)
+//  GET USERS 
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: 1 });

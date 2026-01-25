@@ -9,7 +9,7 @@ const router = express.Router();
 router.post("/login", adminLogin);
 router.post("/logout", adminLogout);
 router.get("/me", protectAdmin, (req, res) => {
-  res.status(200).json(req.user); // protectAdmin already sets req.user
+  res.status(200).json(req.user); 
 });
 
 router.get("/users", protectAdmin, getUsers);

@@ -5,7 +5,7 @@ import cloudinary from "../config/cloudinary.js";
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "lensworld-ecommerce/users/profile", // ✅ folder name here
+    folder: "lensworld-ecommerce/users/profile", 
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
   },
 });

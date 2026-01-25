@@ -21,30 +21,24 @@ const AdminCustomers = () => {
   const [filter, setFilter] = useState("all");
   const [users, setUsers] = useState([]);
 
-  // ✅ Search
   const [search, setSearch] = useState("");
 
-  // ✅ Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
 
-  // ✅ Toast
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
 
-  // ✅ Modal state
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // user object
 
-  // ✅ Toast function
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
     setToastType(type);
     setShowToast(true);
   };
 
-  // ✅ Fetch users
   const fetchUsers = async () => {
     try {
       const res = await axios.get("http://localhost:3000/api/admin/users", {
@@ -62,13 +56,11 @@ const AdminCustomers = () => {
     fetchUsers();
   }, []);
 
-  // ✅ Open confirm popup
   const openConfirmModal = (user) => {
     setSelectedUser(user);
     setShowConfirm(true);
   };
 
-  // ✅ API call for block/unblock (after confirm)
   const confirmToggleBlock = async () => {
     if (!selectedUser) return;
 
@@ -96,7 +88,6 @@ const AdminCustomers = () => {
     }
   };
 
-  // ✅ Filter + Search users (remove admins)
   const filteredUsers = users
     .filter((u) => !u.isAdmin)
     .filter((u) => {
@@ -117,7 +108,6 @@ const AdminCustomers = () => {
       );
     });
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const startIndex = (currentPage - 1) * usersPerPage;
   const endIndex = startIndex + usersPerPage;
@@ -127,16 +117,12 @@ const AdminCustomers = () => {
     <div style={{ background: "#f6f6f7", minHeight: "100vh" }}>
       <Container fluid className="py-4">
         <Row className="g-4">
-          {/* ✅ Sidebar */}
           <Col md={3} lg={2}>
             <AdminSidebar />
           </Col>
 
-          {/* ✅ MAIN CONTENT */}
           <Col>
-            {/* ✅ Title + Search + Button */}
             <div className="d-flex justify-content-between align-items-center mb-3">
-              {/* ✅ Left */}
               <div>
                 <h3 className="fw-bold mb-1">Customers</h3>
                 <div className="text-muted small">
@@ -147,7 +133,6 @@ const AdminCustomers = () => {
                 </div>
               </div>
 
-              {/* ✅ Search with Clear button */}
               <div style={{ maxWidth: "450px", width: "100%" }}>
                 <InputGroup style={{ height: "44px" }}>
                   <InputGroup.Text
@@ -202,7 +187,6 @@ const AdminCustomers = () => {
                 </InputGroup>
               </div>
 
-              {/* ✅ Right Button */}
               <Button
                 className="border-0 px-4 py-2"
                 style={{
@@ -215,7 +199,6 @@ const AdminCustomers = () => {
               </Button>
             </div>
 
-            {/* ✅ Tabs */}
             <div className="d-flex gap-2 mb-4">
               <Button
                 variant={filter === "all" ? "light" : "outline-light"}
@@ -250,8 +233,6 @@ const AdminCustomers = () => {
                 Blocked
               </Button>
             </div>
-
-            {/* ✅ Table Card */}
             <Card className="border-0 shadow-sm rounded-4">
               <Card.Body className="p-0">
                 <Table responsive className="mb-0 align-middle">
@@ -332,7 +313,6 @@ const AdminCustomers = () => {
                             : "-"}
                         </td>
 
-                        {/* ✅ Action buttons */}
                         <td className="text-end" style={{ paddingRight: "20px" }}>
                           <Button variant="light" size="sm" className="me-2">
                             ✏️
@@ -342,7 +322,6 @@ const AdminCustomers = () => {
                             🗑️
                           </Button>
 
-                          {/* ✅ Block/Unblock (Modal confirm) */}
                           <Button
                             variant="light"
                             size="sm"
@@ -369,7 +348,6 @@ const AdminCustomers = () => {
                   </tbody>
                 </Table>
 
-                {/* ✅ Pagination */}
                 <div className="d-flex justify-content-between align-items-center px-4 py-3">
                   <div className="text-muted small">
                     Showing {filteredUsers.length === 0 ? 0 : startIndex + 1}-
@@ -418,7 +396,6 @@ const AdminCustomers = () => {
         </Row>
       </Container>
 
-      {/* ✅ Toast */}
       <ToastContainer position="top-end" className="p-3">
         <Toast
           show={showToast}
@@ -433,7 +410,6 @@ const AdminCustomers = () => {
         </Toast>
       </ToastContainer>
 
-      {/* ✅ Confirm Modal */}
       <Modal show={showConfirm} onHide={() => setShowConfirm(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>

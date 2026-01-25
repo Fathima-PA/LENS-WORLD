@@ -21,7 +21,6 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Toast state
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -29,13 +28,12 @@ const AdminLogin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // ✅ Toast function (FIXED ✅)
   const showMessage = (message, type = "success") => {
-    setShowToast(false); // ✅ close first
+    setShowToast(false); 
     setTimeout(() => {
       setToastMsg(message);
       setToastType(type);
-      setShowToast(true); // ✅ reopen
+      setShowToast(true);
     }, 100);
   };
 
@@ -51,10 +49,8 @@ const AdminLogin = () => {
 
       await dispatch(loadAdminThunk());
 
-      // ✅ SHOW TOAST
       showMessage("Admin login successful ✅", "success");
 
-      // ✅ WAIT THEN NAVIGATE
       setTimeout(() => {
         navigate("/admin/dashboard");
       }, 2500);
@@ -83,7 +79,6 @@ const AdminLogin = () => {
 
       showMessage(res.data.message || "OTP sent ✅", "success");
 
-      // ✅ WAIT THEN NAVIGATE
       setTimeout(() => {
        navigate("/admin/verify-otp", {
   state: {
@@ -184,7 +179,6 @@ const AdminLogin = () => {
         </Card>
       </Container>
 
-      {/* ✅ Toast popup CENTER + BIG */}
       <ToastContainer
         position="top-center"
         className="p-3"
@@ -195,7 +189,7 @@ const AdminLogin = () => {
         <Toast
           show={showToast}
           onClose={() => setShowToast(false)}
-          delay={2000} // ✅ More time to show
+          delay={2000} 
           autohide
           bg={toastType}
           style={{

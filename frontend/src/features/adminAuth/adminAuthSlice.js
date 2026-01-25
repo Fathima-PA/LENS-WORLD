@@ -24,7 +24,6 @@ const adminAuthSlice = createSlice({
     isLoading: false,
   },
   reducers: {
-    // ✅ ADD THIS
     adminLogout: (state) => {
       state.admin = null;
     },
@@ -45,7 +44,6 @@ const adminAuthSlice = createSlice({
   },
 });
 
-// ✅ EXPORT THIS
 export const { adminLogout } = adminAuthSlice.actions;
 
 export default adminAuthSlice.reducer;

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { registerUser, reset } from "../../features/userAuth/auth/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Toast, ToastContainer } from "react-bootstrap"; // ✅ ADD
+import { Toast, ToastContainer } from "react-bootstrap"; 
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -24,13 +24,12 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
 
   const { username, email, password, confirmPassword, phone } = formData;
 
-  // ✅ Form validation errors (show red msg inside form)
+ 
   const [errors, setErrors] = useState({});
 
-  // ✅ Toast state
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger
+  const [toastType, setToastType] = useState("success");
 
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
@@ -41,11 +40,10 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    // ✅ remove error when user types
     setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
-  // ✅ Validation function
+
   const validateForm = () => {
     let newErrors = {};
 
@@ -72,7 +70,6 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
 
     setErrors(newErrors);
 
-    // ✅ If no error => true
     return Object.keys(newErrors).length === 0;
   };
 
@@ -228,7 +225,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ✅ Toast popup */}
       <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999 }}>
         <Toast
           show={showToast}

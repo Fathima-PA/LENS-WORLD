@@ -13,14 +13,11 @@ const AdminDashboard = () => {
      <Col md={3} lg={2}>
   <AdminSidebar />
 </Col>
-        {/* ✅ Main Dashboard */}
         <Col md={9} lg={10}>
-          {/* ✅ Top row: Dashboard title + admin profile */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h3 className="fw-bold mb-0">Dashboard</h3>
           </div>
 
-          {/* ✅ Stat cards */}
           <Row className="g-4 mb-4">
             <Col md={4}>
               <Card className="border-0 shadow-sm rounded-4">
@@ -52,7 +49,6 @@ const AdminDashboard = () => {
             </Col>
           </Row>
 
-          {/* ✅ Chart + Most sold */}
           <Row className="g-4 mb-4">
             <Col md={8}>
               <Card className="border-0 shadow-sm rounded-4">
@@ -67,7 +63,6 @@ const AdminDashboard = () => {
 
                   <div className="fs-3 fw-bold mt-2 mb-3">₹50,23780</div>
 
-                  {/* ✅ Chart placeholder */}
                   <div
                     className="rounded-4"
                     style={{
@@ -111,7 +106,6 @@ const AdminDashboard = () => {
             </Col>
           </Row>
 
-          {/* ✅ Latest Orders */}
           <Card className="border-0 shadow-sm rounded-4">
             <Card.Body className="p-4">
               <h5 className="fw-semibold mb-3">Latest Orders</h5>

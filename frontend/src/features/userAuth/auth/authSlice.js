@@ -5,14 +5,14 @@ import { auth, googleProvider } from "../../../firebase";
 import axios from "axios";
 
 const initialState = {
-  user: null, // ✅ no localStorage
+  user: null, 
   isLoading: false,
   isSuccess: false,
   isError: false,
   message: "",
 };
 
-// ✅ REGISTER
+//  REGISTER
 export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, thunkAPI) => {
@@ -26,7 +26,7 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// ✅ LOGIN (COOKIE BASED)
+//  LOGIN 
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (userData, thunkAPI) => {
@@ -40,7 +40,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// ✅ LOAD USER FROM COOKIE (/me)
+// LOAD USER 
 export const loadUserThunk = createAsyncThunk(
   "auth/loadUser",
   async (_, thunkAPI) => {
@@ -52,7 +52,7 @@ export const loadUserThunk = createAsyncThunk(
   }
 );
 
-// ✅ GOOGLE LOGIN (COOKIE BASED)
+//  GOOGLE LOGIN 
 export const googleLogin = createAsyncThunk(
   "auth/googleLogin",
   async (_, thunkAPI) => {
@@ -68,7 +68,7 @@ export const googleLogin = createAsyncThunk(
           photo: firebaseUser.photoURL,
           googleId: firebaseUser.uid,
         },
-        { withCredentials: true } // ✅ IMPORTANT
+        { withCredentials: true } 
       );
 
       return response.data;
@@ -78,7 +78,7 @@ export const googleLogin = createAsyncThunk(
   }
 );
 
-// ✅ UPDATE PROFILE (NO TOKEN)
+//  UPDATE PROFILE
 export const updateProfileThunk = createAsyncThunk(
   "auth/updateProfile",
   async (data, thunkAPI) => {
@@ -92,7 +92,7 @@ export const updateProfileThunk = createAsyncThunk(
   }
 );
 
-// ✅ CHANGE PASSWORD (NO TOKEN)
+//  CHANGE PASSWORD 
 export const changePasswordThunk = createAsyncThunk(
   "auth/changePassword",
   async (data, thunkAPI) => {
@@ -106,7 +106,7 @@ export const changePasswordThunk = createAsyncThunk(
   }
 );
 
-// ✅ LOGOUT (COOKIE CLEAR)
+//  LOGOUT 
 export const logoutThunk = createAsyncThunk(
   "auth/logout",
   async (_, thunkAPI) => {
@@ -129,8 +129,6 @@ const authSlice = createSlice({
       state.isError = false;
       state.message = "";
     },
-
-    // ✅ manual set user (used in App.jsx if needed)
     setUser: (state, action) => {
       state.user = action.payload;
     },
@@ -154,13 +152,17 @@ const authSlice = createSlice({
       })
 
       // LOGIN
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-      })
+     .addCase(loginUser.pending, (state) => {
+  state.isLoading = true;
+  state.isError = false;
+  state.isSuccess = false;
+  state.message = "";
+})
+
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.user = action.payload.user; // ✅ no localStorage
+        state.user = action.payload.user;
           localStorage.setItem("isLoggedIn", "true");
       })
       .addCase(loginUser.rejected, (state, action) => {

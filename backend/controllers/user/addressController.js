@@ -1,6 +1,6 @@
 import Address from "../../models/AddressModel.js";
 
-// ✅ ADD ADDRESS
+//  ADD ADDRESS
 export const addAddress = async (req, res) => {
   try {
     const { address, phone, city, pincode, state } = req.body;
@@ -24,20 +24,20 @@ export const addAddress = async (req, res) => {
   }
 };
 
-// ✅ GET ALL MY ADDRESSES
+//  GET ALL MY ADDRESSES
 export const getMyAddress = async (req, res) => {
   try {
     const addresses = await Address.find({ user: req.user.id }).sort({
       createdAt: -1,
     });
 
-    res.json(addresses); // ✅ returns [] if no address
+    res.json(addresses);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ UPDATE ADDRESS
+//  UPDATE ADDRESS
 export const updateAddress = async (req, res) => {
   try {
     const { id } = req.params;
@@ -47,8 +47,6 @@ export const updateAddress = async (req, res) => {
     if (!addressDoc) {
       return res.status(404).json({ message: "Address not found" });
     }
-
-    // ✅ only owner can update
     if (addressDoc.user.toString() !== req.user.id) {
       return res.status(401).json({ message: "Not authorized" });
     }
@@ -63,7 +61,7 @@ export const updateAddress = async (req, res) => {
   }
 };
 
-// ✅ DELETE ADDRESS
+//  DELETE ADDRESS
 export const deleteAddress = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,8 +71,6 @@ export const deleteAddress = async (req, res) => {
     if (!addressDoc) {
       return res.status(404).json({ message: "Address not found" });
     }
-
-    // ✅ only owner can delete
     if (addressDoc.user.toString() !== req.user.id) {
       return res.status(401).json({ message: "Not authorized" });
     }

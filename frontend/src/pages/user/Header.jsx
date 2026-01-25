@@ -31,7 +31,7 @@ const Header = () => {
         { withCredentials: true }
       );
 
-      dispatch(adminLogout()); // will set admin = null
+      dispatch(adminLogout()); 
       navigate("/admin/login");
     } catch (error) {
       console.log(error);
@@ -43,7 +43,7 @@ const Header = () => {
       <div className="container py-3">
         <div className="row align-items-center">
 
-          {/* ✅ Logo */}
+         
           <div className="col-md-3 fw-semibold fs-5">
             <Link
               to={isAdminPage ? "/admin/dashboard" : "/"}
@@ -53,16 +53,14 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* ✅ Admin Header Center Title */}
         {isAdminLoginPage ? (
   <div className="col-md-7 text-center fw-semibold text-uppercase">
     ADMIN LOGIN
   </div>
 ) : isAdminPage ? (
-  <div className="col-md-7"></div>   // ✅ blank for other admin pages
+  <div className="col-md-7"></div> 
 ) : (
   <>
-    {/* ✅ User Nav */}
     <div className="col-md-3 d-flex gap-4 text-uppercase small">
       <Link to="/" className="text-decoration-none text-dark">
         Home
@@ -72,7 +70,6 @@ const Header = () => {
       </Link>
     </div>
 
-    {/* ✅ User Search */}
     <div className="col-md-4">
       <input
         type="text"
@@ -85,9 +82,7 @@ const Header = () => {
 )}
 
 
-          {/* ✅ Right Side */}
           <div className={`col-md-2 d-flex justify-content-end gap-3 align-items-center ${isAdminPage ? "ms-auto" : ""}`}>
-            {/* ✅ hide wishlist/cart in admin */}
             {!isAdminPage && (
               <>
                 <span>♡</span>
@@ -95,7 +90,6 @@ const Header = () => {
               </>
             )}
 
-            {/* ✅ ADMIN SIDE */}
             {isAdminPage ? (
               admin && (
   <div className="dropdown">
@@ -106,7 +100,6 @@ const Header = () => {
       aria-expanded="false"
       style={{ background: "none", border: "none" }}
     >
-      {/* Avatar */}
       <span
         className="rounded-circle d-flex align-items-center justify-content-center"
         style={{
@@ -122,13 +115,11 @@ const Header = () => {
           .toUpperCase()}
       </span>
 
-      {/* Admin Name */}
       <span className="small text-capitalize">
         {admin.username || admin.name || admin.email}
       </span>
     </button>
 
-    {/* Dropdown menu */}
     <ul className="dropdown-menu dropdown-menu-end">
       <li>
         <Link className="dropdown-item" to="/admin/dashboard">
@@ -152,7 +143,6 @@ const Header = () => {
   </div>
 )
  ) : (
-              /* ✅ USER SIDE */
               <>
                 {user ? (
                   <div className="dropdown">
@@ -163,7 +153,6 @@ const Header = () => {
                       aria-expanded="false"
                       style={{ background: "none", border: "none" }}
                     >
-                      {/* Avatar */}
                       <span
                         className="rounded-circle d-flex align-items-center justify-content-center"
                         style={{
@@ -179,13 +168,11 @@ const Header = () => {
                           .toUpperCase()}
                       </span>
 
-                      {/* Username */}
                       <span className="small text-capitalize">
                         {user.username || user.name || user.email}
                       </span>
                     </button>
 
-                    {/* Dropdown menu */}
                     <ul className="dropdown-menu dropdown-menu-end">
                       <li>
                         <Link className="dropdown-item" to="/profile">

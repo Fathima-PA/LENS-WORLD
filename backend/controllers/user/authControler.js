@@ -5,9 +5,8 @@ import sendEmail from "../../utils/sendEmail.js";
 import { verifyOtpHelper } from "../../utils/verifyUserOtp.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token.js";
 
-/* ======================
-   GOOGLE LOGIN
-====================== */
+
+  //  GOOGLE LOGIN
 export const googleLogin = async (req, res) => {
   const { name, email, photo } = req.body;
 
@@ -60,9 +59,7 @@ export const googleLogin = async (req, res) => {
   }
 };
 
-/* ======================
-   SEND OTP
-====================== */
+ //  SEND OTP
 export const sendOtp = async (req, res) => {
   try {
     const { email, purpose, role } = req.body;
@@ -100,9 +97,9 @@ const user = await User.findOne(query);
   }
 };
 
-/* ======================
-   VERIFY OTP
-====================== */
+
+  //  VERIFY OTP
+
 export const verifyOtp = async (req, res) => {
   console.log("✅ /api/auth routes loaded");
 
@@ -113,7 +110,6 @@ export const verifyOtp = async (req, res) => {
 
 let query = { email: normalizedEmail };
 
-// ✅ Only filter by isAdmin if role is given
 if (role === "admin") query.isAdmin = true;
 if (role === "user") query.isAdmin = false;
           
@@ -144,9 +140,9 @@ if (role === "user") query.isAdmin = false;
 };
 
 
-/* ======================
-   RESET PASSWORD
-====================== */
+
+  //  RESET PASSWORD
+
 export const resetPassword = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -159,7 +155,6 @@ export const resetPassword = async (req, res) => {
 
 let query = { email: normalizedEmail };
 
-// ✅ Only filter by isAdmin if role is given
 if (role === "admin") query.isAdmin = true;
 if (role === "user") query.isAdmin = false;
 
@@ -189,15 +184,12 @@ const user = await User.findOne(query);
 };
 
 
-/* ======================
-   REFRESH ACCESS TOKEN ✅
-====================== */
+
+  //  REFRESH ACCESS TOKEN 
+
 export const refreshAccessToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-  console.log("✅ Refresh API called");
-console.log("✅ Cookies received:", req.cookies);
-console.log("✅ refreshToken:", req.cookies.refreshToken);
 
     if (!refreshToken) {
       return res.status(401).json({ message: "No refresh token" });
@@ -231,9 +223,9 @@ return res.status(200).json({
   }
 };
 
-/* ======================
-   LOGOUT ✅
-====================== */
+
+  //  LOGOUT 
+
 export const logoutUser = async (req, res) => {
   try {
     res.clearCookie("accessToken");

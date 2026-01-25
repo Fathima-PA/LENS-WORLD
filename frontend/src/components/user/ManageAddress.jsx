@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, Button, Row, Col, Form, Toast, ToastContainer } from "react-bootstrap";
-import api from "../../api"; // ✅ interceptor axios
+import api from "../../api";
 
 const ManageAddress = ({ setActiveTab }) => {
   const [addresses, setAddresses] = useState([]);
@@ -14,10 +14,10 @@ const ManageAddress = ({ setActiveTab }) => {
     pincode: "",
   });
 
-  // ✅ Toast State
+  
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger | warning
+  const [toastType, setToastType] = useState("success"); 
 
   const showPopup = (msg, type = "success") => {
     setToastMsg(msg);
@@ -25,7 +25,7 @@ const ManageAddress = ({ setActiveTab }) => {
     setShowToast(true);
   };
 
-  // ✅ Fetch addresses
+  
   const fetchAddresses = async () => {
     try {
       const res = await api.get("/api/address/my");
@@ -39,7 +39,7 @@ const ManageAddress = ({ setActiveTab }) => {
     fetchAddresses();
   }, []);
 
-  // ✅ Delete address
+
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this address?")) return;
 
@@ -52,7 +52,7 @@ const ManageAddress = ({ setActiveTab }) => {
     }
   };
 
-  // ✅ Start editing
+ 
   const handleEditClick = (item) => {
     setEditingId(item._id);
     setEditForm({
@@ -64,7 +64,6 @@ const ManageAddress = ({ setActiveTab }) => {
     });
   };
 
-  // ✅ Edit form change
   const handleEditChange = (e) => {
     setEditForm((prev) => ({
       ...prev,
@@ -72,7 +71,7 @@ const ManageAddress = ({ setActiveTab }) => {
     }));
   };
 
-  // ✅ Update address
+ 
   const handleUpdate = async (id) => {
     try {
       await api.put(`/api/address/${id}`, editForm);
@@ -87,7 +86,7 @@ const ManageAddress = ({ setActiveTab }) => {
 
   return (
     <>
-      {/* ✅ TOAST POPUP */}
+    
       <ToastContainer position="top-end" className="p-3">
         <Toast
           show={showToast}

@@ -15,9 +15,7 @@ import {
   updateProfileThunk,
   changePasswordThunk,
 } from "../../features/userAuth/auth/authSlice";
-
-// ✅ IMPORTANT: use api instance (with refresh interceptor)
-import api from "../../api.js"; // ✅ change path if needed
+import api from "../../api.js"; 
 
 const AccountDetails = () => {
   const dispatch = useDispatch();
@@ -28,7 +26,6 @@ const AccountDetails = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
-  // ✅ Email change states
   const [newEmail, setNewEmail] = useState("");
   const [emailOtp, setEmailOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -40,7 +37,6 @@ const AccountDetails = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [profilePreview, setProfilePreview] = useState(null);
 
-  // ✅ Toast State
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success"); // success | danger | warning
@@ -62,7 +58,7 @@ const AccountDetails = () => {
 
   /* ---------------- HANDLERS ---------------- */
 
-  // ✅ PHOTO UPLOAD (COOKIE AUTH)
+  //  PHOTO UPLOAD 
   const handlePhotoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -84,7 +80,7 @@ const AccountDetails = () => {
     }
   };
 
-  // ✅ PROFILE UPDATE
+  //  PROFILE UPDATE
   const handleSaveChanges = async () => {
     try {
       await dispatch(updateProfileThunk({ name, phone })).unwrap();
@@ -94,13 +90,11 @@ const AccountDetails = () => {
     }
   };
 
-  // ✅ SEND OTP TO NEW EMAIL (COOKIE)
+  //  SEND OTP TO NEW EMAIL (COOKIE)
   const handleSendEmailOtp = async () => {
     try {
-      // ✅ 1) save pending email (protected)
       await api.put("/api/users/set-pending-email", { newEmail });
 
-      // ✅ 2) send otp (not protected)
       await api.post("/api/auth/send-otp", {
         email: email,
         purpose: "VERIFY_EMAIL",
@@ -114,7 +108,7 @@ const AccountDetails = () => {
     }
   };
 
-  // ✅ VERIFY OTP + UPDATE EMAIL
+  //  VERIFY OTP + UPDATE EMAIL
   const handleVerifyEmailOtp = async () => {
     try {
       await api.post("/api/auth/verify-otp", {
@@ -137,7 +131,7 @@ const AccountDetails = () => {
     }
   };
 
-  // ✅ CHANGE PASSWORD
+  //  CHANGE PASSWORD
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       showPopup("❌ Passwords do not match", "warning");
@@ -161,7 +155,6 @@ const AccountDetails = () => {
       setNewPassword("");
       setConfirmPassword("");
 
-      // ✅ logout cookie session
       await api.post("/api/auth/logout", {});
       window.location.href = "/login";
     } catch (error) {
@@ -171,7 +164,6 @@ const AccountDetails = () => {
 
   return (
     <>
-      {/* ✅ TOAST POPUP */}
       <ToastContainer position="top-end" className="p-3">
         <Toast
           show={showToast}
@@ -184,7 +176,7 @@ const AccountDetails = () => {
         </Toast>
       </ToastContainer>
 
-      {/* ✅ ACCOUNT SETTING */}
+      {/*  ACCOUNT SETTING */}
       <Card className="shadow-sm border-0 rounded mb-4">
         <Card.Body>
           <Card.Title className="fw-semibold mb-4">ACCOUNT SETTING</Card.Title>
@@ -254,7 +246,7 @@ const AccountDetails = () => {
         </Card.Body>
       </Card>
 
-      {/* ✅ CHANGE EMAIL */}
+      {/* CHANGE EMAIL */}
       <Card className="shadow-sm border-0 rounded mb-4">
         <Card.Body>
           <Card.Title className="fw-semibold mb-3">CHANGE EMAIL</Card.Title>
@@ -338,7 +330,7 @@ const AccountDetails = () => {
         </Card.Body>
       </Card>
 
-      {/* ✅ CHANGE PASSWORD */}
+      {/* CHANGE PASSWORD */}
       <Card className="shadow-sm border-0 rounded">
         <Card.Body>
           <Card.Title className="fw-semibold mb-4">CHANGE PASSWORD</Card.Title>
