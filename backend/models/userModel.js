@@ -39,14 +39,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
-    otp: {
-      type: String,
-    },
-
-    otpExpires: {
-      type: Date,
-    },
     pendingEmail: {
      type: String,
       },
@@ -58,12 +50,6 @@ refreshToken: {
   type: String,
   default: "",
 },
-
-
-      otpPurpose: {
-      type: String,
-      enum: ["VERIFY_EMAIL", "RESET_PASSWORD"],
-    },
     authProvider: {
   type: String,
   enum: ["local", "google"],

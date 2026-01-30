@@ -1,40 +1,42 @@
 import User from "../../models/userModel.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token.js";
 
+
 //  REGISTER
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, phone, password } = req.body;
+    const { username, email, password, phone } = req.body;
 
-    if (!username || !email || !phone || !password) {
+    if (!username || !email || !password || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const userExists = await User.findOne({ email: normalizedEmail });
-    if (userExists) {
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const user = await User.create({
       username,
       email: normalizedEmail,
-      phone,
       password,
-      isVerified: false,
-      authProvider: "local",
+      phone,
+      isVerified: true, 
     });
 
-    res.status(201).json({
-      message: "Signup successful. Please verify OTP",
-      userId: user._id,
+    return res.status(201).json({
+      message: "Registration completed successfully",
+      user,
     });
+
   } catch (error) {
-    console.error("REGISTER ERROR 👉", error);
-    res.status(500).json({ message: error.message });
+    console.error("REGISTER AFTER OTP ERROR:", error);
+    return res.status(500).json({ message: "Registration failed" });
   }
 };
+
 
 //  LOGIN 
 export const loginUser = async (req, res) => {
@@ -75,7 +77,6 @@ export const loginUser = async (req, res) => {
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
-    // ✅ store refresh token in DB
     user.refreshToken = refreshToken;
     await user.save();
    res.cookie("accessToken", accessToken, {
@@ -136,6 +137,7 @@ export const updateProfile = async (req, res) => {
 
 //  SAVE PENDING EMAIL
 export const setPendingEmail = async (req, res) => {
+  console.log("set pending email")
   try {
     const { newEmail } = req.body;
 

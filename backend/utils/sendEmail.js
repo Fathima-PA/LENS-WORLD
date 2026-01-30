@@ -17,7 +17,7 @@ const sendEmail = async (email, otp) => {
       <h3>Email Verification</h3>
       <p>Your OTP is:</p>
       <h2>${otp}</h2>
-      <p>This OTP is valid for 5 minutes.</p>
+      <p>This OTP is valid for 1 minutes.</p>
     `,
   });
 };

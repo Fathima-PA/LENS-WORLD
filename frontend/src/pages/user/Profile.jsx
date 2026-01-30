@@ -37,9 +37,7 @@ const Profile = () => {
         <Col md={6}>
           <AccountInfoCard setActiveTab={setActiveTab} />
         </Col>
-        <Col md={6}>
-          <AddressCard setActiveTab={setActiveTab} />
-        </Col>
+       
       </Row>
 
       <Row className="mt-4">

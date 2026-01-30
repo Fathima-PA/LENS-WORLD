@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Toast, ToastContainer } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { completeRegister, reset } from "../../features/userAuth/auth/authSlice";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
+  const { tempRegister } = useSelector((state) => state.auth);
   const { email, purpose } = location.state || {};
 
   const [secondsLeft, setSecondsLeft] = useState(60);
@@ -15,7 +19,7 @@ const VerifyOtp = () => {
 
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger
+  const [toastType, setToastType] = useState("success");
 
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
@@ -23,6 +27,7 @@ const VerifyOtp = () => {
     setShowToast(true);
   };
 
+  /* ================= TIMER ================= */
 
   useEffect(() => {
     if (secondsLeft === 0) {
@@ -37,37 +42,65 @@ const VerifyOtp = () => {
     return () => clearInterval(timer);
   }, [secondsLeft]);
 
+  /* ================= VERIFY OTP ================= */
+
   const handleVerify = async () => {
     if (!otp.trim()) {
-      showMessage("Please enter OTP ❗", "danger");
+      showMessage("Please enter OTP ", "danger");
       return;
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/verify-otp", {
-        email,
-        otp,
-        purpose,
-      });
+      // 1️⃣ VERIFY OTP FIRST
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/verify-otp",
+        { email, otp, purpose }
+      );
 
-      showMessage(res.data.message || "OTP verified ✅", "success");
+      showMessage(res.data.message || "OTP verified ", "success");
 
-      setTimeout(() => {
-        if (purpose === "VERIFY_EMAIL") {
+      // 2️⃣ REGISTER USER ONLY AFTER OTP 
+      if (purpose === "REGISTER") {
+        if (!tempRegister) {
+          showMessage("Session expired. Please register again ", "danger");
+          return;
+        }
+
+        await dispatch(
+          completeRegister({
+            ...tempRegister,
+            otp,
+          })
+        ).unwrap();
+        dispatch(reset());
+
+        setTimeout(() => {
           navigate("/login", { replace: true });
-        }
+        }, 1200);
+      }
+      if (purpose === "VERIFY_NEW_EMAIL") {
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1200);
+      }
 
-        if (purpose === "RESET_PASSWORD") {
-          navigate("/reset-password", { replace: true, state: { email } });
-        }
-      }, 1200);
+      if (purpose === "FORGOT_PASSWORD") {
+        setTimeout(() => {
+          navigate("/reset-password", {
+            replace: true,
+            state: { email },
+          });
+        }, 1200);
+      }
     } catch (error) {
       showMessage(
-        error.response?.data?.message || "OTP verification failed ❌",
+        error.response?.data?.message || "OTP verification failed ",
         "danger"
       );
     }
   };
+
+  /* ================= RESEND OTP (UNCHANGED) ================= */
 
   const resendOtp = async () => {
     if (!canResend) return;
@@ -78,12 +111,12 @@ const VerifyOtp = () => {
         purpose,
       });
 
-      showMessage("OTP resent successfully ✅", "success");
+      showMessage("OTP resent successfully ", "success");
 
       setSecondsLeft(60);
       setCanResend(false);
     } catch (error) {
-      showMessage("Failed to resend OTP ❌", "danger");
+      showMessage("Failed to resend OTP ", "danger");
     }
   };
 
@@ -125,7 +158,7 @@ const VerifyOtp = () => {
               Resend OTP in <b>{secondsLeft}s</b>
             </p>
           ) : (
-            <p className="text-muted mb-2">You can resend OTP now ✅</p>
+            <p className="text-muted mb-2">You can resend OTP now </p>
           )}
 
           <button
@@ -138,26 +171,17 @@ const VerifyOtp = () => {
         </div>
       </div>
 
-      <ToastContainer
-        position="top-center"
-        className="p-3"
-        style={{ zIndex: 9999 }}
-      >
+      <ToastContainer position="top-center" className="p-3">
         <Toast
           show={showToast}
           onClose={() => setShowToast(false)}
           delay={2000}
           autohide
           bg={toastType}
-          style={{
-            minWidth: "360px",
-            fontSize: "18px",
-            borderRadius: "14px",
-            textAlign: "center",
-            padding: "10px",
-          }}
         >
-          <Toast.Body className="text-white fw-semibold">{toastMsg}</Toast.Body>
+          <Toast.Body className="text-white fw-semibold text-center">
+            {toastMsg}
+          </Toast.Body>
         </Toast>
       </ToastContainer>
     </>

@@ -49,20 +49,20 @@ const AdminLogin = () => {
 
       await dispatch(loadAdminThunk());
 
-      showMessage("Admin login successful ✅", "success");
+      showMessage("Admin login successful ", "success");
 
       setTimeout(() => {
         navigate("/admin/dashboard");
       }, 2500);
     } catch (err) {
-      const message = err.response?.data?.message || "Login failed ❌";
+      const message = err.response?.data?.message || "Login failed ";
       showMessage(message, "danger");
     }
   };
 
   const forgotPasswordHandler = async () => {
     if (!email) {
-      showMessage("Please enter your email first ❗", "danger");
+      showMessage("Please enter your email first ", "danger");
       return;
     }
 
@@ -71,19 +71,19 @@ const AdminLogin = () => {
         "http://localhost:3000/api/auth/send-otp",
         {
           email,
-          purpose: "RESET_PASSWORD",
+          purpose: "FORGOT_PASSWORD",
           role: "admin",
         },
         { withCredentials: true }
       );
 
-      showMessage(res.data.message || "OTP sent ✅", "success");
+      showMessage(res.data.message || "OTP sent ", "success");
 
       setTimeout(() => {
        navigate("/admin/verify-otp", {
   state: {
     email,
-    purpose: "RESET_PASSWORD",
+    purpose: "FORGOT_PASSWORD",
     role: "admin",
   },
 });
@@ -92,7 +92,7 @@ const AdminLogin = () => {
       const message =
         error?.response?.data?.message ||
         error?.message ||
-        "Something went wrong ❌";
+        "Something went wrong ";
 
       showMessage(message, "danger");
     }

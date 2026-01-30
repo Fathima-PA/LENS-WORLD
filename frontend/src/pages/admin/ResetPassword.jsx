@@ -24,12 +24,12 @@ const ResetPassword = () => {
 
   const handleReset = async () => {
     if (!password || !confirmPassword) {
-      showMessage("Please fill all fields ❗", "danger");
+      showMessage("Please fill all fields ", "danger");
       return;
     }
 
     if (password !== confirmPassword) {
-      showMessage("Passwords do not match ❗", "danger");
+      showMessage("Passwords do not match ", "danger");
       return;
     }
 
@@ -40,14 +40,14 @@ const ResetPassword = () => {
         { withCredentials: true }
       );
 
-      showMessage(res.data.message || "Password reset successful ✅", "success");
+      showMessage(res.data.message || "Password reset successful ", "success");
 
       setTimeout(() => {
         navigate("/admin/login");
       }, 1200);
     } catch (error) {
       showMessage(
-        error.response?.data?.message || "Password reset failed ❌",
+        error.response?.data?.message || "Password reset failed ",
         "danger"
       );
     }

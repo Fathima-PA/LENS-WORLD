@@ -79,12 +79,12 @@ useEffect(() => {
   
   useEffect(() => {
     if (isError) {
-      showMessage(message || "Login failed ❌", "danger");
+      showMessage(message || "Login failed ", "danger");
       dispatch(reset());
     }
 
     if (isSuccess && user) {
-      showMessage("Login successful ✅", "success");
+      showMessage("Login successful ", "success");
 
       setTimeout(() => {
        navigate("/home", { replace: true });
@@ -118,35 +118,35 @@ useEffect(() => {
   
   const forgotPasswordHandler = async () => {
     if (!email.trim()) {
-      showMessage("Please enter your email first ❗", "danger");
+      showMessage("Please enter your email first ", "danger");
       return;
     }
 
     if (!isValidEmail(email.trim())) {
-      showMessage("Enter a valid email to continue ❗", "danger");
+      showMessage("Enter a valid email to continue ", "danger");
       return;
     }
 
     try {
       const res = await axios.post("http://localhost:3000/api/auth/send-otp", {
         email: email.toLowerCase().trim(),
-        purpose: "RESET_PASSWORD",
+        purpose: "FORGOT_PASSWORD",
       });
 
-      showMessage(res.data.message || "OTP sent ✅", "success");
-
+      showMessage(res.data.message || "OTP sent ", "success");
+    console.log(email);
       setTimeout(() => {
         navigate("/verify-otp", {
           replace: true,
           state: {
             email: email.toLowerCase().trim(),
-            purpose: "RESET_PASSWORD",
+            purpose: "FORGOT_PASSWORD",
           },
         });
       }, 1000);
     } catch (error) {
       console.error("FORGOT PASSWORD ERROR:", error);
-      showMessage(error.response?.data?.message || "Something went wrong ❌", "danger");
+      showMessage(error.response?.data?.message || "Something went wrong ", "danger");
     }
   };
   return (
@@ -225,7 +225,7 @@ useEffect(() => {
             </button>
           </form>
 
-          {/* OR */}
+          
           <div className="text-center text-muted mb-3">OR</div>
 
           {/* Google */}

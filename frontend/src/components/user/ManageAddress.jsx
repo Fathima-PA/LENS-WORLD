@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Card, Button, Row, Col, Form, Toast, ToastContainer } from "react-bootstrap";
+import {
+  Card,
+  Button,
+  Row,
+  Col,
+  Form,
+  Toast,
+  ToastContainer,
+} from "react-bootstrap";
 import api from "../../api";
 
 const ManageAddress = ({ setActiveTab }) => {
@@ -14,10 +22,9 @@ const ManageAddress = ({ setActiveTab }) => {
     pincode: "",
   });
 
-  
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); 
+  const [toastType, setToastType] = useState("success");
 
   const showPopup = (msg, type = "success") => {
     setToastMsg(msg);
@@ -25,7 +32,6 @@ const ManageAddress = ({ setActiveTab }) => {
     setShowToast(true);
   };
 
-  
   const fetchAddresses = async () => {
     try {
       const res = await api.get("/api/address/my");
@@ -39,20 +45,27 @@ const ManageAddress = ({ setActiveTab }) => {
     fetchAddresses();
   }, []);
 
-
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this address?")) return;
 
     try {
       await api.delete(`/api/address/${id}`);
-      showPopup("✅ Address deleted", "success");
+      showPopup(" Address deleted", "success");
       fetchAddresses();
     } catch (error) {
       showPopup(error.response?.data?.message || error.message, "danger");
     }
   };
+const handleSetDefault = async (id) => {
+  try {
+    await api.put(`/api/address/set-default/${id}`);
+    showPopup(" Default address updated", "success");
+    fetchAddresses();
+  } catch (error) {
+    showPopup(error.response?.data?.message || error.message, "danger");
+  }
+};
 
- 
   const handleEditClick = (item) => {
     setEditingId(item._id);
     setEditForm({
@@ -71,12 +84,10 @@ const ManageAddress = ({ setActiveTab }) => {
     }));
   };
 
- 
   const handleUpdate = async (id) => {
     try {
       await api.put(`/api/address/${id}`, editForm);
-
-      showPopup("✅ Address updated", "success");
+      showPopup(" Address updated", "success");
       setEditingId(null);
       fetchAddresses();
     } catch (error) {
@@ -86,7 +97,7 @@ const ManageAddress = ({ setActiveTab }) => {
 
   return (
     <>
-    
+      {/* Toast */}
       <ToastContainer position="top-end" className="p-3">
         <Toast
           show={showToast}
@@ -95,19 +106,23 @@ const ManageAddress = ({ setActiveTab }) => {
           autohide
           bg={toastType}
         >
-          <Toast.Body className="text-white fw-semibold">{toastMsg}</Toast.Body>
+          <Toast.Body className="text-white fw-semibold">
+            {toastMsg}
+          </Toast.Body>
         </Toast>
       </ToastContainer>
 
       <Card className="shadow-sm border-0 rounded">
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <Card.Title className="fw-semibold mb-0">MANAGE ADDRESSES</Card.Title>
+            <Card.Title className="fw-semibold mb-0">
+              MANAGE ADDRESSES
+            </Card.Title>
 
             <Button
               variant="outline-secondary"
               size="sm"
-              onClick={() => setActiveTab("dashboard")}
+              onClick={() => setActiveTab("address")}
             >
               Back
             </Button>
@@ -124,7 +139,9 @@ const ManageAddress = ({ setActiveTab }) => {
                       <>
                         <Row className="g-2">
                           <Col md={12}>
-                            <Form.Label className="fw-semibold">Address</Form.Label>
+                            <Form.Label className="fw-semibold">
+                              Address
+                            </Form.Label>
                             <Form.Control
                               name="address"
                               value={editForm.address}
@@ -133,7 +150,9 @@ const ManageAddress = ({ setActiveTab }) => {
                           </Col>
 
                           <Col md={6}>
-                            <Form.Label className="fw-semibold">Phone</Form.Label>
+                            <Form.Label className="fw-semibold">
+                              Phone
+                            </Form.Label>
                             <Form.Control
                               name="phone"
                               value={editForm.phone}
@@ -142,7 +161,9 @@ const ManageAddress = ({ setActiveTab }) => {
                           </Col>
 
                           <Col md={6}>
-                            <Form.Label className="fw-semibold">City</Form.Label>
+                            <Form.Label className="fw-semibold">
+                              City
+                            </Form.Label>
                             <Form.Control
                               name="city"
                               value={editForm.city}
@@ -151,7 +172,9 @@ const ManageAddress = ({ setActiveTab }) => {
                           </Col>
 
                           <Col md={6}>
-                            <Form.Label className="fw-semibold">State</Form.Label>
+                            <Form.Label className="fw-semibold">
+                              State
+                            </Form.Label>
                             <Form.Control
                               name="state"
                               value={editForm.state}
@@ -160,7 +183,9 @@ const ManageAddress = ({ setActiveTab }) => {
                           </Col>
 
                           <Col md={6}>
-                            <Form.Label className="fw-semibold">Pincode</Form.Label>
+                            <Form.Label className="fw-semibold">
+                              Pincode
+                            </Form.Label>
                             <Form.Control
                               name="pincode"
                               value={editForm.pincode}
@@ -177,7 +202,6 @@ const ManageAddress = ({ setActiveTab }) => {
                           >
                             Save
                           </Button>
-
                           <Button
                             variant="outline-secondary"
                             size="sm"
@@ -189,39 +213,39 @@ const ManageAddress = ({ setActiveTab }) => {
                       </>
                     ) : (
                       <>
-                        <div>
-                          <b>Address:</b> {item.address}
-                        </div>
-                        <div>
-                          <b>Phone:</b> {item.phone}
-                        </div>
-                        <div>
-                          <b>City:</b> {item.city}
-                        </div>
-                        <div>
-                          <b>State:</b> {item.state}
-                        </div>
-                        <div>
-                          <b>Pincode:</b> {item.pincode}
-                        </div>
+                        <div><b>Address:</b> {item.address}</div>
+                        <div><b>Phone:</b> {item.phone}</div>
+                        <div><b>City:</b> {item.city}</div>
+                        <div><b>State:</b> {item.state}</div>
+                        <div><b>Pincode:</b> {item.pincode}</div>
 
                         <div className="d-flex gap-2 mt-3">
-                          <Button
-                            size="sm"
-                            variant="outline-success"
-                            onClick={() => handleEditClick(item)}
-                          >
-                            Edit
-                          </Button>
+    <Button
+      size="sm"
+      variant={item.isDefault ? "success" : "outline-primary"}
+      disabled={item.isDefault}
+      onClick={() => handleSetDefault(item._id)}
+    >
+      {item.isDefault ? "Default" : "Set as Default"}
+    </Button>
 
-                          <Button
-                            size="sm"
-                            variant="outline-danger"
-                            onClick={() => handleDelete(item._id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
+    <Button
+      size="sm"
+      variant="outline-success"
+      onClick={() => handleEditClick(item)}
+    >
+      Edit
+    </Button>
+
+    <Button
+      size="sm"
+      variant="outline-danger"
+      onClick={() => handleDelete(item._id)}
+    >
+      Delete
+    </Button>
+  </div>
+
                       </>
                     )}
                   </Card>

@@ -72,7 +72,7 @@ const AdminCustomers = () => {
       );
 
       showMessage(
-        selectedUser.isBlocked ? "User Unblocked ✅" : "User Blocked ✅",
+        selectedUser.isBlocked ? "User Unblocked " : "User Blocked ",
         "success"
       );
 
@@ -187,16 +187,6 @@ const AdminCustomers = () => {
                 </InputGroup>
               </div>
 
-              <Button
-                className="border-0 px-4 py-2"
-                style={{
-                  backgroundColor: "#c6b4b4",
-                  borderRadius: "12px",
-                  height: "44px",
-                }}
-              >
-                + Add New Customer
-              </Button>
             </div>
 
             <div className="d-flex gap-2 mb-4">
@@ -314,13 +304,6 @@ const AdminCustomers = () => {
                         </td>
 
                         <td className="text-end" style={{ paddingRight: "20px" }}>
-                          <Button variant="light" size="sm" className="me-2">
-                            ✏️
-                          </Button>
-
-                          <Button variant="light" size="sm" className="me-2">
-                            🗑️
-                          </Button>
 
                           <Button
                             variant="light"
@@ -332,7 +315,7 @@ const AdminCustomers = () => {
                               fontWeight: "600",
                             }}
                           >
-                            {user.isBlocked ? "🔓" : "🔒"}
+                            {user.isBlocked ? "UNBLOCK" : "BLOCK"}
                           </Button>
                         </td>
                       </tr>

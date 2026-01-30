@@ -13,8 +13,6 @@ api.interceptors.response.use(
     const publicRoutes = [
       "/api/users/login",
       "/api/users/register",
-      "/api/auth/send-otp",
-      "/api/auth/verify-otp",
       "/api/auth/google",
     ];
 

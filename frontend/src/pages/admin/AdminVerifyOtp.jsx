@@ -17,7 +17,7 @@ const VerifyOtp = () => {
 
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger
+  const [toastType, setToastType] = useState("success");
 
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
@@ -27,7 +27,7 @@ const VerifyOtp = () => {
 
   const handleVerify = async () => {
     if (!otp) {
-      showMessage("Please enter OTP ❗", "danger");
+      showMessage("Please enter OTP ", "danger");
       return;
     }
 
@@ -38,15 +38,12 @@ const VerifyOtp = () => {
         { withCredentials: true }
       );
 
-      showMessage(res.data.message || "OTP verified ✅", "success");
+      showMessage(res.data.message || "OTP verified ", "success");
 
     
       setTimeout(() => {
-        if (purpose === "VERIFY_EMAIL") {
-          navigate("/login");
-        }
 
-        if (purpose === "RESET_PASSWORD") {
+        if (purpose === "FORGOT_PASSWORD") {
           navigate("/admin/reset-password", { state: { email, role: finalRole } });
         }
       }, 1000);
@@ -63,7 +60,7 @@ const VerifyOtp = () => {
         { withCredentials: true }
       );
 
-      showMessage("OTP resent successfully ✅", "success");
+      showMessage("OTP resent successfully ", "success");
     } catch (error) {
       showMessage(error.response?.data?.message || "Failed to resend OTP", "danger");
     }

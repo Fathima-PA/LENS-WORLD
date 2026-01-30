@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser, reset } from "../../features/userAuth/auth/authSlice";
+import {
+  setTempRegister,
+  sendOtp,
+  reset,
+} from "../../features/userAuth/auth/authSlice";
 import { Link, useNavigate } from "react-router-dom";
+import { Toast, ToastContainer } from "react-bootstrap";
 
-import { Toast, ToastContainer } from "react-bootstrap"; 
+
 
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { userId, isLoading, isSuccess, isError, message } = useSelector(
+  const { isLoading, isSuccess, isError, message } = useSelector(
     (state) => state.auth
   );
-console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
 
   const [formData, setFormData] = useState({
     username: "",
@@ -24,9 +28,7 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
 
   const { username, email, password, confirmPassword, phone } = formData;
 
- 
   const [errors, setErrors] = useState({});
-
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -39,16 +41,14 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-
     setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
-
 
   const validateForm = () => {
     let newErrors = {};
 
     if (!username.trim()) newErrors.username = "Username is required";
-    else if (username.trim().length < 3)
+    else if (username.length < 3)
       newErrors.username = "Username must be at least 3 characters";
 
     if (!email.trim()) newErrors.email = "Email is required";
@@ -60,8 +60,6 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
       newErrors.phone = "Phone must be 10 digits";
 
     if (!password.trim()) newErrors.password = "Password is required";
-    // else if (password.length < 6)
-    //   newErrors.password = "Password must be at least 6 characters";
 
     if (!confirmPassword.trim())
       newErrors.confirmPassword = "Confirm password is required";
@@ -69,47 +67,54 @@ console.log("REGISTER PAGE STATE:", { isSuccess, userId, isError, message });
       newErrors.confirmPassword = "Passwords do not match";
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
+
+  /* ================= SUBMIT ================= */
 
   const onSubmit = (e) => {
     e.preventDefault();
 
-    const isValid = validateForm();
-    if (!isValid) {
+    if (!validateForm()) {
       showMessage("Please fix the errors ❗", "danger");
       return;
     }
 
-    dispatch(registerUser({ username, email, password, phone }));
+    const tempData = {
+      username,
+      email: email.toLowerCase(),
+      password,
+      phone,
+    };
+
+    dispatch(setTempRegister(tempData));
+    dispatch(sendOtp({ email: email.toLowerCase() }));
   };
-useEffect(() => {
-  dispatch(reset());
-}, [dispatch]);
+
+  /* ================= EFFECT ================= */
 
   useEffect(() => {
-    if (isSuccess && userId) {
-      showMessage("Signup successful ✅", "success");
-
-      // localStorage.setItem("verifyUserId", userId);
+    if (isSuccess) {
+      showMessage("OTP sent successfully ");
 
       setTimeout(() => {
         navigate("/verify-otp", {
-           replace: true ,
+          replace: true,
           state: {
             email: email.toLowerCase(),
-            purpose: "VERIFY_EMAIL",
+            purpose: "REGISTER",
           },
         });
       }, 1000);
+
+      dispatch(reset());
     }
 
     if (isError) {
-      showMessage(message || "Signup failed ❌", "danger");
+      showMessage(message || "Something went wrong ", "danger");
       dispatch(reset());
     }
-  }, [isSuccess, isError, message, dispatch, userId, navigate, email]);
+  }, [isSuccess, isError, message, navigate, email, dispatch]);
 
   return (
     <>
@@ -124,7 +129,6 @@ useEffect(() => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="username"
                 name="username"
                 value={username}
                 onChange={onChange}
@@ -140,7 +144,6 @@ useEffect(() => {
               <input
                 type="email"
                 className="form-control"
-                placeholder="example@email.com"
                 name="email"
                 value={email}
                 onChange={onChange}
@@ -156,7 +159,6 @@ useEffect(() => {
               <input
                 type="password"
                 className="form-control"
-                placeholder="Enter your password"
                 name="password"
                 value={password}
                 onChange={onChange}
@@ -172,7 +174,6 @@ useEffect(() => {
               <input
                 type="password"
                 className="form-control"
-                placeholder="Confirm your password"
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={onChange}
@@ -188,7 +189,6 @@ useEffect(() => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Enter your phone number"
                 name="phone"
                 value={phone}
                 onChange={onChange}
@@ -204,17 +204,13 @@ useEffect(() => {
               style={{ backgroundColor: "#c8baba" }}
               disabled={isLoading}
             >
-              {isLoading ? "Signing up..." : "Signup"}
+              {isLoading ? "Sending OTP..." : "Signup"}
             </button>
           </form>
 
           <p className="text-center mt-3">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-decoration-underline"
-              style={{ cursor: "pointer", color: "#000" }}
-            >
+            <Link to="/login" className="text-decoration-underline text-dark">
               Login Now
             </Link>
           </p>
@@ -225,22 +221,17 @@ useEffect(() => {
         </div>
       </div>
 
-      <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999 }}>
+      <ToastContainer position="top-center">
         <Toast
           show={showToast}
           onClose={() => setShowToast(false)}
           delay={2000}
           autohide
           bg={toastType}
-          style={{
-            minWidth: "350px",
-            fontSize: "18px",
-            borderRadius: "14px",
-            textAlign: "center",
-            padding: "10px",
-          }}
         >
-          <Toast.Body className="text-white fw-semibold">{toastMsg}</Toast.Body>
+          <Toast.Body className="text-white text-center fw-semibold">
+            {toastMsg}
+          </Toast.Body>
         </Toast>
       </ToastContainer>
     </>

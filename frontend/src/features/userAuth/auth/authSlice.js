@@ -1,23 +1,27 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import authService from "./authService";
+import authService from "../../../services/user/authService";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../../firebase";
 import axios from "axios";
 
 const initialState = {
-  user: null, 
+  user: null,
+
+  tempRegister: null,
+
   isLoading: false,
   isSuccess: false,
   isError: false,
   message: "",
 };
 
-//  REGISTER
-export const registerUser = createAsyncThunk(
-  "auth/register",
-  async (userData, thunkAPI) => {
+/* ================= OTP FLOW ================= */
+
+export const sendOtp = createAsyncThunk(
+  "auth/sendOtp",
+  async ({ email }, thunkAPI) => {
     try {
-      return await authService.register(userData);
+      return await authService.sendOtp(email);
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || error.message
@@ -26,7 +30,22 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-//  LOGIN 
+// FINAL REGISTER (AFTER OTP VERIFIED)
+export const completeRegister = createAsyncThunk(
+  "auth/completeRegister",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.completeRegister(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+/* ================= LOGIN ================= */
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (userData, thunkAPI) => {
@@ -40,19 +59,21 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// LOAD USER 
+/* ================= LOAD USER ================= */
+
 export const loadUserThunk = createAsyncThunk(
   "auth/loadUser",
   async (_, thunkAPI) => {
     try {
       return await authService.getMe();
-    } catch (error) {
+    } catch {
       return thunkAPI.rejectWithValue("Not logged in");
     }
   }
 );
 
-//  GOOGLE LOGIN 
+/* ================= GOOGLE LOGIN ================= */
+
 export const googleLogin = createAsyncThunk(
   "auth/googleLogin",
   async (_, thunkAPI) => {
@@ -68,7 +89,7 @@ export const googleLogin = createAsyncThunk(
           photo: firebaseUser.photoURL,
           googleId: firebaseUser.uid,
         },
-        { withCredentials: true } 
+        { withCredentials: true }
       );
 
       return response.data;
@@ -78,7 +99,8 @@ export const googleLogin = createAsyncThunk(
   }
 );
 
-//  UPDATE PROFILE
+/* ================= PROFILE ================= */
+
 export const updateProfileThunk = createAsyncThunk(
   "auth/updateProfile",
   async (data, thunkAPI) => {
@@ -92,7 +114,8 @@ export const updateProfileThunk = createAsyncThunk(
   }
 );
 
-//  CHANGE PASSWORD 
+/* ================= PASSWORD ================= */
+
 export const changePasswordThunk = createAsyncThunk(
   "auth/changePassword",
   async (data, thunkAPI) => {
@@ -106,23 +129,33 @@ export const changePasswordThunk = createAsyncThunk(
   }
 );
 
-//  LOGOUT 
+/* ================= LOGOUT ================= */
+
 export const logoutThunk = createAsyncThunk(
   "auth/logout",
   async (_, thunkAPI) => {
     try {
       await authService.logout();
       return true;
-    } catch (error) {
+    } catch {
       return thunkAPI.rejectWithValue("Logout failed");
     }
   }
 );
 
+/* ================= SLICE ================= */
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+   
+    setTempRegister: (state, action) => {
+      state.tempRegister = action.payload;
+    },
+    clearTempRegister: (state) => {
+      state.tempRegister = null;
+    },
     reset: (state) => {
       state.isLoading = false;
       state.isSuccess = false;
@@ -132,38 +165,54 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload;
     },
+
   },
 
   extraReducers: (builder) => {
     builder
-      // REGISTER
-      .addCase(registerUser.pending, (state) => {
+
+      /* ===== SEND OTP ===== */
+      .addCase(sendOtp.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(sendOtp.fulfilled, (state) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.userId = action.payload.userId;
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(sendOtp.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })
 
-      // LOGIN
-     .addCase(loginUser.pending, (state) => {
-  state.isLoading = true;
-  state.isError = false;
-  state.isSuccess = false;
-  state.message = "";
-})
+      /* ===== COMPLETE REGISTER ===== */
+      .addCase(completeRegister.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(completeRegister.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        // state.user = action.payload.user;
+        state.tempRegister = null;
+      })
+      .addCase(completeRegister.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
 
+      /* ===== LOGIN ===== */
+      .addCase(loginUser.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+        state.message = "";
+      })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
         state.user = action.payload.user;
-          localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("isLoggedIn", "true");
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -171,10 +220,7 @@ const authSlice = createSlice({
         state.message = action.payload;
       })
 
-      // LOAD USER
-      .addCase(loadUserThunk.pending, (state) => {
-        state.isLoading = true;
-      })
+      /* ===== LOAD USER ===== */
       .addCase(loadUserThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload;
@@ -184,26 +230,31 @@ const authSlice = createSlice({
         state.user = null;
       })
 
-      // GOOGLE LOGIN
+      /* ===== GOOGLE LOGIN ===== */
       .addCase(googleLogin.fulfilled, (state, action) => {
-        state.isLoading = false;
         state.isSuccess = true;
         state.user = action.payload.user;
       })
 
-      // UPDATE PROFILE
+      /* ===== UPDATE PROFILE ===== */
       .addCase(updateProfileThunk.fulfilled, (state, action) => {
         state.user = { ...state.user, ...action.payload };
       })
 
-      // LOGOUT
+      /* ===== LOGOUT ===== */
       .addCase(logoutThunk.fulfilled, (state) => {
         state.user = null;
+        state.tempRegister = null;
         localStorage.removeItem("isLoggedIn");
-
       });
   },
 });
 
-export const { reset, setUser } = authSlice.actions;
+export const {
+  reset,
+  setUser,
+  setTempRegister,
+  clearTempRegister,
+} = authSlice.actions;
+
 export default authSlice.reducer;

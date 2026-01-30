@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../../models/userModel.js";
-import { setUserOtp } from "../../utils/generateOtp.js";
 import sendEmail from "../../utils/sendEmail.js";
-import { verifyOtpHelper } from "../../utils/verifyUserOtp.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token.js";
+import {setOtp} from "../../utils/setOtpForRegister.js"
+import Otp from "../../models/Otp.js";
 
 
   //  GOOGLE LOGIN
@@ -65,81 +65,193 @@ export const sendOtp = async (req, res) => {
     const { email, purpose, role } = req.body;
 
     if (!email || !purpose) {
-      return res.status(400).json({ message: "Email or OTP purpose missing" });
+      return res.status(400).json({ message: "Email or purpose missing" });
     }
 
- const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = email.toLowerCase().trim();
 
-let query = { email: normalizedEmail };
+    let query = { email: normalizedEmail };
+    if (role === "admin") query.isAdmin = true;
+    if (role === "user") query.isAdmin = false;
 
-if (role === "admin") query.isAdmin = true;
-if (role === "user") query.isAdmin = false;
-const user = await User.findOne(query);
+    let user;
 
-    if (!user) {
-      return res.status(404).json({ message: `${role || "user"} not found` });
-    }
+    /* ---------- REGISTER ---------- */
+    if (purpose === "REGISTER") {
 
-    if (user.isBlocked) {
-      return res.status(403).json({ message: "Account is blocked" });
-    }
+     const otp = await setOtp(normalizedEmail, purpose);
 
-    const otp = setUserOtp(user, purpose);
-    await user.save();
-
-    console.log("OTP:", otp);
     await sendEmail(normalizedEmail, otp);
+         console.log("REGISTER OTP EMAIL:",normalizedEmail);
+      console.log(" REGISTER OTP:", otp);
+    return res.json({ message: "OTP sent successfully" });
+  }
 
-    res.json({ message: "OTP generated successfully" });
+    /* ---------- FORGOT PASSWORD ---------- */
+    if (purpose === "FORGOT_PASSWORD") {
+      user = await User.findOne(query);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const otp = await setOtp(user.email, purpose);
+      await user.save();
+      console.log(" OTP EMAIL:", user.email);
+      console.log(" OTP:", otp);
+
+      await sendEmail(user.email, otp);
+      return res.json({ message: "OTP sent successfully" });
+    }
+
+    /* ---------- VERIFY NEW EMAIL ---------- */
+    if (purpose === "VERIFY_NEW_EMAIL") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      user = await User.findById(req.user._id);
+      if (!user || !user.pendingEmail) {
+        return res.status(400).json({ message: "No pending email found" });
+      }
+
+      const otp = await setOtp(user.pendingEmail, purpose);
+      await user.save();
+       console.log(" OTP EMAIL:", user.email);
+      console.log(" OTP:", otp);
+
+      await sendEmail(user.pendingEmail, otp);
+      return res.json({ message: "OTP sent successfully" });
+    }
+
+    return res.status(400).json({ message: "Invalid OTP purpose" });
+
   } catch (error) {
     console.error("SEND OTP ERROR:", error);
-    res.status(500).json({ message: "Failed to generate OTP" });
+    return res.status(500).json({ message: "Failed to send OTP" });
   }
 };
+ 
+
 
 
   //  VERIFY OTP
 
 export const verifyOtp = async (req, res) => {
-  console.log("✅ /api/auth routes loaded");
-
   try {
-    const { email, otp, purpose, role } = req.body;
+    const { email, otp, purpose } = req.body;
 
-    const normalizedEmail = email.toLowerCase().trim();
-
-let query = { email: normalizedEmail };
-
-if (role === "admin") query.isAdmin = true;
-if (role === "user") query.isAdmin = false;
-          
-          
-    const user = await User.findOne(query);
-    
-
-    const result = verifyOtpHelper(user, otp, purpose);
-
-    if (!result.ok) {
-      return res.status(result.status).json({ message: result.message });
+    if (!otp || !purpose) {
+      return res.status(400).json({ message: "OTP and purpose required" });
     }
 
-    if (purpose === "VERIFY_EMAIL") {
-      user.isVerified = true;
+    let user;
+
+    /* ---------- REGISTER ---------- */
+    if (purpose === "REGISTER") {
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+
+      const otpRecord = await Otp.findOne({
+        email: normalizedEmail,
+        purpose,
+      });
+
+      if (!otpRecord) {
+        return res.status(400).json({ message: "OTP expired or not found" });
+      }
+
+    if (otpRecord.expiresAt.getTime() < Date.now()) {
+  await otpRecord.deleteOne();
+  return res.status(400).json({ message: "OTP expired" });
+}
+      if (otpRecord.otp !== otp) {
+        return res.status(400).json({ message: "Invalid OTP" });
+      }
+
+      await otpRecord.deleteOne();
+
+      return res.json({ message: "OTP verified successfully" });
     }
 
-    user.otp = undefined;
-    user.otpPurpose = undefined;
-    user.otpExpires = undefined;
+    /* ---------- FORGOT PASSWORD ---------- */
+    else if (purpose === "FORGOT_PASSWORD") {
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
 
-    await user.save();
+      const normalizedEmail = email.toLowerCase().trim();
+       const otpRecord = await Otp.findOne({
+          email: normalizedEmail,
+        purpose,
+      });
+      if (!otpRecord) {
+        return res.status(400).json({ message: "OTP expired or not found" });
+      }
 
-    res.json({ message: "OTP verified successfully" });
+    if (otpRecord.expiresAt.getTime() < Date.now()) {
+  await otpRecord.deleteOne();
+  return res.status(400).json({ message: "OTP expired" });
+}
+
+
+      if (otpRecord.otp !== otp) {
+        return res.status(400).json({ message: "Invalid OTP" });
+      }
+
+      await otpRecord.deleteOne();
+
+      return res.json({ message: "OTP verified successfully" });
+      
+    }
+
+    /* ---------- VERIFY NEW EMAIL ---------- */
+    else if (purpose === "VERIFY_NEW_EMAIL") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+       const normalizedEmail = email.toLowerCase().trim();
+
+      const otpRecord = await Otp.findOne({
+        email: normalizedEmail,
+        purpose,
+      });
+
+      if (!otpRecord) {
+        return res.status(400).json({ message: "OTP expired or not found" });
+      }
+
+    if (otpRecord.expiresAt.getTime() < Date.now()) {
+  await otpRecord.deleteOne();
+  return res.status(400).json({ message: "OTP expired" });
+}
+
+
+      if (otpRecord.otp !== otp) {
+        return res.status(400).json({ message: "Invalid OTP" });
+      }
+
+      await otpRecord.deleteOne();
+    }
+
+    else {
+      return res.status(400).json({ message: "Invalid OTP purpose" });
+    }
+
+    return res.json({ message: "OTP verified successfully" });
+
   } catch (error) {
-    res.status(500).json({ message: "OTP verification failed" });
+    console.error("VERIFY OTP ERROR:", error);
+    return res.status(500).json({ message: "OTP verification failed" });
   }
 };
-
-
 
   //  RESET PASSWORD
 
@@ -160,8 +272,6 @@ if (role === "user") query.isAdmin = false;
 
 
 const user = await User.findOne(query);
-
-
 
     if (!user) {
       return res.status(404).json({ message: `${role || "user"} not found` });

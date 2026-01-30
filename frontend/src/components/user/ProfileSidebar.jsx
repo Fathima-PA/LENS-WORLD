@@ -56,7 +56,7 @@ const ProfileSidebar = ({ activeTab, setActiveTab }) => {
       <ListGroup.Item
         style={itemStyle}
         action
-        onClick={() => setActiveTab("manage-address")}
+        onClick={() => setActiveTab("address")}
       >
         <GeoAlt className="me-2" /> Address
       </ListGroup.Item>

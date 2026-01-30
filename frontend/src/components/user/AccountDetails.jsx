@@ -9,6 +9,14 @@ import {
   Toast,
   ToastContainer,
 } from "react-bootstrap";
+import {
+  setPendingEmail,
+  sendEmailOtp,
+  verifyEmailOtp,
+  confirmEmailChange,
+  uploadProfilePhoto,
+} from "../../services/user/accountService.js";
+
 import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -39,7 +47,33 @@ const AccountDetails = () => {
 
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success"); // success | danger | warning
+  const [toastType, setToastType] = useState("success"); 
+
+  const [otpTimer, setOtpTimer] = useState(60);
+const [canResendOtp, setCanResendOtp] = useState(false);
+const [otpRequestId, setOtpRequestId] = useState(0);
+
+
+  useEffect(() => {
+  if (!otpSent) return;
+
+  setOtpTimer(60);
+  setCanResendOtp(false);
+
+  const interval = setInterval(() => {
+    setOtpTimer((prev) => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        setCanResendOtp(true);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [otpSent,otpRequestId]);
+
 
   const showPopup = (msg, type = "success") => {
     setToastMsg(msg);
@@ -59,82 +93,75 @@ const AccountDetails = () => {
   /* ---------------- HANDLERS ---------------- */
 
   //  PHOTO UPLOAD 
-  const handlePhotoChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+const handlePhotoChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    setProfilePreview(URL.createObjectURL(file));
+  setProfilePreview(URL.createObjectURL(file));
 
-    try {
-      const formData = new FormData();
-      formData.append("photo", file);
+  try {
+    const formData = new FormData();
+    formData.append("photo", file);
 
-      await api.put("/api/users/update-photo", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    await uploadProfilePhoto(formData);
+    showPopup(" Profile photo updated", "success");
+  } catch (error) {
+    showPopup(error.response?.data?.message || error.message, "danger");
+  }
+};
 
-      showPopup("✅ Profile photo updated successfully", "success");
-    } catch (error) {
-      const msg = error.response?.data?.message || error.message;
-      showPopup(msg, "danger");
-    }
-  };
 
   //  PROFILE UPDATE
   const handleSaveChanges = async () => {
     try {
       await dispatch(updateProfileThunk({ name, phone })).unwrap();
-      showPopup("✅ Profile updated successfully", "success");
+      showPopup(" Profile updated successfully", "success");
     } catch (error) {
-      showPopup(error || "❌ Profile update failed", "danger");
+      showPopup(error || " Profile update failed", "danger");
     }
   };
 
   //  SEND OTP TO NEW EMAIL (COOKIE)
-  const handleSendEmailOtp = async () => {
-    try {
-      await api.put("/api/users/set-pending-email", { newEmail });
+const handleSendEmailOtp = async () => {
+  try {
+    await setPendingEmail(newEmail);
+    await sendEmailOtp(newEmail);
 
-      await api.post("/api/auth/send-otp", {
-        email: email,
-        purpose: "VERIFY_EMAIL",
-      });
+    showPopup(" OTP sent to new email", "success");
+    setOtpSent(true);
+    setOtpRequestId((prev) => prev + 1);
+  } catch (error) {
+    showPopup(error.response?.data?.message || error.message, "danger");
+  }
+};
 
-      showPopup("✅ OTP sent successfully", "success");
-      setOtpSent(true);
-    } catch (error) {
-      const msg = error.response?.data?.message || error.message;
-      showPopup(msg, "danger");
-    }
-  };
+
 
   //  VERIFY OTP + UPDATE EMAIL
-  const handleVerifyEmailOtp = async () => {
-    try {
-      await api.post("/api/auth/verify-otp", {
-        email: email,
-        otp: emailOtp,
-        purpose: "VERIFY_EMAIL",
-      });
+const handleVerifyEmailOtp = async () => {
+  try {
+    console.log(emailOtp)
+ await verifyEmailOtp(emailOtp, newEmail);
 
-      const res = await api.put("/api/users/confirm-email-change", {});
+    const res = await confirmEmailChange();
 
-      showPopup("✅ Email updated successfully", "success");
-      setEmail(res.data.user.email);
+    showPopup(" Email updated successfully", "success");
+    setEmail(res.data.user.email);
 
-      setNewEmail("");
-      setEmailOtp("");
-      setOtpSent(false);
-    } catch (error) {
-      const msg = error.response?.data?.message || error.message;
-      showPopup(msg, "danger");
-    }
-  };
+    setNewEmail("");
+    setEmailOtp("");
+    setOtpSent(false);
+  } catch (error) {
+    showPopup(error.response?.data?.message || error.message, "danger");
+  }
+};
+
+
 
   //  CHANGE PASSWORD
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      showPopup("❌ Passwords do not match", "warning");
+      showPopup(" Passwords do not match", "warning");
       return;
     }
 
@@ -147,7 +174,7 @@ const AccountDetails = () => {
       ).unwrap();
 
       showPopup(
-        "✅ Password changed successfully. Please login again.",
+        " Password changed successfully. Please login again.",
         "success"
       );
 
@@ -158,7 +185,7 @@ const AccountDetails = () => {
       await api.post("/api/auth/logout", {});
       window.location.href = "/login";
     } catch (error) {
-      showPopup(error || "❌ Password change failed", "danger");
+      showPopup(error || " Password change failed", "danger");
     }
   };
 
@@ -280,53 +307,79 @@ const AccountDetails = () => {
             </Col>
           </Row>
 
-          {otpSent && (
-            <>
-              <hr />
+     {otpSent && (
+  <>
+    <hr />
 
-              <Row className="g-2 align-items-end">
-                <Col md={8}>
-                  <Form.Group>
-                    <Form.Label className="fw-semibold">Enter OTP</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter OTP"
-                      value={emailOtp}
-                      onChange={(e) => setEmailOtp(e.target.value)}
-                    />
-                    <Form.Text className="text-muted">
-                      OTP sent to{" "}
-                      <span className="fw-semibold">{newEmail}</span>
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
+    <Row className="g-2 align-items-end">
+      <Col md={8}>
+        <Form.Group>
+          <Form.Label className="fw-semibold">Enter OTP</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter OTP"
+            value={emailOtp}
+            onChange={(e) => setEmailOtp(e.target.value)}
+          />
 
-                <Col md={4} className="d-grid">
-                  <Button
-                    variant="success"
-                    onClick={handleVerifyEmailOtp}
-                    disabled={!emailOtp}
-                  >
-                    Verify & Update
-                  </Button>
-                </Col>
-              </Row>
+          <Form.Text className="text-muted">
+            OTP sent to{" "}
+            <span className="fw-semibold">{newEmail}</span>
+          </Form.Text>
 
-              <div className="d-flex justify-content-end mt-3">
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={() => {
-                    setOtpSent(false);
-                    setNewEmail("");
-                    setEmailOtp("");
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </>
+          {/* TIMER */}
+          {!canResendOtp ? (
+            <Form.Text className="text-warning d-block mt-1">
+              Resend OTP in {otpTimer}s
+            </Form.Text>
+          ) : (
+            <Form.Text className="text-success d-block mt-1">
+              OTP expired. You can resend now.
+            </Form.Text>
           )}
+        </Form.Group>
+      </Col>
+
+      <Col md={4} className="d-grid">
+        <Button
+          variant="success"
+          onClick={handleVerifyEmailOtp}
+          disabled={!emailOtp}
+        >
+          Verify & Update
+        </Button>
+      </Col>
+    </Row>
+
+    <div className="d-flex justify-content-between mt-3">
+      {/* RESEND OTP */}
+      <Button
+        variant="outline-primary"
+        size="sm"
+        disabled={!canResendOtp}
+        onClick={handleSendEmailOtp}
+      >
+        Resend OTP
+      </Button>
+
+      {/* CANCEL */}
+      <Button
+        variant="outline-secondary"
+        size="sm"
+        onClick={() => {
+          setOtpSent(false);
+          setNewEmail("");
+          setEmailOtp("");
+          setOtpTimer(60);
+          setCanResendOtp(false);
+        }}
+      >
+        Cancel
+      </Button>
+    </div>
+  </>
+)}
+
         </Card.Body>
       </Card>
 

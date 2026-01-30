@@ -34,6 +34,12 @@ const AdminSidebar = () => {
           <Button variant="light" className="text-start rounded-3">
             Orders
           </Button>
+          <Button variant="light" className="text-start rounded-3">
+            Coupon
+          </Button>
+          <Button variant="light" className="text-start rounded-3">
+            Offer
+          </Button>
 
           <Button variant="light" className="text-start rounded-3">
             Banner
@@ -51,16 +57,6 @@ const AdminSidebar = () => {
             onClick={() => navigate("/admin/customers")}
           >
             Customers
-          </Button>
-        </div>
-
-        <div className="text-muted small mt-4 mb-2" style={{ letterSpacing: "1px" }}>
-          OTHERS
-        </div>
-
-        <div className="d-grid gap-2">
-          <Button variant="light" className="text-start rounded-3 text-danger">
-            Logout
           </Button>
         </div>
       </Card.Body>

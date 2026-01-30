@@ -13,6 +13,11 @@ const addressSchema = new mongoose.Schema(
     state: String,
     phone: String,
     pincode: String,
+    isDefault: {
+  type: Boolean,
+  default: false,
+}
+
   },
   { timestamps: true }
 );
