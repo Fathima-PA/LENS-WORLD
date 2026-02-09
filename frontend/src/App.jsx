@@ -22,7 +22,6 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AddCategory from "./pages/admin/AddCategory";
 import AdminProducts from "./pages/admin/AdminProduct";
 import AddProduct from "./pages/admin/AddProduct"; 
-import AddVariant from "./pages/admin/AddVariant"
 import ProductListing from "./components/user/ProductListing";
 import ProductDetails from "./components/user/ProductDetails";
 
@@ -114,10 +113,6 @@ useEffect(() => {
 <Route
   path="/admin/products/edit/:id"
   element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
-/>
-<Route
-  path="/admin/products/:productId/variants/add"
-  element={admin ? <AddVariant /> : <Navigate to="/admin/login" />}
 />
 
 
