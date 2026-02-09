@@ -8,7 +8,6 @@ const initialState = {
   user: null,
 
   tempRegister: null,
-
   isLoading: false,
   isSuccess: false,
   isError: false,

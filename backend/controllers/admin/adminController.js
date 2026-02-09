@@ -1,5 +1,7 @@
 import User from "../../models/userModel.js";
 import jwt from "jsonwebtoken";
+import { paginate } from "../../utils/paginate.js";
+import { buildQuery } from "../../utils/buildQuery.js";
 
 export const adminLogin = async (req, res) => {
   try {
@@ -68,13 +70,36 @@ export const adminLogout = (req, res) => {
 //  GET USERS 
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: 1 });
-    res.json(users);
+    const { page = 1, limit = 5, search = "", status = "all" } = req.query;
+
+    const query = buildQuery({
+      search,
+      searchFields: ["username", "email", "phone"],
+      filters: {
+        isBlocked:
+          status === "active"
+            ? false
+            : status === "blocked"
+            ? true
+            : undefined,
+      },
+      baseQuery: { isAdmin: false },
+    });
+
+    const result = await paginate({
+      model: User,
+      query,
+      page,
+      limit,
+    });
+
+    res.json(result);
   } catch (error) {
     console.error("GET USERS ERROR 👉", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const toggleBlockUser = async (req, res) => {
   try {

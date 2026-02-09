@@ -22,9 +22,10 @@ const AdminCustomers = () => {
   const [users, setUsers] = useState([]);
 
   const [search, setSearch] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+
 
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
 
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -39,22 +40,34 @@ const AdminCustomers = () => {
     setShowToast(true);
   };
 
-  const fetchUsers = async () => {
-    try {
-      const res = await axios.get("http://localhost:3000/api/admin/users", {
+ const fetchUsers = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:3000/api/admin/users",
+      {
+        params: {
+          page: currentPage,
+          limit: 5,
+          search,
+          status: filter, 
+        },
         withCredentials: true,
-      });
+      }
+    );
 
-      setUsers(res.data);
-    } catch (error) {
-      console.log(error);
-      showMessage("Failed to fetch users", "danger");
-    }
-  };
+    setUsers(res.data.data);
+    setTotalPages(res.data.totalPages);
+  } catch (error) {
+    console.log(error);
+    showMessage("Failed to fetch users", "danger");
+  }
+};
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+
+useEffect(() => {
+  fetchUsers();
+}, [currentPage, search, filter]);
+
 
   const openConfirmModal = (user) => {
     setSelectedUser(user);
@@ -88,30 +101,9 @@ const AdminCustomers = () => {
     }
   };
 
-  const filteredUsers = users
-    .filter((u) => !u.isAdmin)
-    .filter((u) => {
-      if (filter === "all") return true;
-      if (filter === "active") return u.isBlocked === false;
-      if (filter === "blocked") return u.isBlocked === true;
-      return true;
-    })
-    .filter((u) => {
-      if (!search.trim()) return true;
+  
 
-      const text = search.toLowerCase();
-
-      return (
-        (u.username && u.username.toLowerCase().includes(text)) ||
-        (u.email && u.email.toLowerCase().includes(text)) ||
-        (u.phone && u.phone.toLowerCase().includes(text))
-      );
-    });
-
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-  const startIndex = (currentPage - 1) * usersPerPage;
-  const endIndex = startIndex + usersPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+  
 
   return (
     <div style={{ background: "#f6f6f7", minHeight: "100vh" }}>
@@ -240,7 +232,7 @@ const AdminCustomers = () => {
                   </thead>
 
                   <tbody>
-                    {paginatedUsers.map((user) => (
+                    {users.map((user) => (
                       <tr key={user._id}>
                         <td style={{ padding: "18px 20px" }}>
                           <div className="d-flex align-items-center gap-3">
@@ -321,7 +313,7 @@ const AdminCustomers = () => {
                       </tr>
                     ))}
 
-                    {filteredUsers.length === 0 && (
+                    {users.length === 0 && (
                       <tr>
                         <td colSpan={6} className="text-center py-5 text-muted">
                           No customers found
@@ -333,9 +325,7 @@ const AdminCustomers = () => {
 
                 <div className="d-flex justify-content-between align-items-center px-4 py-3">
                   <div className="text-muted small">
-                    Showing {filteredUsers.length === 0 ? 0 : startIndex + 1}-
-                    {Math.min(endIndex, filteredUsers.length)} from{" "}
-                    {filteredUsers.length}
+                    Showing page {currentPage} of {totalPages}
                   </div>
 
                   <div className="d-flex align-items-center gap-2">

@@ -13,11 +13,18 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loadUserThunk } from "./features/userAuth/auth/authSlice";
+import { loadUserThunk,logoutThunk} from "./features/userAuth/auth/authSlice";
 import { loadAdminThunk } from "./features/adminAuth/adminAuthSlice";
 import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminVerifyOtp from "./pages/admin/AdminVerifyOtp";
 import AdminResetPassword from "./pages/admin/ResetPassword";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AddCategory from "./pages/admin/AddCategory";
+import AdminProducts from "./pages/admin/AdminProduct";
+import AddProduct from "./pages/admin/AddProduct"; 
+import AddVariant from "./pages/admin/AddVariant"
+import ProductListing from "./components/user/ProductListing";
+import ProductDetails from "./components/user/ProductDetails";
 
 
 
@@ -36,7 +43,15 @@ useEffect(() => {
   dispatch(loadUserThunk());
 }, [dispatch]);
 
+useEffect(() => {
+  if (!user) return;
 
+  const interval = setInterval(() => {
+    dispatch(loadUserThunk());
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [user, dispatch]);
 
   useEffect(() => {
     if (
@@ -60,9 +75,12 @@ useEffect(() => {
           <Route path="/home" element={<Home />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/profile" element={user ? <Profile /> : <Login />} />
+           <Route path="/product" element={<ProductListing />} />
+           <Route path="/product/:id" element={<ProductDetails />} />
 
-  
+          <Route path="/profile" element={user?<Profile /> : <Login />} />
+
+ 
           <Route
             path="/admin/login"
             element={admin ? <Navigate to="/admin/dashboard" /> : <AdminLogin />}
@@ -76,6 +94,32 @@ useEffect(() => {
           <Route path="/admin/customers"
   element={admin ? <AdminCustomers /> : <Navigate to="/admin/login" />}
 />
+    <Route path="/admin/categories"
+  element={admin ?<AdminCategories /> : <Navigate to="/admin/login" />}
+/>
+<Route path="/admin/categories/add" element={admin?<AddCategory />:<Navigate to="/admin/login" />} />
+<Route path="/admin/categories/edit/:id" element={admin?<AddCategory />:<Navigate to="/admin/login" />} />
+
+
+<Route
+  path="/admin/products"
+  element={admin ? <AdminProducts /> : <Navigate to="/admin/login" />}
+/>
+
+<Route
+  path="/admin/products/add"
+  element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
+/>
+
+<Route
+  path="/admin/products/edit/:id"
+  element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
+/>
+<Route
+  path="/admin/products/:productId/variants/add"
+  element={admin ? <AddVariant /> : <Navigate to="/admin/login" />}
+/>
+
 
         </Routes>
 

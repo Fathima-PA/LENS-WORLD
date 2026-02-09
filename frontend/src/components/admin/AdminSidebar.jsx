@@ -7,57 +7,65 @@ const AdminSidebar = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  const menuItems = [
+    { label: "Dashboard", path: "/admin/dashboard" },
+    { label: "Products", path: "/admin/products" },
+    { label: "Category", path: "/admin/categories" },
+    { label: "Orders", path: "/admin/orders" },
+    { label: "Coupon", path: "/admin/coupons" },
+    { label: "Offer", path: "/admin/offers" },
+    { label: "Banner", path: "/admin/banners" },
+  ];
+
+  const userMenu = [
+    { label: "Customers", path: "/admin/customers" },
+    { label: "Products", path: "/admin/products" },
+  ];
+
   return (
     <Card className="border-0 shadow-sm rounded-4">
       <Card.Body className="p-3">
+        {/* MENU */}
         <div className="text-muted small mb-2" style={{ letterSpacing: "1px" }}>
           MENU
         </div>
 
         <div className="d-grid gap-2">
-          <Button
-            variant="light"
-            className={`text-start rounded-3 ${isActive("/admin/dashboard") ? "fw-semibold" : ""}`}
-            onClick={() => navigate("/admin/dashboard")}
-          >
-            Dashboard
-          </Button>
-
-          <Button variant="light" className="text-start rounded-3">
-            Products
-          </Button>
-
-          <Button variant="light" className="text-start rounded-3">
-            Category
-          </Button>
-
-          <Button variant="light" className="text-start rounded-3">
-            Orders
-          </Button>
-          <Button variant="light" className="text-start rounded-3">
-            Coupon
-          </Button>
-          <Button variant="light" className="text-start rounded-3">
-            Offer
-          </Button>
-
-          <Button variant="light" className="text-start rounded-3">
-            Banner
-          </Button>
+          {menuItems.map((item) => (
+            <Button
+              key={item.path}
+              variant="light"
+              className={`text-start rounded-3 ${
+                isActive(item.path) ? "fw-semibold bg-light" : ""
+              }`}
+              onClick={() => navigate(item.path)}
+            >
+              {item.label}
+            </Button>
+          ))}
         </div>
 
-        <div className="text-muted small mt-4 mb-2" style={{ letterSpacing: "1px" }}>
+        {/* USER MANAGEMENT */}
+        <div
+          className="text-muted small mt-4 mb-2"
+          style={{ letterSpacing: "1px" }}
+        >
           USER MANAGEMENT
         </div>
 
         <div className="d-grid gap-2">
-          <Button
-            variant="light"
-            className={`text-start rounded-3 ${isActive("/admin/customers") ? "fw-semibold" : ""}`}
-            onClick={() => navigate("/admin/customers")}
-          >
-            Customers
-          </Button>
+          {userMenu.map((item) => (
+            <Button
+              key={item.path}
+              variant="light"
+              className={`text-start rounded-3 ${
+                isActive(item.path) ? "fw-semibold bg-light" : ""
+              }`}
+              onClick={() => navigate(item.path)}
+            >
+              {item.label}
+            </Button>
+          ))}
         </div>
       </Card.Body>
     </Card>

@@ -1,0 +1,56 @@
+
+.shop-page {
+  background: #faf7f2;
+  min-height: 100vh;
+  padding: 20px 40px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.shop-page img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.filter-drawer {
+  width: 380px;
+  background: #fff;
+  padding: 24px;
+  font-family: "Helvetica Neue", sans-serif;
+}
+
+.filter-section h5 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.filter-section label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.filter-section input {
+  margin-right: 8px;
+}
+
+.apply-filter {
+  background: #111;
+  color: #fff;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  margin-top: 24px;
+  letter-spacing: 1px;
+}
+
+.reset-filter {
+  background: none;
+  border: none;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 13px;
+}

@@ -1,0 +1,60 @@
+.admin-card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.table-head {
+  background: #fafafa;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.category-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #f3f3f3;
+}
+
+.create-category-btn {
+  background: #cbb7b0;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.create-category-btn:hover {
+  background: #b9a39b;
+}
+
+.action-icons {
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.table-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #ddd;
+}
+
+.page-btn.active {
+  background: #cbb7b0;
+  color: white;
+  border: none;
+}

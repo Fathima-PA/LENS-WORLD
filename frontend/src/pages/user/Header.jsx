@@ -65,18 +65,18 @@ const Header = () => {
       <Link to="/" className="text-decoration-none text-dark">
         Home
       </Link>
-      <Link to="/shop" className="text-decoration-none text-dark">
+      <Link to="/product" className="text-decoration-none text-dark">
         Shop
       </Link>
     </div>
 
     <div className="col-md-4">
-      <input
+      {/* <input
         type="text"
         className="form-control form-control-sm"
         placeholder="What are you looking for?"
         style={{ backgroundColor: "#eee", border: "none" }}
-      />
+      /> */}
     </div>
   </>
 )}

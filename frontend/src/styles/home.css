@@ -1,0 +1,174 @@
+
+
+.home {
+  font-family: "Georgia", serif;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.hero img {
+  width: 50%;
+}
+
+.hero-text {
+  width: 50%;
+}
+
+.hero-text h1 {
+  font-size: 52px;
+  line-height: 1.2;
+}
+
+.hero-text button {
+  margin-top: 20px;
+  padding: 12px 24px;
+  border: 1px solid #000;
+  background: transparent;
+  cursor: pointer;
+}
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero-right img {
+  width: 110px;
+}
+
+.search-box {
+  margin: 30px 0;
+}
+
+.card-img-top {
+  max-width: 350px;
+  margin: 0 auto;
+  display: block;
+}
+
+.women-btn {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  z-index: 10;
+  background: transparent;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.product-card img {
+  width: 100%;
+}
+
+.category {
+  position: relative;
+  margin: 60px 0;
+}
+
+.category img {
+  width: 100%;
+}
+
+.overlay {
+  position: absolute;
+  top: 40%;
+  left: 10%;
+  color: white;
+}
+
+.whyus-section {
+  padding: 80px 0;
+}
+
+.whyus-left-img {
+  width: 320px;
+}
+
+
+.whyus-top-images {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.whyus-top-images img:first-child {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.whyus-top-images img:last-child {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+}
+
+.whyus-title {
+  letter-spacing: 2px;
+}
+
+.whyus-text {
+  max-width: 300px;
+  line-height: 1.8;
+}
+
+.whyus-btn {
+  padding: 10px 22px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+
+
+.stay-section {
+  padding: 140px 0;
+}
+
+
+.stay-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.stay-left-img {
+  width: 220px;
+}
+
+/* CENTER  */
+.stay-center-img {
+  width: 360px;
+}
+
+/* RIGHT */
+.stay-right {
+  text-align: left;
+}
+
+.stay-title {
+  font-size: 34px;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  margin-bottom: 30px;
+}
+
+.stay-links p {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.stay-right-img {
+  width: 180px;
+  margin-top: 30px;
+}

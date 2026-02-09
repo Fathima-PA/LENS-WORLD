@@ -6,6 +6,7 @@ import cors from "cors";
 import adminRoutes from "./routes/admin/adminRoutes.js";
 import authRoutes from "./routes/user/authRoutes.js";
 import addressRoutes from "./routes/user/addressRoutes.js"
+import productRoutes from "./routes/user/productRoutes.js"
 import cookieParser from "cookie-parser";
 
 
@@ -34,6 +35,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/address",addressRoutes);
+app.use("/api/products",productRoutes);
 
 
 const PORT = process.env.PORT || 3000;
