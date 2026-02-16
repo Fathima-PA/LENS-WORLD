@@ -1,6 +1,8 @@
 import { useEffect, useState, } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
+
 
 const ProductListing = () => {
   const [products, setProducts] = useState([]);
@@ -15,6 +17,9 @@ const ProductListing = () => {
   const [sort, setSort] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [priceRange, setPriceRange] = useState("");
+
+  const [wishlist, setWishlist] = useState([]);
+
   let navigate = useNavigate();
 
   /* ======================
@@ -61,6 +66,24 @@ const ProductListing = () => {
     }
   };
 
+  const handleWishlist = async (productId, variantId, e) => {
+  e.stopPropagation();
+
+  try {
+    await toggleWishlist(productId, variantId);
+
+    setWishlist(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+
+  } catch {
+    alert("Please login first");
+  }
+};
+
+
   /* ======================
      EFFECTS
   ====================== */
@@ -71,6 +94,17 @@ const ProductListing = () => {
   useEffect(() => {
     fetchProducts();
   }, [search, sort, selectedCategory, priceRange, page]);
+
+  useEffect(() => {
+  const loadWishlist = async () => {
+    try {
+      const data = await getWishlist();
+      setWishlist(data.map(i => i.productId));
+    } catch {}
+  };
+  loadWishlist();
+}, []);
+
 
   /* ======================
      RESET FILTERS
@@ -157,9 +191,14 @@ const ProductListing = () => {
                     style={{ maxHeight: "80%" }}
 
                   />
-                  <span className="position-absolute top-0 end-0 m-2 text-muted">
-                    ♡
-                  </span>
+               <span
+  className="position-absolute top-0 end-0 m-2"
+  style={{ fontSize: "18px", cursor: "pointer" }}
+  onClick={(e) => handleWishlist(p._id, v._id, e)}
+>
+  {wishlist.includes(p._id) ? "❤️" : "♡"}
+</span>
+
                 </div>
 
                 <div className="card-body p-2">

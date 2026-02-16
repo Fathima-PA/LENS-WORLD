@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Product from "../../models/ProductModel.js";
 import Category from "../../models/CategoryModel.js";
 
+
 export const getProducts = async (req, res) => {
   try {
     const {
@@ -23,6 +24,9 @@ export const getProducts = async (req, res) => {
         { name: { $regex: search, $options: "i" } },
         { brand: { $regex: search, $options: "i" } },
       ];
+    }
+    if(category == null){
+      return;
     }
     if (category) {
       matchStage.category = new mongoose.Types.ObjectId(category);
@@ -155,3 +159,7 @@ export const getRelatedProducts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
+

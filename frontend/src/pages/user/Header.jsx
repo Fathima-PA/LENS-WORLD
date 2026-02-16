@@ -83,12 +83,18 @@ const Header = () => {
 
 
           <div className={`col-md-2 d-flex justify-content-end gap-3 align-items-center ${isAdminPage ? "ms-auto" : ""}`}>
-            {!isAdminPage && (
-              <>
-                <span>♡</span>
-                <span>👜</span>
-              </>
-            )}
+         {!isAdminPage && (
+  <>
+    <Link to="/wishlist" className="text-decoration-none text-dark">
+      <span style={{ cursor: "pointer" }}>♡</span>
+    </Link>
+
+    <Link to="/cart" className="text-decoration-none text-dark">
+      <span style={{ cursor: "pointer" }}>👜</span>
+    </Link>
+  </>
+)}
+
 
             {isAdminPage ? (
               admin && (

@@ -24,6 +24,12 @@ import AdminProducts from "./pages/admin/AdminProduct";
 import AddProduct from "./pages/admin/AddProduct"; 
 import ProductListing from "./components/user/ProductListing";
 import ProductDetails from "./components/user/ProductDetails";
+import Wishlist from "./components/user/Wishlist";
+
+
+
+
+import Cart from "./components/user/Cart";
 
 
 
@@ -76,10 +82,10 @@ useEffect(() => {
           <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/product" element={<ProductListing />} />
            <Route path="/product/:id" element={<ProductDetails />} />
-
+           <Route path="/cart" element={user?<Cart />:<Login />} />
           <Route path="/profile" element={user?<Profile /> : <Login />} />
 
- 
+ <Route path="/wishlist" element={user?<Wishlist />:<Login />} />
           <Route
             path="/admin/login"
             element={admin ? <Navigate to="/admin/dashboard" /> : <AdminLogin />}

@@ -7,6 +7,8 @@ import adminRoutes from "./routes/admin/adminRoutes.js";
 import authRoutes from "./routes/user/authRoutes.js";
 import addressRoutes from "./routes/user/addressRoutes.js"
 import productRoutes from "./routes/user/productRoutes.js"
+import cartRoutes from "./routes/user/cartRoutes.js"
+import wishlistRoutes from "./routes/user/wishlistRoutes.js"
 import cookieParser from "cookie-parser";
 
 
@@ -16,13 +18,13 @@ dotenv.config();
 
 
 const app = express();
-app.use(
-  cors({
-    origin: ["http://localhost:5173"],
-    credentials: true,
-  })
-);
 
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 app.use(cookieParser());
 connectDB();
@@ -36,6 +38,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/address",addressRoutes);
 app.use("/api/products",productRoutes);
+app.use("/api/cart",cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 
 const PORT = process.env.PORT || 3000;

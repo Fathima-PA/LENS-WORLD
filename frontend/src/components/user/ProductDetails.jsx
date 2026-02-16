@@ -5,7 +5,7 @@ import "react-inner-image-zoom/lib/styles.min.css";
 
 
 import InnerImageZoom from 'react-inner-image-zoom'
-
+import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
 
 
 const ProductDetails = () => {
@@ -16,6 +16,7 @@ const ProductDetails = () => {
   const [related, setRelated] = useState([]);
   const [activeImage, setActiveImage] = useState("");
   const [activeVariant, setActiveVariant] = useState(null);
+   const [wishlist, setWishlist] = useState([]);
 
   /* ======================
      FETCH PRODUCT
@@ -54,9 +55,60 @@ const ProductDetails = () => {
     }
   };
 
+const handleAddToCart = async () => {
+  try {
+    const res = await axios.post(
+      "http://localhost:3000/api/cart/add",
+      {
+        productId: product._id,
+        variantId: activeVariant._id,
+        quantity: 1,
+      },
+      {
+        withCredentials: true
+      }
+    );
+
+    alert(res.data.message || "Added to cart");
+  } catch (error) {
+    if (error.response?.status === 401) {
+      alert("Please login first");
+      navigate("/login");
+    } else {
+      alert(error.response?.data?.message || "Failed to add");
+    }
+  }
+};
+
+const handleWishlist = async (productId, variantId, e) => {
+  e.stopPropagation();
+
+  try {
+    await toggleWishlist(productId, variantId);
+
+    setWishlist(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+
+  } catch {
+    alert("Please login first");
+  }
+};
+
   useEffect(() => {
     fetchProduct();
   }, [id]);
+   useEffect(() => {
+  const loadWishlist = async () => {
+    try {
+      const data = await getWishlist();
+      setWishlist(data.map(i => i.productId));
+    } catch {}
+  };
+  loadWishlist();
+}, []);
 
   if (!product || !activeVariant) return null;
 
@@ -69,7 +121,8 @@ const ProductDetails = () => {
     <div className="container py-5">
       <div className="row g-5">
         <div className="col-md-6 text-center">
-          <div className="border p-4 bg-light">
+        <div className="border p-4 bg-light position-relative">
+
      <InnerImageZoom
   src={activeImage}
   zoomSrc={activeImage}
@@ -77,7 +130,18 @@ const ProductDetails = () => {
   zoomScale={1.5}
   className="img-fluid"
 />
+
+<span
+  className="position-absolute top-0 end-0 m-2"
+  style={{ fontSize: "18px", cursor: "pointer" }}
+  onClick={(e) => handleWishlist(product._id, activeVariant._id, e)}
+>
+  {wishlist.includes(product._id) ? "❤️" : "♡"}
+</span>
+
      </div>
+     
+    
 
           <div className="d-flex justify-content-center gap-3 mt-3">
             {activeVariant.images.map((img) => (
@@ -149,7 +213,8 @@ const ProductDetails = () => {
 
           <button
             className="btn btn-dark w-100 py-2"
-            disabled={totalStock === 0}
+              disabled={activeVariant.stock === 0}
+  onClick={handleAddToCart}
           >
             + ADD TO BASKET
           </button>
