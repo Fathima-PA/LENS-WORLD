@@ -9,6 +9,7 @@ import addressRoutes from "./routes/user/addressRoutes.js"
 import productRoutes from "./routes/user/productRoutes.js"
 import cartRoutes from "./routes/user/cartRoutes.js"
 import wishlistRoutes from "./routes/user/wishlistRoutes.js"
+import orderRoutes from "./routes/user/orderRoutes.js"
 import cookieParser from "cookie-parser";
 
 
@@ -40,6 +41,8 @@ app.use("/api/address",addressRoutes);
 app.use("/api/products",productRoutes);
 app.use("/api/cart",cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/order",orderRoutes);
+
 
 
 const PORT = process.env.PORT || 3000;

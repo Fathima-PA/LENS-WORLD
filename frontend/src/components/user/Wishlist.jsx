@@ -5,14 +5,30 @@ const Wishlist = () => {
   const [items, setItems] = useState([]);
 
   /* ================= FETCH ================= */
-  const fetchWishlist = async () => {
-    try {
-      const res = await api.get("/api/wishlist");
-      setItems(res.data);
-    } catch {
-      console.log("Wishlist fetch failed");
+const fetchWishlist = async () => {
+  try {
+    const res = await api.get("/api/wishlist");
+
+    if (!Array.isArray(res.data)) {
+      if (res.data.warning) alert(res.data.warning);
+      setItems(res.data.items || []);
+      return;
     }
-  };
+
+    setItems(res.data);
+
+  } catch (error) {
+    if (error.response?.status === 401) {
+      alert("Please login again");
+      navigate("/login");
+      return;
+    }
+
+    alert(error.response?.data?.message || "Something went wrong");
+  }
+};
+
+
 
   useEffect(() => {
     fetchWishlist();
@@ -83,13 +99,28 @@ const Wishlist = () => {
             </div>
 
             {/* STOCK */}
-            <div className="col-2">
-              {item.stock > 0 ? (
-                <span className="text-success fw-semibold">In Stock</span>
-              ) : (
-                <span className="text-danger fw-semibold">Out of Stock</span>
-              )}
-            </div>
+           <div className="col-2">
+
+  {!item.isActive && (
+    <span className="text-danger fw-semibold">
+      Unavailable
+    </span>
+  )}
+
+  {item.isActive && item.isOutOfStock && (
+    <span className="text-warning fw-semibold">
+      Out of Stock
+    </span>
+  )}
+
+  {item.isAvailable && (
+    <span className="text-success fw-semibold">
+      In Stock
+    </span>
+  )}
+
+</div>
+
 
             {/* ACTION */}
             <div className="col-3 d-flex align-items-center gap-3">
@@ -101,7 +132,8 @@ const Wishlist = () => {
                   color: "white",
                   border: "none"
                 }}
-                disabled={item.stock === 0}
+                disabled={!item.isAvailable}
+
                 onClick={() => addToCart(item)}
               >
                 Add to Cart

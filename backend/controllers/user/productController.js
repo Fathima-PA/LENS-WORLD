@@ -25,9 +25,6 @@ export const getProducts = async (req, res) => {
         { brand: { $regex: search, $options: "i" } },
       ];
     }
-    if(category == null){
-      return;
-    }
     if (category) {
       matchStage.category = new mongoose.Types.ObjectId(category);
     }
@@ -130,8 +127,8 @@ export const getProductById = async (req, res) => {
       isActive: true,
     }).populate("category");
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not available" });
+    if (!product||!product.isActive) {
+      return res.status(403).json({ message: "Product not available or product is blocked" });
     }
 
     res.status(200).json(product);

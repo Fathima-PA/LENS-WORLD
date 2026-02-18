@@ -34,7 +34,13 @@ const ProductDetails = () => {
 
       fetchRelated(data.category._id, data._id);
     } catch (error) {
-      navigate("/product");
+      if(error.response?.status === 403){
+         alert("This product is currently unavailable or blocked");
+    navigate("/product");
+      }else{
+     navigate("/product");
+      }
+ 
     }
   };
 

@@ -5,9 +5,9 @@ import mongoose from "mongoose";
 
 const MAX_QTY = 5;
 
-//////////////////////////////////////////////////////////
+
 // ADD TO CART
-//////////////////////////////////////////////////////////
+
 export const addToCart = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -46,8 +46,6 @@ cart.items.push({
   price: variant.price
 });
     }
-
-    // remove from wishlist
     await Wishlist.updateOne(
       { userId },
       { $pull: { products: { productId, variantId } } }
@@ -62,9 +60,7 @@ cart.items.push({
   }
 };
 
-//////////////////////////////////////////////////////////
 // GET CART
-//////////////////////////////////////////////////////////
 export const getCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user._id })
@@ -72,38 +68,63 @@ export const getCart = async (req, res) => {
 
     if (!cart) return res.json([]);
 
-   const formattedCart = cart.items.map(item => {
-  const product = item.productId;
+    let removed = false;
+    const validItems = [];
 
-  const variant = product.variants.find(
-    v => v._id.toString() === item.variantId.toString()
-  );
+    for (const item of cart.items) {
 
-  return {
-    itemId: item._id.toString(),
-    productId: product._id,
-    name: product.name,
-    brand: product.brand,
-    image: variant?.images?.[0],
-    color: variant?.color,
-    price: item.price,
-    stock: variant?.stock,
-    quantity: item.quantity,
-    total: item.price * item.quantity
-  };
-});
+      const product = item.productId;
 
-res.json(formattedCart);
+      if (!product) {
+        removed = true;
+        continue;
+      }
 
+      const variant = product.variants.find(
+        v => v._id.toString() === item.variantId.toString()
+      );
+      if (!variant) {
+        removed = true;
+        continue;
+      }
+      validItems.push({
+        itemId: item._id.toString(),
+        productId: product._id,
+        name: product.name,
+        brand: product.brand,
+        image: variant.images?.[0] || "",
+        color: variant.color,
+        price: item.price,
+        stock: variant.stock,
+        quantity: item.quantity,
+        total: item.price * item.quantity,
+        isActive: product.isActive,
+        isOutOfStock: variant.stock === 0,
+        isAvailable: product.isActive && variant.stock > 0
+      });
+    }
+    cart.items = cart.items.filter(item =>
+      validItems.some(v => v.itemId === item._id.toString())
+    );
+
+    await cart.save();
+
+    if (removed) {
+      return res.status(200).json({
+        warning: "Some items were removed because they no longer exist",
+        items: validItems
+      });
+    }
+
+    res.json(validItems);
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Fetch cart failed" });
   }
 };
 
-//////////////////////////////////////////////////////////
 // REMOVE ITEM
-//////////////////////////////////////////////////////////
 export const removeCartItem = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user._id });
@@ -119,9 +140,7 @@ export const removeCartItem = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////////
 // UPDATE QUANTITY
-//////////////////////////////////////////////////////////
 export const updateCartQuantity = async (req, res) => {
   try {
     const { itemId, action } = req.body;
@@ -164,9 +183,7 @@ export const updateCartQuantity = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////////
 // CHECKOUT VALIDATION
-//////////////////////////////////////////////////////////
 export const validateCheckout = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user._id });
@@ -181,9 +198,7 @@ export const validateCheckout = async (req, res) => {
         });
       }
     }
-
     res.json({ message: "Checkout allowed" });
-
   } catch (err) {
     res.status(500).json({ message: "Checkout failed" });
   }

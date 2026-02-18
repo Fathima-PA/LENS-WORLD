@@ -25,6 +25,8 @@ import AddProduct from "./pages/admin/AddProduct";
 import ProductListing from "./components/user/ProductListing";
 import ProductDetails from "./components/user/ProductDetails";
 import Wishlist from "./components/user/Wishlist";
+import Checkout from "./components/user/Checkout";
+import OrderSuccess from "./components/user/Order";
 
 
 
@@ -84,7 +86,8 @@ useEffect(() => {
            <Route path="/product/:id" element={<ProductDetails />} />
            <Route path="/cart" element={user?<Cart />:<Login />} />
           <Route path="/profile" element={user?<Profile /> : <Login />} />
-
+<Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success/:id" element={<OrderSuccess />} />
  <Route path="/wishlist" element={user?<Wishlist />:<Login />} />
           <Route
             path="/admin/login"

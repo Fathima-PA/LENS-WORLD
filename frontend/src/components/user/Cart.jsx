@@ -9,14 +9,31 @@ const Cart = () => {
   ////////////////////////////////////////////////////
   // FETCH CART
   ////////////////////////////////////////////////////
-  const fetchCart = async () => {
-    try {
-      const res = await api.get("/api/cart");
-      setCart(res.data);
-    } catch (err) {
-      console.log("Cart fetch failed");
+const fetchCart = async () => {
+  try {
+    const res = await api.get("/api/cart");
+
+    // if backend sends warning object
+    if (!Array.isArray(res.data)) {
+
+      if (res.data.warning) {
+        alert(res.data.warning);
+        navigate("/product");
+      }
+
+      setCart(res.data.items || []);
+      return;
     }
-  };
+
+    // normal array response
+    setCart(res.data);
+
+  } catch (error) {
+     console.log(error)
+      alert("something went wrong");
+    }
+};
+
 
   useEffect(() => {
     fetchCart();
@@ -49,14 +66,20 @@ const Cart = () => {
   ////////////////////////////////////////////////////
   // CHECKOUT VALIDATION
   ////////////////////////////////////////////////////
-  const handleCheckout = async () => {
-    try {
-      await api.post("/api/cart/checkout");
-      navigate("/checkout");
-    } catch (err) {
-      alert(err.response?.data?.message);
-    }
-  };
+const handleCheckout = () => {
+
+  const invalidItems = cart.filter(i => !i.isAvailable);
+
+  if (invalidItems.length > 0) {
+    alert("Remove unavailable products before checkout");
+    return;
+  }
+
+  // just go to checkout page
+  navigate("/checkout");
+};
+
+
 
   ////////////////////////////////////////////////////
   // TOTAL CALCULATION
@@ -91,7 +114,20 @@ const Cart = () => {
                 <div className="ms-4 flex-grow-1">
                   <h6 className="text-uppercase">{item.brand}</h6>
                   <p className="text-muted small">{item.name}</p>
-                  <p className="small">Color: {item.color}</p>
+                <div className="d-flex align-items-center gap-2 small">
+  <span>Color:</span>
+  <div
+    title={item.color}
+    style={{
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      backgroundColor: item.color,
+      border: "1px solid #ccc"
+    }}
+  />
+</div>
+
 
                   {/* QUANTITY */}
                   <div className="d-flex align-items-center gap-3 mt-2">
@@ -103,10 +139,11 @@ const Cart = () => {
                     <span>{item.quantity}</span>
 
                     <button
-                      className="btn btn-light btn-sm"
-                      disabled={item.stock === 0}
-                      onClick={() => updateQty(item.itemId, "inc")}
-                    >+</button>
+  className="btn btn-light btn-sm"
+  disabled={!item.isAvailable}
+  onClick={() => updateQty(item.itemId, "inc")}
+>+</button>
+
                   </div>
 
                   {/* REMOVE */}
@@ -117,9 +154,20 @@ const Cart = () => {
                     Remove
                   </button>
 
-                  {item.stock === 0 && (
-                    <div className="text-danger small">Out of stock</div>
-                  )}
+                  {/* BLOCKED PRODUCT */}
+{!item.isActive && (
+  <div className="text-danger small fw-semibold">
+    This product is currently unavailable
+  </div>
+)}
+
+{/* OUT OF STOCK */}
+{item.isActive && item.isOutOfStock && (
+  <div className="text-warning small fw-semibold">
+    Out of stock
+  </div>
+)}
+
                 </div>
 
                 <div className="fw-semibold">
@@ -155,7 +203,8 @@ const Cart = () => {
 
             <button
               className="btn btn-dark w-100"
-              disabled={cart.some(i => i.stock === 0)}
+           
+
               onClick={handleCheckout}
             >
               PROCEED TO CHECKOUT

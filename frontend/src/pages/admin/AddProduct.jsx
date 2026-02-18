@@ -83,47 +83,59 @@ const AddProduct = () => {
     };
     fetchCategories();
   }, []);
+const handleAddVariant = () => {
 
-  const handleAddVariant = () => {
-    if (!variantName || !price || !stock || !color) {
-      alert("Variant name, color, price & stock required");
-      return;
-    }
+  const validImages = images.filter(img => img);
 
-    if (images.length !== 3) {
-      alert("Variant must have exactly 3 images");
-      return;
-    }
+  if (!variantName || !price || !stock || !color) {
+    alert("Variant name, color, price & stock required");
+    return;
+  }
 
-    const newVariant = {
-      id: editVariantIndex !== null ? variants[editVariantIndex].id : Date.now(),
-      name: variantName,
-      color,
-      price,
-      stock,
-      images,
-      isNew: true,
-    };
-    console.log("Saving color:", color);
+  // NEW VARIANT → must upload 3 fresh images
+  if (editVariantIndex === null && validImages.length !== 3) {
+    alert("New variant must have exactly 3 images");
+    return;
+  }
 
+  // EDIT VARIANT → must finally contain 3 images
+  if (editVariantIndex !== null && validImages.length !== 3) {
+    alert("Variant must contain 3 images");
+    return;
+  }
 
-    if (editVariantIndex !== null) {
-      const updated = [...variants];
-      updated[editVariantIndex] = newVariant;
-      setVariants(updated);
-    } else {
-      setVariants((prev) => [...prev, newVariant]);
-    }
-
-    setVariantName("");
-    setColor("#000000");
-    setPrice("");
-    setStock("");
-    setImages([]);
-    setPreviews([]);
-    setEditVariantIndex(null);
-    setShowVariantModal(false);
+  const newVariant = {
+    id:
+      editVariantIndex !== null
+        ? variants[editVariantIndex].id
+        : Date.now(),
+    name: variantName,
+    color,
+    price,
+    stock,
+    images: validImages,
+    isNew: editVariantIndex === null, // ✅ FIXED
   };
+
+  if (editVariantIndex !== null) {
+    const updated = [...variants];
+    updated[editVariantIndex] = newVariant;
+    setVariants(updated);
+  } else {
+    setVariants(prev => [...prev, newVariant]);
+  }
+
+  setVariantName("");
+  setColor("#000000");
+  setPrice("");
+  setStock("");
+  setImages([]);
+  setPreviews([]);
+  setEditVariantIndex(null);
+  setShowVariantModal(false);
+};
+
+
 
   const handleEditVariant = (index) => {
     const v = variants[index];
@@ -216,6 +228,22 @@ const AddProduct = () => {
       alert(err.response?.data?.message || "Save failed");
     }
   };
+
+
+const handleRemoveImage = (index) => {
+  setImages(prev => {
+    const updated = [...prev];
+    updated[index] = null;
+    return updated;
+  });
+
+  setPreviews(prev => {
+    const updated = [...prev];
+    updated[index] = null;
+    return updated;
+  });
+};
+
 
   const handleCropDone = async (croppedArea) => {
     const croppedFile = await getCroppedImage(cropImageSrc, croppedArea);
@@ -393,20 +421,41 @@ const AddProduct = () => {
                       setShowCropModal(true);
                     }}
                   />
+{previews[index] && (
+  <div style={{ position: "relative", marginTop: 6 }}>
+    <img
+      src={previews[index]}
+      alt="preview"
+      style={{
+        width: 90,
+        height: 90,
+        objectFit: "cover",
+        borderRadius: 8,
+      }}
+    />
 
-                  {previews[index] && (
-                    <img
-                      src={previews[index]}
-                      alt="preview"
-                      style={{
-                        width: 90,
-                        height: 90,
-                        objectFit: "cover",
-                        borderRadius: 8,
-                        marginTop: 6,
-                      }}
-                    />
-                  )}
+    <button
+      type="button"
+      onClick={() => handleRemoveImage(index)}
+      style={{
+        position: "absolute",
+        top: -8,
+        right: -8,
+        background: "red",
+        color: "white",
+        border: "none",
+        borderRadius: "50%",
+        width: 22,
+        height: 22,
+        fontSize: 12,
+        cursor: "pointer"
+      }}
+    >
+      ✕
+    </button>
+  </div>
+)}
+
                 </div>
               ))}
             </div>
@@ -419,7 +468,7 @@ const AddProduct = () => {
 
         <Modal.Footer>
           <Button onClick={handleAddVariant}>
-            {editVariantIndex !== null ? "Update Variant" : "Add Variant"}
+            {editVariantIndex !== null ? "Update Variant" : "Save Variant"}
           </Button>
         </Modal.Footer>
       </Modal>
