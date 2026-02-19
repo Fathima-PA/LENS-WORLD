@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+
 
 import ProfileSidebar from "../../components/user/ProfileSidebar";
 import AccountInfoCard from "../../components/user/AccountInfoCard";
@@ -9,11 +11,18 @@ import InviteEarnCard from "../../components/user/InviteEarnCard";
 import AccountDetails from "../../components/user/AccountDetails";
 import AddAddress from "../../components/user/AddAddress";
 import ManageAddress from "../../components/user/ManageAddress";
+import OrderHistory from "../../components/user/OrderHistory";
+import Cart from "../../components/user/Cart";
+import Wishlist from "../../components/user/Wishlist";
+
 
 
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const location = useLocation();
+const params = new URLSearchParams(location.search);
+
+  const [activeTab, setActiveTab] = useState(params.get("tab") || "dashboard");
   const { user } = useSelector((state) => state.auth);
 
   return (
@@ -60,6 +69,12 @@ const Profile = () => {
             )}
 
   {activeTab === "account" && <AccountDetails />}
+  {activeTab === "orders" && <OrderHistory />}
+
+  {activeTab === "cart" && <Cart />}
+
+  {activeTab === "wishlist" && <Wishlist />}
+
 </Col>
 
         </Row>

@@ -33,6 +33,17 @@ import OrderSuccess from "./components/user/Order";
 
 import Cart from "./components/user/Cart";
 
+import OrderHistory from "./components/user/OrderHistory";
+
+import OrderDetails from "./components/user/OrderDetails";
+
+
+import AdminOrders from "./pages/admin/AdminOrders"
+
+import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
+
+
+
 
 
 function App() {
@@ -89,6 +100,9 @@ useEffect(() => {
 <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success/:id" element={<OrderSuccess />} />
  <Route path="/wishlist" element={user?<Wishlist />:<Login />} />
+ <Route path="/orders" element={<OrderHistory />} />
+<Route path="/profile/order/:id" element={<OrderDetails />} />
+
           <Route
             path="/admin/login"
             element={admin ? <Navigate to="/admin/dashboard" /> : <AdminLogin />}
@@ -107,6 +121,7 @@ useEffect(() => {
 />
 <Route path="/admin/categories/add" element={admin?<AddCategory />:<Navigate to="/admin/login" />} />
 <Route path="/admin/categories/edit/:id" element={admin?<AddCategory />:<Navigate to="/admin/login" />} />
+<Route path="/admin/orders" element={<AdminOrders />} />
 
 
 <Route
@@ -123,7 +138,7 @@ useEffect(() => {
   path="/admin/products/edit/:id"
   element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
 />
-
+<Route path="/admin/orders/:id" element={<AdminOrderDetails />} />
 
         </Routes>
 

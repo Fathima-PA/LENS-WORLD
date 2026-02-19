@@ -41,17 +41,39 @@ const ProfileSidebar = ({ activeTab, setActiveTab }) => {
 </ListGroup.Item>
 
 
-      <ListGroup.Item style={itemStyle}>
-        <ClockHistory className="me-2" /> Order History
-      </ListGroup.Item>
+    <ListGroup.Item
+  style={{
+    ...itemStyle,
+    background: activeTab === "orders" ? "#d6caca" : "white",
+  }}
+  action
+  onClick={() => setActiveTab("orders")}
+>
+  <ClockHistory className="me-2" /> Order History
+</ListGroup.Item>
 
-      <ListGroup.Item style={itemStyle}>
-        <Cart className="me-2" /> Shopping Cart
-      </ListGroup.Item>
+<ListGroup.Item
+  style={{
+    ...itemStyle,
+    background: activeTab === "cart" ? "#d6caca" : "white",
+  }}
+  action
+  onClick={() => setActiveTab("cart")}
+>
+  <Cart className="me-2" /> Shopping Cart
+</ListGroup.Item>
 
-      <ListGroup.Item style={itemStyle}>
-        <Heart className="me-2" /> Wishlist
-      </ListGroup.Item>
+<ListGroup.Item
+  style={{
+    ...itemStyle,
+    background: activeTab === "wishlist" ? "#d6caca" : "white",
+  }}
+  action
+  onClick={() => setActiveTab("wishlist")}
+>
+  <Heart className="me-2" /> Wishlist
+</ListGroup.Item>
+      
 
       <ListGroup.Item
         style={itemStyle}

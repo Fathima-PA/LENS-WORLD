@@ -20,6 +20,11 @@ toggleProductStatus,
    updateProductWithVariant
 } from "../../controllers/admin/adminProductController.js";
 import { addVariantToProduct} from "../../controllers/admin/adminVariantController.js"
+
+import{getAllOrders,updateOrderStatus,getOrderDetailsAdmin,  approveCancel,
+  rejectCancel,
+  approveReturn,
+  rejectReturn} from "../../controllers/admin/adminOrderController.js"
 import upload from "../../middlewares/uploadMiddleware.js";
 
 import { protectAdmin } from "../../middlewares/adminMiddleware.js";
@@ -99,5 +104,18 @@ router.post(
   upload.array("images", 3),
   addVariantToProduct
 );
+
+
+
+
+
+router.get("/orders", protectAdmin, getAllOrders);
+router.patch("/orders/status/:id",  protectAdmin,updateOrderStatus);
+router.get("/orders/:id",protectAdmin, getOrderDetailsAdmin);
+router.patch("/orders/approve-cancel/:id", protectAdmin, approveCancel);
+router.patch("/orders/reject-cancel/:id", protectAdmin, rejectCancel);
+
+router.patch("/orders/approve-return/:id", protectAdmin, approveReturn);
+router.patch("/orders/reject-return/:id", protectAdmin, rejectReturn);
 
 export default router;
