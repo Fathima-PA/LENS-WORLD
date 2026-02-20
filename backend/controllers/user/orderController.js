@@ -41,6 +41,7 @@ export const placeOrderCOD = async (req,res)=>{
 
       orderItems.push({
         productId:product._id,
+        variantId: variant._id,
         name:product.name,
         image:variant.images?.[0]||"",
         price:item.price,
@@ -146,7 +147,6 @@ export const cancelOrder = async (req, res) => {
     if (!["Placed","Packaging"].includes(order.status))
       return res.status(400).json({ message: "Cannot cancel now" });
 
-    // mark all items pending
     order.items.forEach(item => {
       if (item.status === "Active") {
         item.cancelRequest = "Pending";
@@ -212,10 +212,6 @@ export const returnOrder = async (req, res) => {
 
   res.json({ message: "Return request submitted" });
 };
-
-
-
-
 
 
 export const downloadInvoice = async (req, res) => {

@@ -51,7 +51,7 @@ const fetchWishlist = async () => {
       quantity: 1
     });
 
-    fetchWishlist(); // auto removed by backend
+    fetchWishlist(); 
   };
 
   return (
@@ -93,12 +93,10 @@ const fetchWishlist = async () => {
               </div>
             </div>
 
-            {/* PRICE */}
             <div className="col-2 fw-semibold">
               ₹{item.price}
             </div>
 
-            {/* STOCK */}
            <div className="col-2">
 
   {!item.isActive && (
@@ -122,7 +120,6 @@ const fetchWishlist = async () => {
 </div>
 
 
-            {/* ACTION */}
             <div className="col-3 d-flex align-items-center gap-3">
 
               <button

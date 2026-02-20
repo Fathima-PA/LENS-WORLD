@@ -63,18 +63,6 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-// GET SINGLE ORDER
-export const getSingleOrderAdmin = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id)
-      .populate("user", "username email");
-
-    res.json(order);
-
-  } catch (err) {
-    res.status(404).json({ message: "Order not found" });
-  }
-};
 
 
 export const getOrderDetailsAdmin = async (req, res) => {
@@ -148,6 +136,7 @@ export const approveCancel = async (req, res) => {
     recalculateOrderStatus(order);
 
     await order.save();
+    
 
     res.json({ message: "Cancel approved" });
 

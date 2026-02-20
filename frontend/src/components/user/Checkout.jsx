@@ -11,9 +11,8 @@ const Checkout = () => {
 
   const navigate = useNavigate();
 
-  ////////////////////////////////////////////////////
+  
   // LOAD DATA
-  ////////////////////////////////////////////////////
   useEffect(() => {
     fetchAddresses();
     fetchCart();
@@ -42,9 +41,8 @@ const Checkout = () => {
     }
   };
 
-  ////////////////////////////////////////////////////
+
   // PLACE ORDER
-  ////////////////////////////////////////////////////
   const placeOrder = async () => {
     try {
       const res = await api.post("/api/order/place-cod");
@@ -54,17 +52,11 @@ const Checkout = () => {
     }
   };
 
-  ////////////////////////////////////////////////////
-  // TOTALS
-  ////////////////////////////////////////////////////
   const subtotal = cart.reduce((s, i) => s + i.total, 0);
   const tax = Math.round(subtotal * 0.18);
   const discount = subtotal > 5000 ? 500 : 0;
   const grandTotal = subtotal + tax - discount;
 
-  ////////////////////////////////////////////////////
-  // UI
-  ////////////////////////////////////////////////////
   return (
     <div className="container py-5">
 
@@ -102,12 +94,9 @@ const Checkout = () => {
               </button>
             </div>
           )}
-
-          {/* ADDRESS SELECTOR */}
           {showSelector && (
   <div className="border rounded p-3 bg-light position-relative">
 
-    {/* CLOSE BUTTON */}
     <button
       className="btn btn-sm btn-outline-dark position-absolute"
       style={{ top: "10px", right: "10px" }}
@@ -156,7 +145,6 @@ const Checkout = () => {
           {cart.map(item => (
   <div key={item.itemId} className="d-flex align-items-center mb-3">
 
-    {/* PRODUCT IMAGE */}
     <img
       src={item.image}
       alt={item.name}
@@ -170,7 +158,6 @@ const Checkout = () => {
       }}
     />
 
-    {/* PRODUCT INFO */}
     <div className="flex-grow-1">
       <div className="fw-semibold small">{item.name}</div>
       <div className="text-muted small">Qty: {item.quantity}</div>
@@ -191,7 +178,6 @@ const Checkout = () => {
 
     </div>
 
-    {/* PRICE */}
     <div className="fw-semibold small">
       ₹{item.total}
     </div>

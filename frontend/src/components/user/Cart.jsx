@@ -6,14 +6,12 @@ const Cart = () => {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
 
-  ////////////////////////////////////////////////////
+ 
   // FETCH CART
-  ////////////////////////////////////////////////////
 const fetchCart = async () => {
   try {
     const res = await api.get("/api/cart");
 
-    // if backend sends warning object
     if (!Array.isArray(res.data)) {
 
       if (res.data.warning) {
@@ -25,7 +23,6 @@ const fetchCart = async () => {
       return;
     }
 
-    // normal array response
     setCart(res.data);
 
   } catch (error) {
@@ -39,9 +36,7 @@ const fetchCart = async () => {
     fetchCart();
   }, []);
 
-  ////////////////////////////////////////////////////
   // REMOVE ITEM
-  ////////////////////////////////////////////////////
   const handleRemove = async (itemId) => {
     try {
       await api.delete(`/api/cart/${itemId}`);
@@ -51,9 +46,7 @@ const fetchCart = async () => {
     }
   };
 
-  ////////////////////////////////////////////////////
   // UPDATE QUANTITY
-  ////////////////////////////////////////////////////
   const updateQty = async (itemId, action) => {
     try {
       await api.patch("/api/cart/quantity", { itemId, action });
@@ -63,9 +56,8 @@ const fetchCart = async () => {
     }
   };
 
-  ////////////////////////////////////////////////////
+
   // CHECKOUT VALIDATION
-  ////////////////////////////////////////////////////
 const handleCheckout = () => {
 
   const invalidItems = cart.filter(i => !i.isAvailable);
@@ -75,22 +67,16 @@ const handleCheckout = () => {
     return;
   }
 
-  // just go to checkout page
+
   navigate("/checkout");
 };
 
 
-
-  ////////////////////////////////////////////////////
   // TOTAL CALCULATION
-  ////////////////////////////////////////////////////
   const subTotal = cart.reduce((sum, item) => sum + item.total, 0);
   const tax = Math.round(subTotal * 0.18);
   const grandTotal = subTotal + tax;
 
-  ////////////////////////////////////////////////////
-  // UI
-  ////////////////////////////////////////////////////
   return (
     <div className="container py-5">
       <h3 className="text-center mb-5">MY CART</h3>
@@ -127,9 +113,6 @@ const handleCheckout = () => {
     }}
   />
 </div>
-
-
-                  {/* QUANTITY */}
                   <div className="d-flex align-items-center gap-3 mt-2">
                     <button
                       className="btn btn-light btn-sm"
@@ -146,7 +129,6 @@ const handleCheckout = () => {
 
                   </div>
 
-                  {/* REMOVE */}
                   <button
                     className="btn btn-sm text-danger p-0 mt-2"
                     onClick={() => handleRemove(item.itemId)}
@@ -154,14 +136,12 @@ const handleCheckout = () => {
                     Remove
                   </button>
 
-                  {/* BLOCKED PRODUCT */}
 {!item.isActive && (
   <div className="text-danger small fw-semibold">
     This product is currently unavailable
   </div>
 )}
 
-{/* OUT OF STOCK */}
 {item.isActive && item.isOutOfStock && (
   <div className="text-warning small fw-semibold">
     Out of stock
@@ -179,7 +159,6 @@ const handleCheckout = () => {
           )}
         </div>
 
-        {/* RIGHT SIDE SUMMARY */}
         <div className="col-lg-4">
           <div className="border p-4">
             <h5 className="text-center mb-4">ORDER SUMMARY</h5>

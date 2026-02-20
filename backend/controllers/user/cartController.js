@@ -37,8 +37,6 @@ export const addToCart = async (req, res) => {
 
       existingItem.quantity += quantity;
     } else {
-      
-
 cart.items.push({
   productId: new mongoose.Types.ObjectId(productId),
   variantId: new mongoose.Types.ObjectId(variantId),

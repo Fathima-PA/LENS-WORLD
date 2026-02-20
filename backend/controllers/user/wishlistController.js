@@ -73,8 +73,6 @@ export const getWishlist = async (req, res) => {
         isAvailable: product.isActive && variant.stock > 0
       });
     }
-
-    // remove only deleted items from DB
     wishlist.products = wishlist.products.filter(item =>
       validItems.some(v =>
         v.productId.toString() === item.productId.toString() &&
