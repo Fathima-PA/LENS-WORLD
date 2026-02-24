@@ -24,7 +24,12 @@ export const placeOrderCOD = async (req,res)=>{
       if(!variant || variant.stock < item.quantity)
         return res.status(400).json({message:"Stock changed, please review cart"});
     }
-    const addressDoc = await Address.findOne({user:userId,isDefault:true});
+   const { addressId } = req.body;
+
+const addressDoc = await Address.findOne({
+  _id: addressId,
+  user: userId
+});
     if(!addressDoc)
       return res.status(400).json({message:"Please select address"});
 

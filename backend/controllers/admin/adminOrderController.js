@@ -103,10 +103,6 @@ const recalculateOrderStatus = (order) => {
     return;
   }
 
-  if (active > 0) {
-    if(order.status !== "Shipped")
-      order.status = "Delivered";
-  }
 };
 
 // APPROVE CANCEL ITEM

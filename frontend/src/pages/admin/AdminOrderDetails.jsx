@@ -130,30 +130,47 @@ const AdminOrderDetails = () => {
                         <td>₹{item.total}</td>
 
                       
-                        <td>
-                          {item.cancelRequest === "Pending" && (
-                            <Badge bg="warning">Cancel Requested</Badge>
-                          )}
+                      <td>
 
-                          {item.returnRequest === "Pending" && (
-                            <Badge bg="dark">Return Requested</Badge>
-                          )}
+  {/* CANCEL REQUEST */}
+  {item.cancelRequest === "Pending" && (
+    <>
+      <Badge bg="warning">Cancel Requested</Badge>
+      {item.cancelReason && (
+        <div className="small text-muted mt-1">
+          Reason: {item.cancelReason}
+        </div>
+      )}
+    </>
+  )}
 
-                          {item.status === "Cancelled" && (
-                            <Badge bg="danger">Cancelled</Badge>
-                          )}
+  {/* RETURN REQUEST */}
+  {item.returnRequest === "Pending" && (
+    <>
+      <Badge bg="dark">Return Requested</Badge>
+      {item.returnReason && (
+        <div className="small text-muted mt-1">
+          Reason: {item.returnReason}
+        </div>
+      )}
+    </>
+  )}
 
-                          {item.status === "Returned" && (
-                            <Badge bg="secondary">Returned</Badge>
-                          )}
+  {item.status === "Cancelled" && (
+    <Badge bg="danger">Cancelled</Badge>
+  )}
 
-                          {item.status === "Active" &&
-                           item.cancelRequest === "None" &&
-                           item.returnRequest === "None" &&
-                           <Badge bg="success">Active</Badge>}
-                        </td>
+  {item.status === "Returned" && (
+    <Badge bg="secondary">Returned</Badge>
+  )}
 
-                    
+  {item.status === "Active" &&
+    item.cancelRequest === "None" &&
+    item.returnRequest === "None" && (
+      <Badge bg="success">Active</Badge>
+  )}
+
+</td>   
                         <td>
 
                           {item.cancelRequest === "Pending" && (

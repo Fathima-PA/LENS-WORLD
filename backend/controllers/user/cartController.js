@@ -5,7 +5,6 @@ import mongoose from "mongoose";
 
 const MAX_QTY = 5;
 
-
 // ADD TO CART
 
 export const addToCart = async (req, res) => {
@@ -18,38 +17,53 @@ export const addToCart = async (req, res) => {
       return res.status(400).json({ message: "Product unavailable" });
 
     const variant = product.variants.id(variantId);
-    if (!variant) return res.status(404).json({ message: "Variant not found" });
-
-    if (variant.stock < quantity)
-      return res.status(400).json({ message: "Out of stock" });
+    if (!variant)
+      return res.status(404).json({ message: "Variant not found" });
 
     let cart = await Cart.findOne({ userId });
     if (!cart) cart = new Cart({ userId, items: [] });
 
     const existingItem = cart.items.find(
-      i => i.productId.toString() === productId &&
-           i.variantId.toString() === variantId
+      i =>
+        i.productId.toString() === productId &&
+        i.variantId.toString() === variantId
     );
 
     if (existingItem) {
-      if (existingItem.quantity + quantity > MAX_QTY)
+
+      const newQty = existingItem.quantity + quantity;
+
+      if (newQty > MAX_QTY)
         return res.status(400).json({ message: "Maximum limit reached" });
 
-      existingItem.quantity += quantity;
+      if (variant.stock < newQty)
+        return res.status(400).json({ message: "Out of stock" });
+
+      existingItem.quantity = newQty;
+
     } else {
-cart.items.push({
-  productId: new mongoose.Types.ObjectId(productId),
-  variantId: new mongoose.Types.ObjectId(variantId),
-  quantity,
-  price: variant.price
-});
+
+      if (quantity > MAX_QTY)
+        return res.status(400).json({ message: "Maximum limit reached" });
+
+      if (variant.stock < quantity)
+        return res.status(400).json({ message: "Out of stock" });
+
+      cart.items.push({
+        productId: new mongoose.Types.ObjectId(productId),
+        variantId: new mongoose.Types.ObjectId(variantId),
+        quantity,
+        price: variant.price
+      });
     }
+
     await Wishlist.updateOne(
       { userId },
       { $pull: { products: { productId, variantId } } }
     );
 
     await cart.save();
+
     res.json({ message: "Added to cart" });
 
   } catch (err) {
@@ -97,7 +111,6 @@ export const getCart = async (req, res) => {
         quantity: item.quantity,
         total: item.price * item.quantity,
         isActive: product.isActive,
-        isOutOfStock: variant.stock === 0,
         isAvailable: product.isActive && variant.stock > 0
       });
     }
@@ -153,14 +166,14 @@ export const updateCartQuantity = async (req, res) => {
     const variant = product.variants.id(item.variantId);
 
     if (action === "inc") {
-      if (variant.stock <= 0)
+      if (variant.stock <= 0 || variant.stock < item.quantity+1)
         return res.status(400).json({ message: "Out of stock" });
 
       if (item.quantity + 1 > MAX_QTY)
         return res.status(400).json({ message: "Maximum limit reached" });
 
       item.quantity += 1;
-      variant.stock -= 1;
+      // variant.stock -= 1;
     }
 
     if (action === "dec") {
@@ -168,10 +181,10 @@ export const updateCartQuantity = async (req, res) => {
         return res.status(400).json({ message: "Minimum quantity is 1" });
 
       item.quantity -= 1;
-      variant.stock += 1;
+      // variant.stock += 1;
     }
 
-    await product.save();
+    // await product.save();
     await cart.save();
 
     res.json({ message: "Quantity updated" });

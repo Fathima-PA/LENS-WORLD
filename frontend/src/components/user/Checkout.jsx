@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
 import { useNavigate } from "react-router-dom";
+import AddAddress from "../../components/user/AddAddress";
+import { Modal, Button } from "react-bootstrap";
 
 const Checkout = () => {
 
@@ -8,11 +10,13 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showSelector, setShowSelector] = useState(false);
   const [cart, setCart] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
 
-  
-  // LOAD DATA
   useEffect(() => {
     fetchAddresses();
     fetchCart();
@@ -21,14 +25,11 @@ const Checkout = () => {
   const fetchAddresses = async () => {
     try {
       const res = await api.get("/api/address/my");
-
       setAddresses(res.data);
-
       const def = res.data.find(a => a.isDefault);
       setSelectedAddress(def);
-
-    } catch (err) {
-      alert("Failed to load addresses");
+    } catch {
+      setErrorMsg("Failed to load addresses");
     }
   };
 
@@ -36,19 +37,38 @@ const Checkout = () => {
     try {
       const res = await api.get("/api/cart");
       setCart(Array.isArray(res.data) ? res.data : res.data.items);
-    } catch (err) {
-      alert("Failed to load cart");
+    } catch {
+      setErrorMsg("Failed to load cart");
     }
   };
 
+  const handleAddressAdded = (newAddress) => {
+    setShowAddForm(false);
+    setAddresses(prev => [...prev, newAddress]);
+    setSelectedAddress(newAddress);
+    setShowSelector(false);
+  };
 
-  // PLACE ORDER
   const placeOrder = async () => {
     try {
-      const res = await api.post("/api/order/place-cod");
-      navigate(`/order-success/${res.data.orderId}`);
+
+      if (!selectedAddress) {
+        setErrorMsg("Please select address");
+        return;
+      }
+
+      const res = await api.post("/api/order/place-cod", {
+        addressId: selectedAddress._id
+      });
+
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        navigate(`/order-success/${res.data.orderId}`);
+      }, 2000);
+
     } catch (err) {
-      alert(err.response?.data?.message || "Order failed");
+      setErrorMsg(err.response?.data?.message || "Order failed");
     }
   };
 
@@ -60,6 +80,27 @@ const Checkout = () => {
   return (
     <div className="container py-5">
 
+      {/* SUCCESS MODAL */}
+      <Modal
+        show={showSuccessModal}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Body className="text-center p-5">
+          <div style={{ fontSize: 60, color: "green" }}>✔</div>
+          <h4 className="mt-3">Order Placed Successfully!</h4>
+          <p className="text-muted">Redirecting to order details...</p>
+        </Modal.Body>
+      </Modal>
+
+      {/* ERROR MESSAGE */}
+      {errorMsg && (
+        <div className="alert alert-danger text-center">
+          ✖ {errorMsg}
+        </div>
+      )}
+
       <div className="row">
 
         {/* LEFT SIDE */}
@@ -67,159 +108,109 @@ const Checkout = () => {
 
           <h5 className="mb-3">Shipping Address</h5>
 
-          {/* DEFAULT ADDRESS */}
           {selectedAddress && (
             <div className="border rounded p-3 mb-3">
-
-              <div className="d-flex justify-content-between">
-                <div>
-                  <div className="fw-semibold">{selectedAddress.address}</div>
-                  <div className="text-muted small">
-                    {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
-                  </div>
-                  <div className="small">📞 {selectedAddress.phone}</div>
-                </div>
-
-                <span className="badge bg-dark align-self-start">
-                  DEFAULT
-                </span>
+              <div className="fw-semibold">{selectedAddress.address}</div>
+              <div className="text-muted small">
+                {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
               </div>
+              <div className="small">📞 {selectedAddress.phone}</div>
 
               <button
                 className="btn btn-outline-dark btn-sm mt-3"
-                 disabled={addresses.length <= 1}
                 onClick={() => setShowSelector(true)}
               >
                 Change
               </button>
             </div>
           )}
+
           {showSelector && (
-  <div className="border rounded p-3 bg-light position-relative">
+            <div className="border rounded p-3 bg-light">
+              <h6>Select Delivery Address</h6>
 
-    <button
-      className="btn btn-sm btn-outline-dark position-absolute"
-      style={{ top: "10px", right: "10px" }}
-      onClick={() => setShowSelector(false)}
-    >
-      ✕
-    </button>
+              <button
+                className="btn btn-dark btn-sm mb-3"
+                onClick={() => setShowAddForm(true)}
+              >
+                + Add New Address
+              </button>
 
-    <h6 className="mb-3">Select Delivery Address</h6>
-
-    {addresses
-      .filter(addr => addr._id !== selectedAddress?._id)
-      .map(addr => (
-        <div key={addr._id} className="form-check mb-3">
-
-          <input
-            type="radio"
-            className="form-check-input"
-            checked={selectedAddress?._id === addr._id}
-            onChange={() => setSelectedAddress(addr)}
-          />
-
-          <label className="form-check-label">
-            <div className="fw-semibold">{addr.address}</div>
-            <div className="small text-muted">
-              {addr.city}, {addr.state} - {addr.pincode}
+              {addresses.map(addr => (
+                <div key={addr._id} className="form-check mb-2">
+                  <input
+                    type="radio"
+                    className="form-check-input"
+                    checked={selectedAddress?._id === addr._id}
+                    onChange={() => setSelectedAddress(addr)}
+                  />
+                  <label className="form-check-label">
+                    {addr.address}, {addr.city}
+                  </label>
+                </div>
+              ))}
             </div>
-            <div className="small">📞 {addr.phone}</div>
-          </label>
+          )}
 
+          {showAddForm && (
+            <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+              style={{ background: "rgba(0,0,0,0.5)", zIndex: 2000 }}>
+              <div className="bg-white p-3 rounded" style={{ width: "600px" }}>
+                <AddAddress
+                  onSuccess={handleAddressAdded}
+                  onCancel={() => setShowAddForm(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
-    ))}
-  </div>
-)}
 
-
-        </div>
-
-        {/* RIGHT SIDE SUMMARY */}
+        {/* RIGHT SIDE */}
         <div className="col-lg-5">
+          <div className="border rounded p-4">
 
-          <div className="border rounded p-4 position-sticky" style={{ top: "100px" }}>
+            <h5>Order Summary</h5>
 
-            <h5 className="mb-4">Order Summary</h5>
-
-          {cart.map(item => (
-  <div key={item.itemId} className="d-flex align-items-center mb-3">
-
-    <img
-      src={item.image}
-      alt={item.name}
-      style={{
-        width: "60px",
-        height: "60px",
-        objectFit: "cover",
-        borderRadius: "6px",
-        marginRight: "12px",
-        background: "#f4f4f4"
-      }}
-    />
-
-    <div className="flex-grow-1">
-      <div className="fw-semibold small">{item.name}</div>
-      <div className="text-muted small">Qty: {item.quantity}</div>
-      <div className="d-flex align-items-center gap-2 small">
-  <span>Color:</span>
-  <div
-    title={item.color}
-    style={{
-      width: 18,
-      height: 18,
-      borderRadius: "50%",
-      backgroundColor: item.color,
-      border: "1px solid #ccc"
-    }}
-  />
-</div>
-
-
-    </div>
-
-    <div className="fw-semibold small">
-      ₹{item.total}
-    </div>
-
-  </div>
-))}
-
+            {cart.map(item => (
+              <div key={item.itemId} className="d-flex justify-content-between mb-2">
+                <span>{item.name} (x{item.quantity})</span>
+                <span>₹{item.total}</span>
+              </div>
+            ))}
 
             <hr />
 
-            <div className="d-flex justify-content-between mb-2">
+            <div className="d-flex justify-content-between">
               <span>Subtotal</span>
               <span>₹{subtotal}</span>
             </div>
 
-            <div className="d-flex justify-content-between mb-2">
+            <div className="d-flex justify-content-between">
               <span>Tax (18%)</span>
               <span>₹{tax}</span>
             </div>
 
-            <div className="d-flex justify-content-between mb-2">
+            <div className="d-flex justify-content-between">
               <span>Discount</span>
               <span>- ₹{discount}</span>
             </div>
 
             <hr />
 
-            <div className="d-flex justify-content-between fw-bold mb-4">
+            <div className="d-flex justify-content-between fw-bold">
               <span>Total</span>
               <span>₹{grandTotal}</span>
             </div>
 
             <button
-              className="btn btn-dark w-100"
-              disabled={!selectedAddress}
+              className="btn btn-dark w-100 mt-3"
               onClick={placeOrder}
+              disabled={!selectedAddress}
             >
               Place Order (Cash on Delivery)
             </button>
 
           </div>
-
         </div>
 
       </div>

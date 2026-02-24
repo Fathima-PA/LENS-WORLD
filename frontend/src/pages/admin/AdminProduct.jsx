@@ -169,7 +169,7 @@ const handleToggleStatus = async (product) => {
                     const productImage =
                       p.variants?.find(v => v.images?.length > 0)?.images[0];
 
-                    const stock = p.variants?.[0]?.stock ?? 0;
+                    const stock = p.variants?.reduce((total,v)=>total+(v.stock||0),0)??0;
                     const price = p.variants?.[0]?.price ?? 0;
 
                     return (

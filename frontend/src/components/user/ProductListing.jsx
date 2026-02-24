@@ -84,9 +84,6 @@ const ProductListing = () => {
 };
 
 
-  /* ======================
-     EFFECTS
-  ====================== */
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -106,9 +103,6 @@ const ProductListing = () => {
 }, []);
 
 
-  /* ======================
-     RESET FILTERS
-  ====================== */
   const resetFilters = () => {
     setSearch("");
     setSort("");
@@ -203,9 +197,9 @@ const ProductListing = () => {
 
                 <div className="card-body p-2">
                   <h6 className="text-uppercase small fw-semibold mb-1">
-                    {p.brand}
+                    {p.name}
                   </h6>
-                  <p className="small text-muted mb-1">{p.name}</p>
+                  <p className="small text-muted mb-1">{p.brand}</p>
                   <p className="fw-semibold text-warning mb-1">
                     ₹{p.displayPrice}
                   </p>

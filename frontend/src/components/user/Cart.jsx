@@ -6,31 +6,37 @@ const Cart = () => {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
 
- 
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState("success");
+
+  const showMessage = (msg, type = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   // FETCH CART
-const fetchCart = async () => {
-  try {
-    const res = await api.get("/api/cart");
+  const fetchCart = async () => {
+    try {
+      const res = await api.get("/api/cart");
 
-    if (!Array.isArray(res.data)) {
-
-      if (res.data.warning) {
-        alert(res.data.warning);
-        navigate("/product");
+      if (!Array.isArray(res.data)) {
+        if (res.data.warning) {
+          showMessage(res.data.warning, "warning");
+          navigate("/product");
+        }
+        setCart(res.data.items || []);
+        return;
       }
 
-      setCart(res.data.items || []);
-      return;
+      setCart(res.data);
+
+    } catch (error) {
+      showMessage("Something went wrong", "danger");
     }
-
-    setCart(res.data);
-
-  } catch (error) {
-     console.log(error)
-      alert("something went wrong");
-    }
-};
-
+  };
 
   useEffect(() => {
     fetchCart();
@@ -41,8 +47,9 @@ const fetchCart = async () => {
     try {
       await api.delete(`/api/cart/${itemId}`);
       setCart(prev => prev.filter(i => i.itemId !== itemId));
+      showMessage("Item removed successfully", "success");
     } catch (err) {
-      alert("Failed to remove item");
+      showMessage("Failed to remove item", "danger");
     }
   };
 
@@ -52,38 +59,47 @@ const fetchCart = async () => {
       await api.patch("/api/cart/quantity", { itemId, action });
       fetchCart();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed");
+      showMessage(err.response?.data?.message || "Update failed", "danger");
     }
   };
 
+  // CHECKOUT
+  const handleCheckout = () => {
+    const invalidItems = cart.filter(i => !i.isAvailable);
 
-  // CHECKOUT VALIDATION
-const handleCheckout = () => {
+    if (invalidItems.length > 0) {
+      showMessage("Remove unavailable products before checkout", "warning");
+      return;
+    }
 
-  const invalidItems = cart.filter(i => !i.isAvailable);
+    navigate("/checkout");
+  };
 
-  if (invalidItems.length > 0) {
-    alert("Remove unavailable products before checkout");
-    return;
-  }
-
-
-  navigate("/checkout");
-};
-
-
-  // TOTAL CALCULATION
+  // TOTAL
   const subTotal = cart.reduce((sum, item) => sum + item.total, 0);
   const tax = Math.round(subTotal * 0.18);
   const grandTotal = subTotal + tax;
 
   return (
     <div className="container py-5">
+
+      
+      {showToast && (
+        <div
+          className={`position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-${toastType} shadow`}
+          style={{ zIndex: 3000, minWidth: "300px" }}
+        >
+          {toastType === "success" && "✔ "}
+          {toastType === "danger" && "✖ "}
+          {toastType === "warning" && "⚠ "}
+          {toastMsg}
+        </div>
+      )}
+
       <h3 className="text-center mb-5">MY CART</h3>
 
       <div className="row">
 
-        {/* LEFT SIDE */}
         <div className="col-lg-8">
           {cart.length === 0 ? (
             <h5>Your cart is empty</h5>
@@ -98,21 +114,9 @@ const handleCheckout = () => {
                 />
 
                 <div className="ms-4 flex-grow-1">
-                  <h6 className="text-uppercase">{item.brand}</h6>
-                  <p className="text-muted small">{item.name}</p>
-                <div className="d-flex align-items-center gap-2 small">
-  <span>Color:</span>
-  <div
-    title={item.color}
-    style={{
-      width: 18,
-      height: 18,
-      borderRadius: "50%",
-      backgroundColor: item.color,
-      border: "1px solid #ccc"
-    }}
-  />
-</div>
+                  <h6 className="text-uppercase">{item.name}</h6>
+                  <p className="text-muted small">{item.brand}</p>
+
                   <div className="d-flex align-items-center gap-3 mt-2">
                     <button
                       className="btn btn-light btn-sm"
@@ -122,11 +126,10 @@ const handleCheckout = () => {
                     <span>{item.quantity}</span>
 
                     <button
-  className="btn btn-light btn-sm"
-  disabled={!item.isAvailable}
-  onClick={() => updateQty(item.itemId, "inc")}
->+</button>
-
+                      className="btn btn-light btn-sm"
+                      disabled={!item.isAvailable}
+                      onClick={() => updateQty(item.itemId, "inc")}
+                    >+</button>
                   </div>
 
                   <button
@@ -136,24 +139,22 @@ const handleCheckout = () => {
                     Remove
                   </button>
 
-{!item.isActive && (
-  <div className="text-danger small fw-semibold">
-    This product is currently unavailable
-  </div>
-)}
+                  {!item.isActive && (
+                    <div className="text-danger small fw-semibold">
+                      This product is currently unavailable
+                    </div>
+                  )}
 
-{item.isActive && item.isOutOfStock && (
-  <div className="text-warning small fw-semibold">
-    Out of stock
-  </div>
-)}
-
+                  {!item.isAvailable && (
+                    <div className="text-warning small fw-semibold">
+                      Out of stock
+                    </div>
+                  )}
                 </div>
 
                 <div className="fw-semibold">
                   ₹{item.total}
                 </div>
-
               </div>
             ))
           )}
@@ -182,8 +183,6 @@ const handleCheckout = () => {
 
             <button
               className="btn btn-dark w-100"
-           
-
               onClick={handleCheckout}
             >
               PROCEED TO CHECKOUT

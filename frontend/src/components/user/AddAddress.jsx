@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import api from "../../api";
 
-const AddAddress = ({ setActiveTab, refreshAddresses }) => {
+const AddAddress = ({ setActiveTab, refreshAddresses, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     address: "",
     phone: "",
@@ -73,39 +73,49 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const isValid = validateForm();
-    if (!isValid) {
-      showPopup("Please fix the errors ❗", "danger");
+  const isValid = validateForm();
+  if (!isValid) {
+    showPopup("Please fix the errors ❗", "danger");
+    return;
+  }
+
+  try {
+    const res = await api.post("/api/address", formData);
+
+    showPopup("✅ Address added successfully", "success");
+
+    setFormData({
+      address: "",
+      phone: "",
+      city: "",
+      pincode: "",
+      state: "",
+    });
+
+    if (onSuccess) {
+      setTimeout(() => {
+        onSuccess(res.data);
+      }, 600);
       return;
     }
 
-    try {
-      await api.post("/api/address", formData);
+    if (typeof refreshAddresses === "function") {
+      refreshAddresses();
+    }
 
-      showPopup("✅ Address added successfully", "success");
-
-      setFormData({
-        address: "",
-        phone: "",
-        city: "",
-        pincode: "",
-        state: "",
-      });
-
-      if (typeof refreshAddresses === "function") {
-        refreshAddresses();
-      }
-
+    if (setActiveTab) {
       setTimeout(() => {
         setActiveTab("address");
       }, 1000);
-    } catch (error) {
-      showPopup(error.response?.data?.message || error.message, "danger");
     }
-  };
+
+  } catch (error) {
+    showPopup(error.response?.data?.message || error.message, "danger");
+  }
+};
 
   return (
     <>
@@ -226,6 +236,13 @@ const AddAddress = ({ setActiveTab, refreshAddresses }) => {
               >
                 ADD NOW
               </Button>
+              {onCancel && (
+  <div className="text-center mt-3">
+    <Button variant="secondary" onClick={onCancel}>
+      Cancel
+    </Button>
+  </div>
+)}
             </div>
           </Form>
         </Card>
