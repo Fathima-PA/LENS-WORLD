@@ -10,7 +10,7 @@ import {
   getCategories,
   getCategoryById,
   updateCategory,
-  deleteCategory,
+  toggleCategoryStatus
 } from "../../controllers/admin/adminCategoryController.js";
 import {
   createProductWithVariant,
@@ -62,11 +62,7 @@ router.put(
   updateCategory
 );
 
-router.delete(
-  "/categories/:id",
-  protectAdmin,
-  deleteCategory
-);
+router.patch("/categories/toggle/:id", toggleCategoryStatus);
 
 /* ================= PRODUCTS ================= */
 

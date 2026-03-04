@@ -220,14 +220,16 @@ const AdminOrders = () => {
                         </td>
 
                       
-                        <td className="text-end">
-                          <Button
-                            variant={needsAttention ? "warning" : "link"}
-                            onClick={()=>navigate(`/admin/orders/${order._id}`)}
-                          >
-                            {needsAttention ? "Review Request" : "View"}
-                          </Button>
-                        </td>
+                       <td className="text-end">
+  <Button
+    size="sm"
+    variant={needsAttention ? "warning" : "primary"}
+    className="px-3 fw-semibold"
+    onClick={() => navigate(`/admin/orders/${order._id}`)}
+  >
+    {needsAttention ? "Review Request" : "View Details"}
+  </Button>
+</td>
 
                       </tr>
                     );

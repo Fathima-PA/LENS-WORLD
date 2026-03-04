@@ -1,5 +1,5 @@
 import Product from "../../models/ProductModel.js";
-
+import Category from "../../models/CategoryModel.js";
 
 export const createProductWithVariant = async (req, res) => {
   try {
@@ -10,6 +10,19 @@ export const createProductWithVariant = async (req, res) => {
         message: "All product fields are required",
       });
     }
+    const categoryDoc = await Category.findById(category);
+
+if (!categoryDoc) {
+  return res.status(404).json({
+    message: "Category not found",
+  });
+}
+
+if (!categoryDoc.isActive) {
+  return res.status(400).json({
+    message: "Cannot add product to a blocked category",
+  });
+}
 
     const variants = JSON.parse(req.body.variants || "[]");
 

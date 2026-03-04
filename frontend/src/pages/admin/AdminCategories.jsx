@@ -13,7 +13,7 @@ import axios from "axios";
 import "../../styles/AdminCategories.css";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 
 
 const AdminCategories = () => {
@@ -45,22 +45,33 @@ const handleEdit = (id) => {
   navigate(`/admin/categories/edit/${id}`);
 };
 
-const handleDelete = async (id) => {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this category?"
+const handleToggleStatus = async (categorie) => {
+  const action = categorie.isActive ? "block" : "unblock";
+
+  const confirmed = window.confirm(
+    `Are you sure you want to ${action} this product?`
   );
 
-  if (!confirmDelete) return;
+  if (!confirmed) return;
 
   try {
-    await axios.delete(
-      `http://localhost:3000/api/admin/categories/${id}`,
+    await axios.patch(
+      `http://localhost:3000/api/admin/categories/toggle/${categorie._id}`,
+      {},
       { withCredentials: true }
     );
 
-    fetchCategories();
+    toast.success(
+      categorie.isActive
+        ? "Categorie blocked successfully "
+        : "Categorie unblocked successfully "
+    );
+
+     fetchCategories();
   } catch (error) {
-    alert(error.response?.data?.message || "Failed to delete category");
+    toast.error(
+      error.response?.data?.message || "Something went wrong"
+    );
   }
 };
 
@@ -152,21 +163,42 @@ const navigate = useNavigate();
                         {new Date(cat.createdAt).toLocaleDateString("en-GB")}
                       </td>
 
-                      <td className="text-end pe-4 action-icons">
-  <span
-    style={{ cursor: "pointer" }}
-    onClick={() => handleEdit(cat._id)}
-  >
-    ✏️
-  </span>
-  &nbsp;&nbsp;
-  <span
-    style={{ cursor: "pointer" }}
-    onClick={() => handleDelete(cat._id)}
-  >
-    🗑
-  </span>
-</td>
+<td className="text-end pe-4">
+                          <span
+                            style={{
+                              cursor: cat.isActive ? "pointer" : "not-allowed",
+                              opacity: cat.isActive ? 1 : 0.4,
+                            }}
+                            onClick={() =>
+                              cat.isActive &&
+                              handleEdit(cat._id)
+                            }
+                            title={
+                              cat.isActive
+                                ? "Edit Categorie"
+                                : "Blocked Categorie"
+                            }
+                          >
+                            ✏️
+                          </span>
+
+                          &nbsp;&nbsp;
+
+                          <span
+                            style={{
+                              cursor: "pointer",
+                              color: cat.isActive ? "red" : "green",
+                            }}
+                            onClick={() => handleToggleStatus(cat)}
+                            title={
+                              cat.isActive
+                                ? "Block Product"
+                                : "Unblock Product"
+                            }
+                          >
+                            {cat.isActive ? "BLOCK" : "UNBLOCK"}
+                          </span>
+                        </td>
 
                     </tr>
                   ))}

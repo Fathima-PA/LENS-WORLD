@@ -100,6 +100,26 @@ const AdminOrderDetails = () => {
                 <div><b>Date:</b> {new Date(order.createdAt).toLocaleDateString()}</div>
               </div>
             </Card>
+            {/* DELIVERY ADDRESS */}
+<Card className="p-3 shadow-sm mb-4">
+  <h5 className="mb-3">Delivery Address</h5>
+
+  <div className="small">
+    <div><b>Address:</b> {order.address?.address}</div>
+    <div>
+      <b>City:</b> {order.address?.city}
+    </div>
+    <div>
+      <b>State:</b> {order.address?.state}
+    </div>
+    <div>
+      <b>Pincode:</b> {order.address?.pincode}
+    </div>
+    <div>
+      <b>Phone:</b> {order.address?.phone}
+    </div>
+  </div>
+</Card>
 
             {/* ITEMS */}
             <Card className="shadow-sm">

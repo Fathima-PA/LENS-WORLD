@@ -105,16 +105,23 @@ export const updateCategory = async (req, res) => {
 };
 
 /* ===================== DELETE CATEGORY ===================== */
-export const deleteCategory = async (req, res) => {
+export const toggleCategoryStatus = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id);
+      const category = await Category.findById(req.params.id);
 
-    if (!category)
-      return res.status(404).json({ message: "Category not found" });
+    if (!category) {
+      return res.status(404).json({ message: "category not found" });
+    }
 
-    await category.deleteOne();
+    category.isActive = !category.isActive;
+    await category.save();
 
-    res.json({ message: "Category deleted successfully" });
+    res.json({
+      message: category.isActive
+        ? "category activated successfully"
+        : "category blocked successfully",
+      isActive: category.isActive,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

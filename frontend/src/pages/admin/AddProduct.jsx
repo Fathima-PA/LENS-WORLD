@@ -305,7 +305,7 @@ const handleRemoveImage = (index) => {
                 onChange={(e) => setCategory(e.target.value)}
               >
                 <option value="">Select category</option>
-                {categories.map((c) => (
+                {categories.filter((c)=>c.isActive).map((c) => (
                   <option key={c._id} value={c._id}>
                     {c.name}
                   </option>

@@ -21,6 +21,7 @@ export const placeOrderCOD = async (req,res)=>{
 
       const variant = product.variants.id(item.variantId);
 
+      
       if(!variant || variant.stock < item.quantity)
         return res.status(400).json({message:"Stock changed, please review cart"});
     }
@@ -98,8 +99,26 @@ const addressDoc = await Address.findOne({
 export const getMyOrders = async (req, res) => {
   try {
 
-    const orders = await Order.find({ user: req.user._id })
-      .sort({ createdAt: -1 });
+     let { page = 1, limit = 8,search = "" } = req.query;
+
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+
+    const query = { user: req.user._id };
+if (search) {
+      query.$expr = {
+        $regexMatch: {
+          input: { $toString: "$_id" },
+          regex: search,
+          options: "i"
+        }
+      };
+    }
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 }).limit(limit).skip((page-1)*limit);
+
+       const total = await Order.countDocuments(query);
 
     const formatted = orders.map(order => ({
           _id: order._id, 
@@ -110,7 +129,7 @@ export const getMyOrders = async (req, res) => {
       items: order.items.length
     }));
 
-    res.json(formatted);
+    res.json({formatted, totalPages: Math.ceil(total / limit)});
 
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch orders" });
@@ -229,9 +248,8 @@ export const downloadInvoice = async (req, res) => {
     if (!order)
       return res.status(404).json({ message: "Order not found" });
 
-
-    // CREATE PDF
-    const doc = new PDFDocument({ margin: 50 });
+    const PDFDocument = (await import("pdfkit")).default;
+    const doc = new PDFDocument({ margin: 40 });
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -241,18 +259,17 @@ export const downloadInvoice = async (req, res) => {
 
     doc.pipe(res);
 
-    // HEADER
-    doc.fontSize(20).text("LENS WORLD", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14).text("INVOICE", { align: "center" });
+    /* ---------------- HEADER ---------------- */
+    doc.fontSize(22).text("LENS WORLD", { align: "center" });
+    doc.moveDown(0.5);
+    doc.fontSize(16).text("INVOICE", { align: "center" });
+    doc.moveDown(2);
 
-    doc.moveDown();
-
-    // ORDER INFO
-    doc.fontSize(12).text(`Order ID: ${order._id}`);
+    /* ---------------- ORDER INFO ---------------- */
+    doc.fontSize(12);
+    doc.text(`Order ID: ${order._id}`);
     doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`);
     doc.text(`Status: ${order.status}`);
-
     doc.moveDown();
 
     doc.text("Shipping Address:");
@@ -260,29 +277,58 @@ export const downloadInvoice = async (req, res) => {
     doc.text(`${order.address.city}, ${order.address.state}`);
     doc.text(order.address.pincode);
     doc.text(`Phone: ${order.address.phone}`);
+    doc.moveDown(2);
 
-    doc.moveDown();
+    /* ---------------- TABLE HEADER ---------------- */
+    const tableTop = doc.y;
+    const itemX = 40;
+    const qtyX = 300;
+    const priceX = 350;
+    const totalX = 450;
 
-    doc.text("Items:");
-    doc.moveDown(0.5);
+    doc.font("Helvetica-Bold");
+    doc.text("Item", itemX, tableTop);
+    doc.text("Qty", qtyX, tableTop);
+    doc.text("Price", priceX, tableTop);
+    doc.text("Total", totalX, tableTop);
 
-    order.items.forEach(item => {
-      doc.text(
-        `${item.name}  | Qty: ${item.quantity}  | ₹${item.price}  | ₹${item.total}`
-      );
+    doc.moveTo(itemX, tableTop + 15)
+      .lineTo(550, tableTop + 15)
+      .stroke();
+
+    doc.font("Helvetica");
+
+    /* ---------------- TABLE ROWS ---------------- */
+    let position = tableTop + 25;
+
+    order.items.forEach((item) => {
+      doc.text(item.name, itemX, position);
+      doc.text(item.quantity.toString(), qtyX, position);
+      doc.text(`₹${item.price}`, priceX, position);
+      doc.text(`₹${item.total}`, totalX, position);
+
+      position += 25;
     });
 
-    doc.moveDown();
+    doc.moveTo(itemX, position - 10)
+      .lineTo(550, position - 10)
+      .stroke();
 
+    /* ---------------- TOTAL SECTION ---------------- */
+    doc.moveDown(2);
 
-    doc.text(`Subtotal: ₹${order.subtotal}`);
-    doc.text(`Tax: ₹${order.tax}`);
-    doc.text(`Shipping: ₹${order.shipping}`);
-    doc.text(`Grand Total: ₹${order.grandTotal}`);
+    doc.text(`Subtotal: ₹${order.subtotal}`, { align: "right" });
+    doc.text(`Tax (18%): ₹${order.tax}`, { align: "right" });
+    doc.text(`Shipping: ₹${order.shipping}`, { align: "right" });
+    doc.text(`Discount: ₹${order.discount}`, { align: "right" });
+
+    doc.font("Helvetica-Bold");
+    doc.text(`Grand Total: ₹${order.grandTotal}`, { align: "right" });
 
     doc.end();
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Invoice failed" });
   }
 };

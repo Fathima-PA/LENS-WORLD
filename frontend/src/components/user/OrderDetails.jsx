@@ -65,11 +65,11 @@ const OrderDetails = () => {
       {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <button
-          className="btn btn-link p-0"
-          onClick={() => navigate("/profile?tab=orders")}
-        >
-          ← Back to Orders
-        </button>
+  className="btn btn-sm btn-outline-secondary px-3 fw-semibold"
+  onClick={() => navigate("/profile?tab=orders")}
+>
+  ← Back to Orders
+</button>
 
         <h5>ORDER DETAILS</h5>
 

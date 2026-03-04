@@ -8,21 +8,27 @@ const OrderHistory = () => {
   const navigate = useNavigate();
 
   const [orders, setOrders] = useState([]);
-  const [allOrders, setAllOrders] = useState([]);
+  // const [allOrders, setAllOrders] = useState([]);
   const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // FETCH ORDERS
   const fetchOrders = async () => {
     try {
-      const res = await api.get("/api/order/my");
+      const res = await api.get("/api/order/my",{
+        params:{ page, limit: 5,search},
+         withCredentials: true
+      });
 
-      const data = res.data.map(o => ({
+      const data = res.data.formatted.map(o => ({
         ...o,
         orderId: String(o.orderId)
       }));
 
       setOrders(data);
-      setAllOrders(data);
+      // setAllOrders(data);
+        setTotalPages(res.data.totalPages); 
 
     } catch (err) {
       console.log(err);
@@ -31,24 +37,22 @@ const OrderHistory = () => {
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  },  [page,search]);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    if (!search.trim()) {
-      setOrders(allOrders);
-      return;
-    }
+  //   if (!search.trim()) {
+  //     setOrders(allOrders);
+  //     return;
+  //   }
 
-    const filtered = allOrders.filter(order =>
-      order.orderId.toLowerCase().includes(search.toLowerCase())
-    );
+  //   const filtered = allOrders.filter(order =>
+  //     order.orderId.toLowerCase().includes(search.toLowerCase())
+  //   );
 
-    setOrders(filtered);
+  //   setOrders(filtered);
 
-  }, [search, allOrders]);
+  // }, [search, allOrders]);
 
   const getStatusColor = (status) => {
     if (status === "Placed") return "orange";
@@ -70,7 +74,10 @@ const OrderHistory = () => {
         <Form.Control
           placeholder="Search order id..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          
+          onChange={(e) => {setSearch(e.target.value);
+             setPage(1); 
+          }}
         />
 
         {search && (
@@ -117,14 +124,16 @@ const OrderHistory = () => {
                 ₹{order.total} ({order.items} items)
               </div>
 
-              <div className="col-2 text-end">
-                <button
-                  className="btn btn-link p-0"
-                  onClick={() => navigate(`/profile/order/${order.orderId}`)}
-                >
-                  View Details →
-                </button>
-              </div>
+        
+
+<div className="col-2 text-end">
+  <button
+    className="btn btn-sm btn-primary rounded-pill px-3 fw-semibold"
+    onClick={() => navigate(`/profile/order/${order.orderId}`)}
+  >
+    View Details
+  </button>
+</div>
 
             </div>
 
@@ -132,7 +141,25 @@ const OrderHistory = () => {
         )}
 
       </div>
-
+     <div className="d-flex justify-content-between align-items-center p-3">
+                   <small className="text-muted">
+                     Page {page} of {totalPages}
+                   </small>
+   
+                   <div className="d-flex gap-2">
+                     <Button
+                       disabled={page===1}
+                       onClick={()=>setPage(p=>p-1)}
+                     >←</Button>
+   
+                     <Button disabled>{page}</Button>
+   
+                     <Button
+                       disabled={page===totalPages}
+                       onClick={()=>setPage(p=>p+1)}
+                     >→</Button>
+                   </div>
+                 </div>
     </div>
   );
 };

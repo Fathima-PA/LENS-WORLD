@@ -17,6 +17,8 @@ export const getProducts = async (req, res) => {
 
     const pipeline = [];
 
+
+
     const matchStage = { isActive: true };
 
     if (search) {
@@ -84,6 +86,13 @@ export const getProducts = async (req, res) => {
     });
 
     pipeline.push({ $unwind: "$category" });
+    
+    
+pipeline.push({
+  $match: {
+    "category.isActive": true,
+  },
+});
 
     const products = await Product.aggregate(pipeline);
 
