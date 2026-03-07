@@ -49,7 +49,15 @@ const orderSchema = new mongoose.Schema({
     enum: ["COD", "RAZORPAY", "WALLET"],
     default: "COD"
   },
+paymentStatus: {
+  type: String,
+  enum: ["Pending","Paid","Failed"],
+  default: "Pending"
+},
 
+paymentId: {
+  type: String
+},
   subtotal: Number,
   tax: Number,
   shipping: Number,

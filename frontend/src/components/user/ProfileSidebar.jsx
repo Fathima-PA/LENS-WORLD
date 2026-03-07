@@ -83,9 +83,16 @@ const ProfileSidebar = ({ activeTab, setActiveTab }) => {
         <GeoAlt className="me-2" /> Address
       </ListGroup.Item>
 
-      <ListGroup.Item style={itemStyle}>
-        <Wallet2 className="me-2" /> Wallet
-      </ListGroup.Item>
+     <ListGroup.Item
+  style={{
+    ...itemStyle,
+    background: activeTab === "wallet" ? "#d6caca" : "white",
+  }}
+  action
+  onClick={() => setActiveTab("wallet")}
+>
+  <Wallet2 className="me-2" /> Wallet
+</ListGroup.Item>
     </ListGroup>
   );
 };

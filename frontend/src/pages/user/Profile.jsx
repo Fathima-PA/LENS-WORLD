@@ -15,7 +15,7 @@ import OrderHistory from "../../components/user/OrderHistory";
 import Cart from "../../components/user/Cart";
 import Wishlist from "../../components/user/Wishlist";
 
-
+import Wallet from "../../components/user/Wallet";
 
 
 const Profile = () => {
@@ -75,6 +75,7 @@ const params = new URLSearchParams(location.search);
 
   {activeTab === "wishlist" && <Wishlist />}
 
+{activeTab === "wallet" && <Wallet />}
 </Col>
 
         </Row>

@@ -27,8 +27,8 @@ import ProductDetails from "./components/user/ProductDetails";
 import Wishlist from "./components/user/Wishlist";
 import Checkout from "./components/user/Checkout";
 import OrderSuccess from "./components/user/Order";
-
-
+import PaymentFailed from "./components/user/PaymentFail"
+import Wallet from "./components/user/Wallet";
 
 
 import Cart from "./components/user/Cart";
@@ -102,7 +102,8 @@ useEffect(() => {
  <Route path="/wishlist" element={user?<Wishlist />:<Login />} />
  <Route path="/orders" element={<OrderHistory />} />
 <Route path="/profile/order/:id" element={<OrderDetails />} />
-
+<Route path="/payment-failed" element={<PaymentFailed/>}/>
+<Route path="/wallet" element={<Wallet />} />
           <Route
             path="/admin/login"
             element={admin ? <Navigate to="/admin/dashboard" /> : <AdminLogin />}

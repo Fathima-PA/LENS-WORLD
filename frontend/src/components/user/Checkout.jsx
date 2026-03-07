@@ -14,12 +14,18 @@ const Checkout = () => {
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
+const [paymentMethod, setPaymentMethod] = useState("COD");
+const [coupon,setCoupon] = useState("");
+const [discount,setDiscount] = useState(0);
+const [appliedCoupon,setAppliedCoupon] = useState(null);
+const [showCoupons,setShowCoupons] = useState(false);
+const [availableCoupons,setAvailableCoupons] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchAddresses();
     fetchCart();
+     fetchCoupons();
   }, []);
 
   const fetchAddresses = async () => {
@@ -42,6 +48,20 @@ const Checkout = () => {
     }
   };
 
+
+  const fetchCoupons = async ()=>{
+
+  try{
+
+    const res = await api.get("/api/order/available-coupons");
+
+    setAvailableCoupons(res.data);
+
+  }catch(err){
+    console.log(err);
+  }
+
+};
   const handleAddressAdded = (newAddress) => {
     setShowAddForm(false);
     setAddresses(prev => [...prev, newAddress]);
@@ -49,32 +69,116 @@ const Checkout = () => {
     setShowSelector(false);
   };
 
-  const placeOrder = async () => {
-    try {
+ const placeOrder = async () => {
+  try {
 
-      if (!selectedAddress) {
-        setErrorMsg("Please select address");
-        return;
-      }
-
-      const res = await api.post("/api/order/place-cod", {
-        addressId: selectedAddress._id
-      });
-
-      setShowSuccessModal(true);
-
-      setTimeout(() => {
-        navigate(`/order-success/${res.data.orderId}`);
-      }, 2000);
-
-    } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Order failed");
+    if (!selectedAddress) {
+      setErrorMsg("Please select address");
+      return;
     }
-  };
+
+    const res = await api.post("/api/order/place-cod", {
+      addressId: selectedAddress._id,
+      paymentMethod,
+      couponCode: appliedCoupon
+    });
+  console.log("Order from backend:", res.data);
+    // ---------- RAZORPAY ----------
+    if (res.data.razorpay) {
+
+      const { razorpayOrder, orderId } = res.data;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: "INR",
+        name: "LensWorld Opticals",
+        description: "Order Payment",
+        order_id: razorpayOrder.id,
+
+        handler: async function (response) {
+
+          const verify = await api.post("/api/order/verify-payment", {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            orderId
+          });
+
+          if (verify.data.success) {
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+              navigate(`/order-success/${orderId}`);
+            }, 2000);
+          }
+
+        },
+
+        theme: {
+          color: "#3399cc"
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+
+  console.log("Payment failed:", response.error);
+
+  navigate("/payment-failed");
+
+});
+      rzp.open();
+
+      return;
+    }
+
+    // ---------- COD / WALLET ----------
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      navigate(`/order-success/${res.data.orderId}`);
+    }, 2000);
+
+  } catch (err) {
+    setErrorMsg(err.response?.data?.message || "Order failed");
+  }
+};
+
+const applyCoupon = async ()=>{
+
+  if(appliedCoupon){
+    alert("Coupon already applied");
+    return;
+  }
+
+  try{
+
+    const res = await api.post("/api/order/apply-coupon",{
+      code:coupon,
+      subtotal
+    });
+
+    setDiscount(res.data.discount);
+    setAppliedCoupon(res.data.couponCode);
+
+  }catch(err){
+
+    alert(err.response?.data?.message);
+
+  }
+
+};
+
+const removeCoupon = ()=>{
+  setAppliedCoupon(null);
+  setDiscount(0);
+  setCoupon("");
+};
 
   const subtotal = cart.reduce((s, i) => s + i.total, 0);
   const tax = Math.round(subtotal * 0.18);
-  const discount = subtotal > 5000 ? 500 : 0;
+  // const discount = subtotal > 5000 ? 500 : 0;
   const grandTotal = subtotal + tax - discount;
 
   return (
@@ -93,7 +197,60 @@ const Checkout = () => {
           <p className="text-muted">Redirecting to order details...</p>
         </Modal.Body>
       </Modal>
+   <Modal show={showCoupons} onHide={()=>setShowCoupons(false)} centered>
 
+  <Modal.Header closeButton>
+    <Modal.Title>Available Coupons</Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body>
+
+    {availableCoupons.length === 0 ? (
+      <div className="text-muted">No coupons available</div>
+    ) : (
+
+      availableCoupons.map(c => (
+
+        <div
+          key={c._id}
+          className="border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
+        >
+
+          <div>
+
+            <div className="fw-semibold">{c.code}</div>
+
+            <div className="small text-muted">
+              {c.discountType === "percentage"
+                ? `${c.discountValue}% OFF`
+                : `₹${c.discountValue} OFF`}
+            </div>
+
+            <div className="small text-muted">
+              Min purchase ₹{c.minPurchase}
+            </div>
+
+          </div>
+
+          <button
+            className="btn btn-sm btn-dark"
+            onClick={()=>{
+              setCoupon(c.code);
+              setShowCoupons(false);
+            }}
+          >
+            Apply
+          </button>
+
+        </div>
+
+      ))
+
+    )}
+
+  </Modal.Body>
+
+</Modal>
       {/* ERROR MESSAGE */}
       {errorMsg && (
         <div className="alert alert-danger text-center">
@@ -163,11 +320,111 @@ const Checkout = () => {
               </div>
             </div>
           )}
+
+          <h5 className="mt-4">Payment Method</h5>
+
+<div className="form-check">
+  <input
+    type="radio"
+    className="form-check-input"
+    value="COD"
+    checked={paymentMethod === "COD"}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+  />
+  <label className="form-check-label">
+    Cash on Delivery
+  </label>
+</div>
+
+<div className="form-check">
+  <input
+    type="radio"
+    className="form-check-input"
+    value="RAZORPAY"
+    checked={paymentMethod === "RAZORPAY"}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+  />
+  <label className="form-check-label">
+    Razorpay
+  </label>
+</div>
+
+<div className="form-check">
+  <input
+    type="radio"
+    className="form-check-input"
+    value="WALLET"
+    checked={paymentMethod === "WALLET"}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+  />
+  <label className="form-check-label">
+    Wallet
+  </label>
+</div>
         </div>
+        
 
         {/* RIGHT SIDE */}
         <div className="col-lg-5">
+        <div className="border rounded p-3 mb-3">
+
+  <h6 className="fw-semibold mb-2">Apply Coupon</h6>
+
+  <div className="input-group">
+
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Enter coupon code"
+      value={coupon}
+      onChange={(e)=>setCoupon(e.target.value.toUpperCase())}
+      disabled={appliedCoupon}
+    />
+
+    {!appliedCoupon ? (
+
+      <button
+        className="btn btn-dark"
+        onClick={applyCoupon}
+      >
+        Apply
+      </button>
+
+    ) : (
+
+      <button
+        className="btn btn-danger"
+        onClick={removeCoupon}
+      >
+        Remove
+      </button>
+
+    )}
+
+  </div>
+
+  {appliedCoupon && (
+    <div className="text-success mt-2 small">
+      ✔ Coupon <b>{appliedCoupon}</b> applied successfully
+    </div>
+  )}
+
+ <button
+  className="btn btn-sm mt-2 px-3 py-1"
+  style={{
+    border: "1px dashed #0d6efd",
+    color: "#0d6efd",
+    background: "#f5f9ff",
+    fontWeight: "500"
+  }}
+  onClick={() => setShowCoupons(true)}
+>
+  🎟 View Available Coupons
+</button>
+
+</div>
           <div className="border rounded p-4">
+            
 
             <h5>Order Summary</h5>
 
@@ -190,10 +447,14 @@ const Checkout = () => {
               <span>₹{tax}</span>
             </div>
 
-            <div className="d-flex justify-content-between">
-              <span>Discount</span>
-              <span>- ₹{discount}</span>
-            </div>
+            {appliedCoupon && (
+
+<div className="d-flex justify-content-between text-success">
+  <span>Coupon ({appliedCoupon})</span>
+  <span>- ₹{discount}</span>
+</div>
+
+)}
 
             <hr />
 
@@ -207,7 +468,7 @@ const Checkout = () => {
               onClick={placeOrder}
               disabled={!selectedAddress}
             >
-              Place Order (Cash on Delivery)
+              Place Order ({paymentMethod})
             </button>
 
           </div>

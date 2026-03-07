@@ -106,6 +106,8 @@ const recalculateOrderStatus = (order) => {
 };
 
 // APPROVE CANCEL ITEM
+
+
 export const approveCancel = async (req, res) => {
   try {
 
@@ -118,8 +120,14 @@ export const approveCancel = async (req, res) => {
     if (!item)
       return res.status(404).json({ message: "Item not found" });
 
+    if (item.status === "Cancelled") {
+      return res.status(400).json({ message: "Item already cancelled" });
+    }
+
     item.cancelRequest = "Approved";
     item.status = "Cancelled";
+
+    /* -------- RESTOCK PRODUCT -------- */
 
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
@@ -129,14 +137,33 @@ export const approveCancel = async (req, res) => {
       await product.save();
     }
 
+    /* -------- WALLET REFUND -------- */
+
+    if (order.paymentMethod !== "COD") {
+
+      const user = await User.findById(order.user);
+
+      user.wallet += item.total;
+
+      user.walletHistory.push({
+        type: "CREDIT",
+        amount: item.total,
+        reason: "Order Item Cancel Refund"
+      });
+
+      await user.save();
+    }
+
+    /* -------- UPDATE ORDER STATUS -------- */
+
     recalculateOrderStatus(order);
 
     await order.save();
-    
 
-    res.json({ message: "Cancel approved" });
+    res.json({ message: "Cancel approved and refund added to wallet" });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Error approving cancel" });
   }
 };
@@ -163,6 +190,7 @@ export const rejectCancel = async (req, res) => {
 };
 
 // APPROVE RETURN ITEM
+
 export const approveReturn = async (req, res) => {
   try {
 
@@ -171,8 +199,18 @@ export const approveReturn = async (req, res) => {
     const order = await Order.findById(req.params.id);
     const item = order.items.id(itemId);
 
+    if (!item)
+      return res.status(404).json({ message: "Item not found" });
+
+    // Prevent double approval
+    if (item.status === "Returned") {
+      return res.status(400).json({ message: "Item already returned" });
+    }
+
     item.returnRequest = "Approved";
     item.status = "Returned";
+
+    /* -------- RESTOCK PRODUCT -------- */
 
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
@@ -182,13 +220,33 @@ export const approveReturn = async (req, res) => {
       await product.save();
     }
 
+    /* -------- WALLET REFUND -------- */
+
+    if (order.paymentMethod !== "COD") {
+
+      const user = await User.findById(order.user);
+
+      user.wallet += item.total;
+
+      user.walletHistory.push({
+        type: "CREDIT",
+        amount: item.total,
+        reason: "Order Return Refund"
+      });
+
+      await user.save();
+    }
+
+    /* -------- UPDATE ORDER STATUS -------- */
+
     recalculateOrderStatus(order);
 
     await order.save();
 
-    res.json({ message: "Return approved" });
+    res.json({ message: "Return approved and refund added to wallet" });
 
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Error approving return" });
   }
 };

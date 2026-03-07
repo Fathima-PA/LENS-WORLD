@@ -3,7 +3,10 @@ import Product from "../../models/ProductModel.js";
 import Address from "../../models/AddressModel.js";
 import Order from "../../models/OrderModel.js";
 import PDFDocument from "pdfkit";
-
+import razorpay from "../../config/razorpay.js";
+import crypto from "crypto";
+import User from "../../models/userModel.js";
+import Coupon from "../../models/couponModel.js";
 export const placeOrderCOD = async (req,res)=>{
   try{
 
@@ -25,7 +28,7 @@ export const placeOrderCOD = async (req,res)=>{
       if(!variant || variant.stock < item.quantity)
         return res.status(400).json({message:"Stock changed, please review cart"});
     }
-   const { addressId } = req.body;
+  const { addressId, paymentMethod,couponCode } = req.body;
 
 const addressDoc = await Address.findOne({
   _id: addressId,
@@ -56,14 +59,75 @@ const addressDoc = await Address.findOne({
       });
     }
 
-    const tax=Math.round(subtotal*0.18);
-    const shipping=0;
-    const discount=subtotal>5000?500:0;
-    const grandTotal=subtotal+tax+shipping-discount;
+ let discount = subtotal > 5000 ? 500 : 0;
+
+if (couponCode) {
+
+  const coupon = await Coupon.findOne({
+    code: couponCode.toUpperCase(),
+    isActive: true
+  });
+
+  if (!coupon) {
+    return res.status(400).json({ message: "Invalid coupon" });
+  }
+
+  if (coupon.expiryDate < new Date()) {
+    return res.status(400).json({ message: "Coupon expired" });
+  }
+
+  if (subtotal < coupon.minPurchase) {
+    return res.status(400).json({
+      message: `Minimum purchase ₹${coupon.minPurchase} required`
+    });
+  }
+
+  if (coupon.discountType === "percentage") {
+
+    discount = subtotal * coupon.discountValue / 100;
+
+    if (coupon.maxDiscount) {
+      discount = Math.min(discount, coupon.maxDiscount);
+    }
+
+  } else {
+    discount = coupon.discountValue;
+  }
+}
+
+const tax = Math.round(subtotal * 0.18);
+const shipping = 0;
+const grandTotal = subtotal + tax + shipping - discount;
+
+    if(paymentMethod === "COD"){
+
+  if(grandTotal > 10000){
+    return res.status(400).json({
+      message:"COD not allowed above ₹10,000"
+    });
+  }
+
+}
+
+if(paymentMethod === "WALLET"){
+
+  const user = await User.findById(userId);
+
+  if(user.wallet < grandTotal){
+    return res.status(400).json({
+      message:"Insufficient wallet balance"
+    });
+  }
+
+  user.wallet -= grandTotal;
+  await user.save();
+
+}
 
     const order=await Order.create({
       user:userId,
       items:orderItems,
+      couponCode,
       address:{
         address:addressDoc.address,
         city:addressDoc.city,
@@ -75,9 +139,39 @@ const addressDoc = await Address.findOne({
       tax,
       shipping,
       discount,
-      grandTotal
+      grandTotal,
+        paymentMethod,
+          paymentStatus: paymentMethod === "RAZORPAY" ? "Pending" : "Paid"
     });
 
+    if (couponCode) {
+
+  const coupon = await Coupon.findOne({ code: couponCode });
+
+  if (coupon) {
+    coupon.usedBy.push(userId);
+    await coupon.save();
+  }
+
+}
+
+
+
+if(paymentMethod === "RAZORPAY"){
+
+  const razorpayOrder = await razorpay.orders.create({
+    amount: grandTotal * 100,
+    currency:"INR",
+    receipt: order._id.toString()
+  });
+console.log("Razorpay Order:", razorpayOrder);
+  return res.json({
+    razorpay:true,
+    orderId:order._id,
+    razorpayOrder
+  });
+
+}
     for(const item of cart.items){
       const product=await Product.findById(item.productId._id);
       const variant=product.variants.id(item.variantId);
@@ -331,4 +425,81 @@ export const downloadInvoice = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Invoice failed" });
   }
+};
+
+
+export const verifyRazorpayPayment = async (req,res)=>{
+  try{
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId
+    } = req.body;
+
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSign = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .update(sign)
+      .digest("hex");
+
+    if(expectedSign !== razorpay_signature){
+      return res.status(400).json({message:"Payment verification failed"});
+    }
+
+    const order = await Order.findById(orderId);
+
+    if(!order){
+      return res.status(404).json({message:"Order not found"});
+    }
+
+    if(order.paymentStatus === "Paid"){
+      return res.json({success:true});
+    }
+
+    order.paymentStatus = "Paid";
+    order.paymentId = razorpay_payment_id;
+
+    await order.save();
+
+    // reduce stock
+    for(const item of order.items){
+
+      const product = await Product.findById(item.productId);
+      if(!product) continue;
+
+      const variant = product.variants.id(item.variantId);
+      if(!variant) continue;
+
+      variant.stock -= item.quantity;
+
+      await product.save();
+    }
+
+    // clear cart
+    await Cart.findOneAndUpdate(
+      { userId: order.user },
+      { $set: { items: [] } }
+    );
+
+    res.json({
+      success:true,
+      message:"Payment successful"
+    });
+
+  }catch(err){
+    console.error("VERIFY ERROR:",err);
+    res.status(500).json({message:"Verification failed"});
+  }
+};
+
+export const getWallet = async (req,res)=>{
+
+ const user = await User.findById(req.user._id)
+   .select("wallet walletHistory");
+
+ res.json(user);
+
 };

@@ -35,26 +35,53 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+
     isVerified: {
       type: Boolean,
-      default: false,
+      default: false
     },
+
     pendingEmail: {
-     type: String,
-      },
-      profileImage: {
-  type: String,
-  default: "",
-},
-refreshToken: {
-  type: String,
-  default: "",
-},
+      type: String
+    },
+
+    profileImage: {
+      type: String,
+      default: ""
+    },
+
+    refreshToken: {
+      type: String,
+      default: ""
+    },
+
     authProvider: {
-  type: String,
-  enum: ["local", "google"],
-  default: "local",
-},
+      type: String,
+      enum: ["local", "google"],
+      default: "local"
+    },
+
+    // ⭐ WALLET BALANCE
+    wallet: {
+      type: Number,
+      default: 0
+    },
+
+    // ⭐ WALLET TRANSACTION HISTORY
+    walletHistory: [
+      {
+        type: {
+          type: String,
+          enum: ["CREDIT", "DEBIT"]
+        },
+        amount: Number,
+        reason: String,
+        date: {
+          type: Date,
+          default: Date.now
+        }
+      }
+    ]
 
   },
   {
@@ -68,7 +95,6 @@ userSchema.pre("save", async function () {
 
   this.password = await bcrypt.hash(this.password, 10);
 });
-
 
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
