@@ -201,8 +201,31 @@ const ProductListing = () => {
                   </h6>
                   <p className="small text-muted mb-1">{p.brand}</p>
                   <p className="fw-semibold text-warning mb-1">
-                    ₹{p.displayPrice}
-                  </p>
+
+  {p.finalPrice && p.finalPrice < p.displayPrice ? (
+    <>
+      <span style={{ textDecoration: "line-through", color: "#888", marginRight: 6 }}>
+        ₹{p.displayPrice}
+      </span>
+
+      <span style={{ color: "red" }}>
+        ₹{p.finalPrice}
+      </span>
+    </>
+  ) : (
+    <>₹{p.displayPrice}</>
+  )}
+
+</p>
+{p.finalPrice < p.displayPrice && (
+  <span className="badge bg-danger">
+    {Math.max(
+      1,
+      Math.round(((p.displayPrice - p.finalPrice) / p.displayPrice) * 100)
+    )}
+    % OFF
+  </span>
+)}
                   <p className="small text-muted mb-0">
                     ★ 4.8 Ratings
                   </p>

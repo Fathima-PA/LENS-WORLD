@@ -2,6 +2,8 @@ import Cart from "../../models/CartModel.js";
 import Product from "../../models/ProductModel.js";
 import Wishlist from "../../models/WhistlistModel.js";
 import mongoose from "mongoose";
+import Offer from "../../models/OfferModel.js";
+import { getBestOfferPrice } from "../../utils/offerHelper.js";
 
 const MAX_QTY = 5;
 
@@ -49,11 +51,35 @@ export const addToCart = async (req, res) => {
       if (variant.stock < quantity)
         return res.status(400).json({ message: "Out of stock" });
 
+
+      const today = new Date();
+
+const productOffer = await Offer.findOne({
+  type: "product",
+  product: product._id,
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today }
+});
+
+const categoryOffer = await Offer.findOne({
+  type: "category",
+  category: product.category,
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today }
+});
+
+const finalPrice = getBestOfferPrice(
+  variant.price,
+  productOffer,
+  categoryOffer
+);
       cart.items.push({
         productId: new mongoose.Types.ObjectId(productId),
         variantId: new mongoose.Types.ObjectId(variantId),
         quantity,
-        price: variant.price
+        price: finalPrice
       });
     }
 
@@ -99,20 +125,24 @@ export const getCart = async (req, res) => {
         removed = true;
         continue;
       }
-      validItems.push({
-        itemId: item._id.toString(),
-        productId: product._id,
-        name: product.name,
-        brand: product.brand,
-        image: variant.images?.[0] || "",
-        color: variant.color,
-        price: item.price,
-        stock: variant.stock,
-        quantity: item.quantity,
-        total: item.price * item.quantity,
-        isActive: product.isActive,
-        isAvailable: product.isActive && variant.stock > 0
-      });
+     validItems.push({
+  itemId: item._id.toString(),
+  productId: product._id,
+  name: product.name,
+  brand: product.brand,
+  image: variant.images?.[0] || "",
+  color: variant.color,
+
+  originalPrice: variant.price, 
+
+  price: item.price,
+  stock: variant.stock,
+  quantity: item.quantity,
+  total: item.price * item.quantity,
+
+  isActive: product.isActive,
+  isAvailable: product.isActive && variant.stock > 0
+});
     }
     cart.items = cart.items.filter(item =>
       validItems.some(v => v.itemId === item._id.toString())

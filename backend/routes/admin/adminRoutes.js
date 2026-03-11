@@ -25,6 +25,25 @@ import{getAllOrders,updateOrderStatus,getOrderDetailsAdmin,  approveCancel,
   rejectCancel,
   approveReturn,
   rejectReturn} from "../../controllers/admin/adminOrderController.js"
+
+  
+import {
+  addOffer,
+  getOffers,
+  updateOffer,
+  toggleOfferStatus
+} from "../../controllers/admin/adminOfferController.js";
+
+import {
+  createCoupon,
+  getCoupons,
+  toggleCouponStatus,
+  updateCoupon
+} from "../../controllers/admin/adminCouponController.js";
+
+
+import { getDashboardStats,getDashboardChart} from "../../controllers/admin/adminDashboardController.js";
+import { getSalesReport,downloadSalesPDF,downloadSalesExcel} from "../../controllers/admin/adminReportController.js";
 import upload from "../../middlewares/uploadMiddleware.js";
 
 import { protectAdmin } from "../../middlewares/adminMiddleware.js";
@@ -113,5 +132,33 @@ router.patch("/orders/reject-cancel/:id", protectAdmin, rejectCancel);
 
 router.patch("/orders/approve-return/:id", protectAdmin, approveReturn);
 router.patch("/orders/reject-return/:id", protectAdmin, rejectReturn);
+
+
+
+router.post("/add-offer", addOffer);
+
+router.get("/offers", getOffers);
+
+router.put("/update-offer/:id", updateOffer);
+
+router.patch("/toggle-offer/:id", toggleOfferStatus);
+
+router.post("/create-coupon", createCoupon);
+
+router.get("/coupons", getCoupons);
+
+router.patch("/toggle-coupon/:id", toggleCouponStatus);
+router.put("/update-coupon/:id", protectAdmin, updateCoupon);
+
+
+
+router.get("/sales-report", protectAdmin, getSalesReport);
+
+router.get("/sales-report/pdf", protectAdmin, downloadSalesPDF);
+router.get("/sales-report/excel", protectAdmin, downloadSalesExcel);
+
+
+router.get("/dashboard", protectAdmin, getDashboardStats);
+router.get("/dashboard-chart", protectAdmin, getDashboardChart);
 
 export default router;

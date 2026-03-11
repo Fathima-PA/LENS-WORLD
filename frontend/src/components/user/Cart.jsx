@@ -151,10 +151,29 @@ const Cart = () => {
                     </div>
                   )}
                 </div>
+<div className="text-end">
 
-                <div className="fw-semibold">
-                  ₹{item.total}
-                </div>
+  {item.originalPrice && item.originalPrice > item.price ? (
+    <>
+      <div style={{ textDecoration: "line-through", color: "#888" }}>
+        ₹{item.originalPrice * item.quantity}
+      </div>
+
+      <div className="fw-semibold text-danger">
+        ₹{item.total}
+      </div>
+
+      <div className="text-success small">
+        You saved ₹{(item.originalPrice - item.price) * item.quantity}
+      </div>
+    </>
+  ) : (
+    <div className="fw-semibold">
+      ₹{item.total}
+    </div>
+  )}
+
+</div>
               </div>
             ))
           )}

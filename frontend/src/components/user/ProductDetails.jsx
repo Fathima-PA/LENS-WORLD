@@ -191,9 +191,25 @@ const ProductDetails = () => {
 
           <h3>{product.name}</h3>
 
-          <p className="fs-4 text-danger fw-semibold">
-            ₹{activeVariant.price}
-          </p>
+           <p className="fw-semibold text-warning mb-1">
+
+{activeVariant.finalPrice < activeVariant.price ? (
+
+<>
+<span style={{ textDecoration: "line-through", color: "#888", marginRight: 6 }}>
+₹{activeVariant.price}
+</span>
+
+<span style={{ color: "red" }}>
+₹{activeVariant.finalPrice}
+</span>
+</>
+
+) : (
+<>₹{activeVariant.price}</>
+)}
+
+</p>
 
           <p className="text-muted">★ 4.8 Ratings</p>
 

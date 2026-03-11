@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
 
+
 const Wishlist = () => {
   const [items, setItems] = useState([]);
 
-  /* ================= FETCH ================= */
 const fetchWishlist = async () => {
   try {
     const res = await api.get("/api/wishlist");
@@ -72,7 +72,7 @@ const fetchWishlist = async () => {
         <p className="text-muted text-center">Your wishlist is empty</p>
       ) : (
         items.map(item => (
-          <div key={item.productId} className="row align-items-center mb-4 border-bottom pb-3">
+          <div key={`${item.productId}-${item.variantId}`} className="row align-items-center mb-4 border-bottom pb-3">
 
             {/* PRODUCT */}
             <div className="col-5 d-flex align-items-center gap-3">
@@ -93,9 +93,29 @@ const fetchWishlist = async () => {
               </div>
             </div>
 
-            <div className="col-2 fw-semibold">
-              ₹{item.price}
-            </div>
+          <div className="col-2">
+
+  {item.originalPrice && item.originalPrice > item.price ? (
+    <>
+      <div style={{ textDecoration: "line-through", color: "#888" }}>
+        ₹{item.originalPrice}
+      </div>
+
+      <div className="fw-semibold text-danger">
+        ₹{item.price}
+      </div>
+
+      <div className="text-success small">
+        You saved ₹{item.originalPrice - item.price}
+      </div>
+    </>
+  ) : (
+    <div className="fw-semibold">
+      ₹{item.price}
+    </div>
+  )}
+
+</div>
 
            <div className="col-2">
 

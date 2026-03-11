@@ -61,13 +61,11 @@ const userSchema = new mongoose.Schema(
       default: "local"
     },
 
-    // ⭐ WALLET BALANCE
     wallet: {
       type: Number,
       default: 0
     },
 
-    // ⭐ WALLET TRANSACTION HISTORY
     walletHistory: [
       {
         type: {
@@ -81,7 +79,17 @@ const userSchema = new mongoose.Schema(
           default: Date.now
         }
       }
-    ]
+    ],
+referralCode: {
+  type: String,
+  unique: true
+},
+
+referredBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null
+},
 
   },
   {

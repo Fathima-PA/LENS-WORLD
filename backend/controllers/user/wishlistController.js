@@ -1,5 +1,7 @@
 import Wishlist from "../../models/WhistlistModel.js";
 import Product from "../../models/ProductModel.js";
+import Offer from "../../models/OfferModel.js";
+import { getBestOfferPrice } from "../../utils/offerHelper.js";
 
 // TOGGLE WISHLIST
 export const toggleWishlist = async (req, res) => {
@@ -37,26 +39,47 @@ export const getWishlist = async (req, res) => {
 
     if (!wishlist) return res.json([]);
 
-    let removed = false;
     const validItems = [];
+    const today = new Date();
+
+    const productOffers = await Offer.find({
+      type: "product",
+      isActive: true,
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    });
+
+    const categoryOffers = await Offer.find({
+      type: "category",
+      isActive: true,
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    });
 
     for (const item of wishlist.products) {
 
       const product = item.productId;
-
-      if (!product) {
-        removed = true;
-        continue;
-      }
+      if (!product) continue;
 
       const variant = product.variants?.find(
         v => v._id.toString() === item.variantId?.toString()
       );
 
-      if (!variant) {
-        removed = true;
-        continue;
-      }
+      if (!variant) continue;
+
+      const productOffer = productOffers.find(
+        offer => offer.product?.toString() === product._id.toString()
+      );
+
+      const categoryOffer = categoryOffers.find(
+        offer => offer.category?.toString() === product.category?.toString()
+      );
+
+      const finalPrice = getBestOfferPrice(
+        variant.price,
+        productOffer,
+        categoryOffer
+      );
 
       validItems.push({
         productId: product._id,
@@ -65,27 +88,14 @@ export const getWishlist = async (req, res) => {
         brand: product.brand,
         stock: variant.stock ?? 0,
         image: variant.images?.[0] ?? "",
-        price: variant.price ?? 0,
         color: variant.color ?? "",
+
+        originalPrice: variant.price,
+        price: finalPrice,
 
         isActive: product.isActive,
         isOutOfStock: variant.stock === 0,
         isAvailable: product.isActive && variant.stock > 0
-      });
-    }
-    wishlist.products = wishlist.products.filter(item =>
-      validItems.some(v =>
-        v.productId.toString() === item.productId.toString() &&
-        v.variantId.toString() === item.variantId.toString()
-      )
-    );
-
-    await wishlist.save();
-
-    if (removed) {
-      return res.status(200).json({
-        warning: "Some items were removed because they no longer exist",
-        items: validItems
       });
     }
 

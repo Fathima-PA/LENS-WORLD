@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import Product from "../../models/ProductModel.js";
 import Category from "../../models/CategoryModel.js";
-
+import Offer from "../../models/OfferModel.js";
+import { getBestOfferPrice } from "../../utils/offerHelper.js";
 
 export const getProducts = async (req, res) => {
   try {
@@ -14,6 +15,7 @@ export const getProducts = async (req, res) => {
       page = 1,
       limit = 12,
     } = req.query;
+
 
     const pipeline = [];
 
@@ -95,11 +97,53 @@ pipeline.push({
 });
 
     const products = await Product.aggregate(pipeline);
+    const today = new Date();
+
+const productOffers = await Offer.find({
+  type: "product",
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today },
+});
+
+const categoryOffers = await Offer.find({
+  type: "category",
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today },
+});
+
+const updatedProducts = products.map((product) => {
+
+  const productOffer = productOffers.find(
+  (offer) => offer.product.toString() === product._id.toString()
+);
+
+const categoryOffer = categoryOffers.find(
+  (offer) => offer.category.toString() === product.category._id.toString()
+);
+
+
+console.log("Product:", product.name);
+console.log("Product Offer:", productOffer);
+console.log("Category Offer:", categoryOffer);
+  const finalPrice = getBestOfferPrice(
+    product.displayPrice,
+    productOffer,
+    categoryOffer
+  );
+
+  return {
+    ...product,
+    finalPrice,
+  };
+
+});
 
     const totalProducts = await Product.countDocuments(matchStage);
 
     res.status(200).json({
-      products,
+      products:updatedProducts,
       totalProducts,
       totalPages: Math.ceil(totalProducts / limit),
       currentPage: Number(page),
@@ -125,6 +169,7 @@ export const getUserCategories = async (req, res) => {
 /* GET PRODUCT BY ID  */
 export const getProductById = async (req, res) => {
   try {
+
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -133,14 +178,53 @@ export const getProductById = async (req, res) => {
 
     const product = await Product.findOne({
       _id: id,
-      isActive: true,
+      isActive: true
     }).populate("category");
 
-    if (!product||!product.isActive) {
-      return res.status(403).json({ message: "Product not available or product is blocked" });
+    if (!product) {
+      return res.status(403).json({
+        message: "Product not available or product is blocked"
+      });
     }
 
-    res.status(200).json(product);
+  const today = new Date();
+
+const productOffer = await Offer.findOne({
+  type: "product",
+  product: product._id,
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today }
+});
+
+const categoryOffer = await Offer.findOne({
+  type: "category",
+  category: product.category._id,
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today }
+});
+
+const updatedVariants = product.variants.map((variant) => {
+
+  const finalPrice = getBestOfferPrice(
+    variant.price,
+    productOffer,
+    categoryOffer
+  );
+
+  return {
+    ...variant.toObject(),
+    finalPrice
+  };
+
+});
+
+res.status(200).json({
+  ...product.toObject(),
+  variants: updatedVariants
+});
+
   } catch (error) {
     console.error("GET PRODUCT ERROR:", error);
     res.status(500).json({ message: error.message });

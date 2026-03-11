@@ -24,9 +24,10 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     phone: "",
+    referralCode: "", 
   });
 
-  const { username, email, password, confirmPassword, phone } = formData;
+  const { username, email, password, confirmPassword, phone,referralCode } = formData;
 
   const [errors, setErrors] = useState({});
   const [showToast, setShowToast] = useState(false);
@@ -85,6 +86,7 @@ const Register = () => {
       email: email.toLowerCase(),
       password,
       phone,
+      referralCode, 
     };
 
     dispatch(setTempRegister(tempData));
@@ -197,7 +199,19 @@ const Register = () => {
                 <small className="text-danger">{errors.phone}</small>
               )}
             </div>
-
+           
+           {/* Referral Code */}
+<div className="mb-3">
+  <label className="form-label">Referral Code (Optional)</label>
+  <input
+    type="text"
+    className="form-control"
+    name="referralCode"
+    value={referralCode}
+    onChange={onChange}
+    placeholder="Enter referral code"
+  />
+</div>
             <button
               type="submit"
               className="btn w-100 text-white"

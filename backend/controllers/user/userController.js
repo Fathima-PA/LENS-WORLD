@@ -1,11 +1,11 @@
 import User from "../../models/userModel.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/token.js";
-
+import { generateReferralCode } from "../../utils/generateReferralCode.js";
 
 //  REGISTER
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password, phone } = req.body;
+    const { username, email, password, phone,referralCode } = req.body;
 
     if (!username || !email || !password || !phone) {
       return res.status(400).json({ message: "All fields are required" });
@@ -17,14 +17,48 @@ export const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
+    const newReferralCode = generateReferralCode(username);
 
     const user = await User.create({
       username,
       email: normalizedEmail,
       password,
       phone,
-      isVerified: true, 
+      isVerified: true,
+      referralCode: newReferralCode 
     });
+   
+     if (referralCode) {
+
+      const referrer = await User.findOne({ referralCode });
+
+      if (referrer) {
+
+        user.referredBy = referrer._id;
+
+        referrer.wallet += 100;
+
+        referrer.walletHistory.push({
+          type: "CREDIT",
+          amount: 100,
+          reason: "Referral Reward"
+        });
+       await referrer.save();
+
+
+        user.wallet += 50;
+
+        user.walletHistory.push({
+          type: "CREDIT",
+          amount: 50,
+          reason: "Signup Referral Bonus"
+        });
+
+      }
+
+    }
+
+       await user.save();
 
     return res.status(201).json({
       message: "Registration completed successfully",

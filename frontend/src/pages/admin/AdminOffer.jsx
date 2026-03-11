@@ -1,0 +1,476 @@
+import { useState, useEffect } from "react";
+import { Container, Table, Button, Form, Badge,Modal } from "react-bootstrap";
+import AdminSidebar from "../../components/admin/AdminSidebar";
+import axios from "axios";
+
+const AdminOffers = () => {
+const [isEdit, setIsEdit] = useState(false);
+const [editId, setEditId] = useState(null);
+  const [activeTab, setActiveTab] = useState("product");
+  const [offers, setOffers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [products, setProducts] = useState([]);
+const [categories, setCategories] = useState([]);
+const [formData, setFormData] = useState({
+  title: "",
+  product: "",
+  category: "",
+  discountType: "percentage",
+  discountValue: "",
+  startDate: "",
+  endDate: ""
+});
+
+useEffect(() => {
+  fetchProducts();
+  fetchCategories();
+}, []);
+
+const fetchProducts = async () => {
+  try {
+
+    const res = await axios.get("http://localhost:3000/api/admin/products",{
+          withCredentials: true,
+    }); 
+      setProducts(res.data.data);
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const fetchCategories = async () => {
+  try {
+
+    const res = await axios.get("http://localhost:3000/api/admin/categories",{
+          withCredentials: true,
+    });
+
+    
+      setCategories(res.data.data);
+    
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+  // Fetch offers
+ const fetchOffers = async () => {
+  try {
+
+    const res = await axios.get(
+      `http://localhost:3000/api/admin/offers?type=${activeTab}`,
+      { withCredentials: true }
+    );
+
+      setOffers(res.data.offers);
+    
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+  useEffect(() => {
+    fetchOffers();
+  }, [activeTab]);
+
+
+  const toggleOffer = async (id) => {
+
+    try {
+
+      const res = await axios.patch(`http://localhost:3000/api/admin/toggle-offer/${id}`, { withCredentials: true });
+
+      if (res.data.success) {
+        fetchOffers();
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+
+  };
+
+  const createOffer = async () => {
+  try {
+
+    const payload = {
+      ...formData,
+      type: activeTab
+    };
+
+    const res = await axios.post(
+      "http://localhost:3000/api/admin/add-offer",
+      payload,
+      { withCredentials: true }
+    );
+
+if (!res.data.success) {
+      alert(res.data.message);
+      return;
+    }
+
+      alert("Offer created successfully");
+
+      setShowModal(false);
+
+      fetchOffers();
+
+      setFormData({
+        title: "",
+        product: "",
+        category: "",
+        discountValue: "",
+        discountType: "percentage",
+        startDate: "",
+        endDate: ""
+      });
+
+    
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const updateOffer = async () => {
+  try {
+
+    const res = await axios.put(
+      `http://localhost:3000/api/admin/update-offer/${editId}`,
+      formData,
+      { withCredentials: true }
+    );
+
+    if (res.data.success) {
+
+      alert("Offer updated successfully");
+
+      setShowModal(false);
+      setIsEdit(false);
+
+      fetchOffers();
+
+      setFormData({
+        title: "",
+        product: "",
+        category: "",
+        discountType: "percentage",
+        discountValue: "",
+        startDate: "",
+        endDate: ""
+      });
+
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+  return (
+    <div className="d-flex">
+
+      <AdminSidebar />
+
+      <Container fluid className="p-4">
+
+        <h3 className="fw-bold">Offers</h3>
+        <p className="text-muted">Dashboard › Offers</p>
+
+        {/* Search + Add */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+
+          <Form.Control
+            type="text"
+            placeholder="Search offer..."
+            style={{ width: "350px" }}
+          />
+
+          {activeTab === "product" ? (
+            <Button variant="primary"  onClick={() => setShowModal(true)}>+ Add Product Offer</Button>
+          ) : (
+            <Button variant="primary"  onClick={() => setShowModal(true)}>+ Add Category Offer</Button>
+          )}
+
+        </div>
+
+
+        <div className="mb-3">
+
+          <Button
+            className="me-2"
+            variant={activeTab === "product" ? "primary" : "light"}
+            onClick={() => setActiveTab("product")}
+          >
+            Product Offers
+          </Button>
+
+          <Button
+            variant={activeTab === "category" ? "primary" : "light"}
+            onClick={() => setActiveTab("category")}
+          >
+            Category Offers
+          </Button>
+
+        </div>
+
+        <div className="bg-white p-3 rounded shadow-sm">
+
+          <Table hover>
+
+            <thead>
+              <tr>
+                <th>Offer Name</th>
+                <th>{activeTab === "product" ? "Product" : "Category"}</th>
+                <th>Discount</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {offers.length === 0 ? (
+
+                <tr>
+                  <td colSpan="6" className="text-center">
+                    No Offers Found
+                  </td>
+                </tr>
+
+              ) : (
+
+                offers.map((offer) => (
+
+                  <tr key={offer._id}>
+
+                    <td>{offer.title}</td>
+
+                    <td>
+                      {activeTab === "product"
+                        ? offer.product?.name
+                        : offer.category?.name}
+                    </td>
+
+                   <td>
+  {offer.discountType === "percentage"
+    ? `${offer.discountValue}%`
+    : `₹${offer.discountValue}`}
+</td>
+
+                    <td>
+                      {new Date(offer.startDate).toLocaleDateString()} -{" "}
+                      {new Date(offer.endDate).toLocaleDateString()}
+                    </td>
+
+                    <td>
+                      {offer.isActive ? (
+                        <Badge bg="success">Active</Badge>
+                      ) : (
+                        <Badge bg="secondary">Blocked</Badge>
+                      )}
+                    </td>
+
+                    <td>
+
+                      <Button
+size="sm"
+variant="warning"
+className="me-2"
+onClick={() => {
+
+  setIsEdit(true);
+  setEditId(offer._id);
+  setShowModal(true);
+
+  setFormData({
+    title: offer.title,
+    product: offer.product?._id || "",
+    category: offer.category?._id || "",
+    discountType: offer.discountType,
+    discountValue: offer.discountValue,
+    startDate: offer.startDate.split("T")[0],
+    endDate: offer.endDate.split("T")[0]
+  });
+
+}}
+>
+Edit
+</Button>
+
+<Button
+size="sm"
+variant={offer.isActive ? "danger" : "success"}
+onClick={() => toggleOffer(offer._id)}
+>
+{offer.isActive ? "Block" : "Unblock"}
+</Button>
+
+                    </td>
+
+                  </tr>
+
+                ))
+
+              )}
+
+            </tbody>
+
+          </Table>
+          <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+
+  <Modal.Header closeButton>
+    <Modal.Title>
+{isEdit ? "Edit Offer" : "Add Offer"}
+</Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body>
+
+    <Form.Group className="mb-3">
+      <Form.Label>Title</Form.Label>
+      <Form.Control
+        type="text"
+        value={formData.title}
+        onChange={(e) =>
+          setFormData({ ...formData, title: e.target.value })
+        }
+      />
+    </Form.Group>
+
+    {activeTab === "product" ? (
+
+      <Form.Group className="mb-3">
+        <Form.Label>Product</Form.Label>
+        <Form.Select
+  onChange={(e) =>
+    setFormData({ ...formData, product: e.target.value })
+  }
+>
+
+<option>Select Product</option>
+
+{products.map((product) => (
+
+<option key={product._id} value={product._id}>
+{product.name}
+</option>
+
+))}
+
+</Form.Select>
+      </Form.Group>
+
+    ) : (
+
+      <Form.Group className="mb-3">
+        <Form.Label>Category</Form.Label>
+        <Form.Select
+  onChange={(e) =>
+    setFormData({ ...formData, category: e.target.value })
+  }
+>
+
+<option>Select Category</option>
+
+{categories.map((cat) => (
+
+<option key={cat._id} value={cat._id}>
+{cat.name}
+</option>
+
+))}
+
+</Form.Select>
+      </Form.Group>
+
+    )}
+
+<Form.Group className="mb-3">
+  <Form.Label>Discount Type</Form.Label>
+
+  <Form.Select
+    value={formData.discountType}
+    onChange={(e) =>
+      setFormData({ ...formData, discountType: e.target.value })
+    }
+  >
+    <option value="percentage">Percentage (%)</option>
+    <option value="flat">Flat Amount (₹)</option>
+  </Form.Select>
+
+</Form.Group>
+    {/* Discount */}
+   <Form.Group className="mb-3">
+  <Form.Label>
+    Discount Value {formData.discountType === "percentage" ? "(%)" : "(₹)"}
+  </Form.Label>
+
+  <Form.Control
+    type="number"
+    value={formData.discountValue}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        discountValue: e.target.value
+      })
+    }
+  />
+</Form.Group>
+
+    <Form.Group className="mb-3">
+      <Form.Label>Start Date</Form.Label>
+      <Form.Control
+        type="date"
+        value={formData.startDate}
+        onChange={(e) =>
+          setFormData({ ...formData, startDate: e.target.value })
+        }
+      />
+    </Form.Group>
+
+   
+    <Form.Group className="mb-3">
+      <Form.Label>End Date</Form.Label>
+      <Form.Control
+        type="date"
+        value={formData.endDate}
+        onChange={(e) =>
+          setFormData({ ...formData, endDate: e.target.value })
+        }
+      />
+    </Form.Group>
+
+  </Modal.Body>
+
+  <Modal.Footer>
+
+    <Button
+      variant="secondary"
+      onClick={() => setShowModal(false)}
+    >
+      Cancel
+    </Button>
+
+    <Button
+variant="primary"
+onClick={isEdit ? updateOffer : createOffer}
+>
+{isEdit ? "Update" : "Create"}
+</Button>
+
+  </Modal.Footer>
+
+</Modal>
+
+        </div>
+
+      </Container>
+
+    </div>
+  );
+};
+
+export default AdminOffers;

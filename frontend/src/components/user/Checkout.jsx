@@ -265,49 +265,70 @@ const removeCoupon = ()=>{
 
           <h5 className="mb-3">Shipping Address</h5>
 
-          {selectedAddress && (
-            <div className="border rounded p-3 mb-3">
-              <div className="fw-semibold">{selectedAddress.address}</div>
-              <div className="text-muted small">
-                {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
-              </div>
-              <div className="small">📞 {selectedAddress.phone}</div>
 
-              <button
-                className="btn btn-outline-dark btn-sm mt-3"
-                onClick={() => setShowSelector(true)}
-              >
-                Change
-              </button>
-            </div>
-          )}
+{selectedAddress ? (
+  <div className="border rounded p-3 mb-3">
+    <div className="fw-semibold">{selectedAddress.address}</div>
 
-          {showSelector && (
-            <div className="border rounded p-3 bg-light">
-              <h6>Select Delivery Address</h6>
+    <div className="text-muted small">
+      {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
+    </div>
 
-              <button
-                className="btn btn-dark btn-sm mb-3"
-                onClick={() => setShowAddForm(true)}
-              >
-                + Add New Address
-              </button>
+    <div className="small">📞 {selectedAddress.phone}</div>
 
-              {addresses.map(addr => (
-                <div key={addr._id} className="form-check mb-2">
-                  <input
-                    type="radio"
-                    className="form-check-input"
-                    checked={selectedAddress?._id === addr._id}
-                    onChange={() => setSelectedAddress(addr)}
-                  />
-                  <label className="form-check-label">
-                    {addr.address}, {addr.city}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
+    <button
+      className="btn btn-outline-dark btn-sm mt-3"
+      onClick={() => setShowSelector(true)}
+    >
+      Change
+    </button>
+  </div>
+) : (
+
+  /* If no address */
+
+  <div className="border rounded p-3 mb-3 text-center">
+    <div className="text-muted mb-2">No address found</div>
+
+    <button
+      className="btn btn-dark btn-sm"
+      onClick={() => setShowAddForm(true)}
+    >
+      + Add Address
+    </button>
+  </div>
+)}
+
+{showSelector && (
+  <div className="border rounded p-3 bg-light">
+    <h6>Select Delivery Address</h6>
+
+    <button
+      className="btn btn-dark btn-sm mb-3"
+      onClick={() => setShowAddForm(true)}
+    >
+      + Add New Address
+    </button>
+
+    {addresses.length === 0 ? (
+      <div className="text-muted">No saved addresses</div>
+    ) : (
+      addresses.map((addr) => (
+        <div key={addr._id} className="form-check mb-2">
+          <input
+            type="radio"
+            className="form-check-input"
+            checked={selectedAddress?._id === addr._id}
+            onChange={() => setSelectedAddress(addr)}
+          />
+          <label className="form-check-label">
+            {addr.address}, {addr.city}
+          </label>
+        </div>
+      ))
+    )}
+  </div>
+)}
 
           {showAddForm && (
             <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"

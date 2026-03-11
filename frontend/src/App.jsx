@@ -41,8 +41,10 @@ import OrderDetails from "./components/user/OrderDetails";
 import AdminOrders from "./pages/admin/AdminOrders"
 
 import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
+import AdminOffers from "./pages/admin/AdminOffer";
 
-
+import AdminCoupons from "./pages/admin/AdminCoupon";
+import AdminSalesReport from "./pages/admin/AdminSalesReport";
 
 
 
@@ -140,7 +142,9 @@ useEffect(() => {
   element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
 />
 <Route path="/admin/orders/:id" element={<AdminOrderDetails />} />
-
+<Route path="/admin/offers" element={<AdminOffers />} />
+<Route path="/admin/coupons" element={<AdminCoupons />} />
+<Route path="/admin/sales-report" element={<AdminSalesReport />} />
         </Routes>
 
       </div>

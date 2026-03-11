@@ -1,0 +1,399 @@
+import { useEffect, useState } from "react";
+import { Container, Table, Button, Form, Modal } from "react-bootstrap";
+import axios from "axios";
+import AdminSidebar from "../../components/admin/AdminSidebar";
+
+const AdminCoupons = () => {
+
+  const [coupons, setCoupons] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+const [editId, setEditId] = useState(null);
+const [isEdit, setIsEdit] = useState(false);
+
+
+  const [formData, setFormData] = useState({
+    code: "",
+    discountType: "percentage",
+    discountValue: "",
+    minPurchase: "",
+    maxDiscount: "",
+    expiryDate: ""
+  });
+
+  // FETCH COUPONS
+  const fetchCoupons = async () => {
+    try {
+
+      const res = await axios.get(
+        "http://localhost:3000/api/admin/coupons",
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        setCoupons(res.data.coupons);
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  // CREATE COUPON
+  const createCoupon = async () => {
+
+    try {
+
+      const res = await axios.post(
+        "http://localhost:3000/api/admin/create-coupon",
+        formData,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+
+        alert("Coupon created successfully");
+
+        setShowModal(false);
+
+        fetchCoupons();
+
+        setFormData({
+          code: "",
+          discountType: "percentage",
+          discountValue: "",
+          minPurchase: "",
+          maxDiscount: "",
+          expiryDate: ""
+        });
+
+      } else {
+        alert(res.data.message);
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+
+  };
+
+  // DELETE COUPON
+  const toggleCoupon = async (id) => {
+
+    try {
+
+      const res = await axios.patch(
+        `http://localhost:3000/api/admin/toggle-coupon/${id}`,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        fetchCoupons();
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+
+  };
+
+  const updateCoupon = async () => {
+
+  try {
+
+    const res = await axios.put(
+      `http://localhost:3000/api/admin/update-coupon/${editId}`,
+      formData,
+      { withCredentials: true }
+    );
+
+    if (res.data.success) {
+
+      alert("Coupon updated successfully");
+
+      setShowModal(false);
+      setIsEdit(false);
+
+      fetchCoupons();
+
+      setFormData({
+        code: "",
+        discountType: "percentage",
+        discountValue: "",
+        minPurchase: "",
+        maxDiscount: "",
+        expiryDate: ""
+      });
+
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+
+};
+ 
+
+  return (
+    <div className="d-flex">
+
+      <AdminSidebar />
+
+      <Container fluid className="p-4">
+
+        <h3 className="fw-bold">Coupons</h3>
+        <p className="text-muted">Dashboard › Coupons</p>
+
+        <div className="d-flex justify-content-end mb-3">
+
+          <Button
+            variant="primary"
+            onClick={() => setShowModal(true)}
+          >
+            + Create Coupon
+          </Button>
+
+        </div>
+
+        {/* COUPON TABLE */}
+        <div className="bg-white p-3 rounded shadow-sm">
+
+          <Table hover>
+
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Min Purchase</th>
+                <th>Max Discount</th>
+                <th>Expiry</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {coupons.length === 0 ? (
+
+                <tr>
+                  <td colSpan="6" className="text-center">
+                    No Coupons Found
+                  </td>
+                </tr>
+
+              ) : (
+
+                coupons.map((coupon) => (
+
+                  <tr key={coupon._id}>
+
+                    <td>{coupon.code}</td>
+
+                    <td>
+                      {coupon.discountType === "percentage"
+                        ? `${coupon.discountValue}%`
+                        : `₹${coupon.discountValue}`}
+                    </td>
+
+                    <td>₹{coupon.minPurchase}</td>
+
+                    <td>₹{coupon.maxDiscount}</td>
+
+                    <td>
+                      {new Date(coupon.expiryDate).toLocaleDateString()}
+                    </td>
+                  <td>
+{coupon.isActive ? (
+<span className="text-success fw-semibold">Active</span>
+) : (
+<span className="text-danger fw-semibold">Blocked</span>
+)}
+</td>
+
+                   <td>
+
+<Button
+size="sm"
+variant="warning"
+className="me-2"
+onClick={() => {
+  setIsEdit(true);
+  setEditId(coupon._id);
+  setShowModal(true);
+
+  setFormData({
+    code: coupon.code,
+    discountType: coupon.discountType,
+    discountValue: coupon.discountValue,
+    minPurchase: coupon.minPurchase,
+    maxDiscount: coupon.maxDiscount,
+    expiryDate: coupon.expiryDate.split("T")[0]
+  });
+}}
+>
+Edit
+</Button>
+
+<Button
+size="sm"
+variant={coupon.isActive ? "danger" : "success"}
+onClick={() => toggleCoupon(coupon._id)}
+>
+{coupon.isActive ? "Block" : "Unblock"}
+</Button>
+
+</td>
+
+                    
+
+                  </tr>
+
+                ))
+
+              )}
+
+            </tbody>
+
+          </Table>
+
+        </div>
+
+      </Container>
+
+      {/* CREATE COUPON MODAL */}
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+
+        <Modal.Header closeButton>
+          <Modal.Title>
+{isEdit ? "Edit Coupon" : "Create Coupon"}
+</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Coupon Code</Form.Label>
+
+            <Form.Control
+              type="text"
+              value={formData.code}
+              onChange={(e) =>
+                setFormData({ ...formData, code: e.target.value })
+              }
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Discount Type</Form.Label>
+
+            <Form.Select
+              value={formData.discountType}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  discountType: e.target.value
+                })
+              }
+            >
+              <option value="percentage">Percentage (%)</option>
+              <option value="flat">Flat (₹)</option>
+            </Form.Select>
+
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Discount Value</Form.Label>
+
+            <Form.Control
+              type="number"
+              value={formData.discountValue}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  discountValue: e.target.value
+                })
+              }
+            />
+
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Minimum Purchase</Form.Label>
+
+            <Form.Control
+              type="number"
+              value={formData.minPurchase}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  minPurchase: e.target.value
+                })
+              }
+            />
+
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Maximum Discount</Form.Label>
+
+            <Form.Control
+              type="number"
+              value={formData.maxDiscount}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  maxDiscount: e.target.value
+                })
+              }
+            />
+
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Expiry Date</Form.Label>
+
+            <Form.Control
+              type="date"
+              value={formData.expiryDate}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  expiryDate: e.target.value
+                })
+              }
+            />
+
+          </Form.Group>
+
+        </Modal.Body>
+
+        <Modal.Footer>
+
+          <Button
+            variant="secondary"
+            onClick={() => setShowModal(false)}
+          >
+            Cancel
+          </Button>
+
+        <Button
+variant="primary"
+onClick={isEdit ? updateCoupon : createCoupon}
+>
+{isEdit ? "Update" : "Create"}
+</Button>
+
+        </Modal.Footer>
+
+      </Modal>
+
+    </div>
+  );
+};
+
+export default AdminCoupons;
