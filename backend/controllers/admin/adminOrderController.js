@@ -127,7 +127,6 @@ export const approveCancel = async (req, res) => {
     item.cancelRequest = "Approved";
     item.status = "Cancelled";
 
-    /* -------- RESTOCK PRODUCT -------- */
 
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
@@ -137,7 +136,7 @@ export const approveCancel = async (req, res) => {
       await product.save();
     }
 
-    /* -------- WALLET REFUND -------- */
+   
 
     if (order.paymentMethod !== "COD") {
 
@@ -154,7 +153,7 @@ export const approveCancel = async (req, res) => {
       await user.save();
     }
 
-    /* -------- UPDATE ORDER STATUS -------- */
+   
 
     recalculateOrderStatus(order);
 
@@ -202,7 +201,7 @@ export const approveReturn = async (req, res) => {
     if (!item)
       return res.status(404).json({ message: "Item not found" });
 
-    // Prevent double approval
+    
     if (item.status === "Returned") {
       return res.status(400).json({ message: "Item already returned" });
     }
@@ -210,7 +209,7 @@ export const approveReturn = async (req, res) => {
     item.returnRequest = "Approved";
     item.status = "Returned";
 
-    /* -------- RESTOCK PRODUCT -------- */
+   
 
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
@@ -220,7 +219,7 @@ export const approveReturn = async (req, res) => {
       await product.save();
     }
 
-    /* -------- WALLET REFUND -------- */
+   
 
     if (order.paymentMethod !== "COD") {
 
@@ -237,7 +236,7 @@ export const approveReturn = async (req, res) => {
       await user.save();
     }
 
-    /* -------- UPDATE ORDER STATUS -------- */
+   
 
     recalculateOrderStatus(order);
 

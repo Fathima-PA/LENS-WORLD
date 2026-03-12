@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Container, Table, Button, Form, Badge,Modal } from "react-bootstrap";
+import { Container, Table, Button, Form, Badge, Modal, Pagination } from "react-bootstrap";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import axios from "axios";
 
@@ -11,6 +11,9 @@ const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [products, setProducts] = useState([]);
 const [categories, setCategories] = useState([]);
+const [search, setSearch] = useState("");
+const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
 const [formData, setFormData] = useState({
   title: "",
   product: "",
@@ -59,8 +62,13 @@ const fetchCategories = async () => {
   try {
 
     const res = await axios.get(
-      `http://localhost:3000/api/admin/offers?type=${activeTab}`,
-      { withCredentials: true }
+      `http://localhost:3000/api/admin/offers`,
+      { withCredentials: true,params:{
+        type: activeTab,
+            page: currentPage,
+          limit: 5,
+          search: search
+          } }
     );
 
       setOffers(res.data.offers);
@@ -73,7 +81,7 @@ const fetchCategories = async () => {
 
   useEffect(() => {
     fetchOffers();
-  }, [activeTab]);
+  }, [activeTab, currentPage, search]);
 
 
   const toggleOffer = async (id) => {
@@ -182,8 +190,13 @@ const updateOffer = async () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
 
           <Form.Control
-            type="text"
+            type="search"
             placeholder="Search offer..."
+            value={search}
+  onChange={(e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  }}
             style={{ width: "350px" }}
           />
 
@@ -319,6 +332,33 @@ onClick={() => toggleOffer(offer._id)}
             </tbody>
 
           </Table>
+          <div className="d-flex justify-content-end mt-3">
+          <Pagination>
+
+    <Pagination.Prev
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage(currentPage - 1)}
+    />
+
+    {[...Array(totalPages)].map((_, index) => (
+
+      <Pagination.Item
+        key={index}
+        active={currentPage === index + 1}
+        onClick={() => setCurrentPage(index + 1)}
+      >
+        {index + 1}
+      </Pagination.Item>
+
+    ))}
+
+    <Pagination.Next
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage(currentPage + 1)}
+    />
+
+  </Pagination>
+  </div>
           <Modal show={showModal} onHide={() => setShowModal(false)} centered>
 
   <Modal.Header closeButton>

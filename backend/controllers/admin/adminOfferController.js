@@ -62,23 +62,40 @@ if (existingOffer) {
 export const getOffers = async (req, res) => {
   try {
 
-    const { type } = req.query;
+    let { type, page = 1, limit = 5, search = "" } = req.query;
 
-    const filter = type ? { type } : {};
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const filter = {};
+
+    if (type) {
+      filter.type = type;
+    }
+
+    if (search) {
+      filter.title = { $regex: search, $options: "i" };
+    }
+
+    const totalOffers = await Offer.countDocuments(filter);
 
     const offers = await Offer.find(filter)
       .populate("product")
       .populate("category")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     res.json({
       success: true,
-      offers
+      offers,
+      totalPages: Math.ceil(totalOffers / limit),
+      currentPage: page
     });
 
   } catch (error) {
     console.log(error);
-    res.json({ success: false });
+    res.status(500).json({ success: false });
   }
 };
 

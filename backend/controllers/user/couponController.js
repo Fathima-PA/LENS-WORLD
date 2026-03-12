@@ -50,7 +50,7 @@ const coupons = await Coupon.find({
   ]
 }).select("code discountType discountValue minPurchase maxDiscount expiryDate");
 
-    console.log("Coupons found:", coupons);
+    
 
     res.json(coupons);
 

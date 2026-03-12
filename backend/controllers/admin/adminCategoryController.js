@@ -104,7 +104,7 @@ export const updateCategory = async (req, res) => {
   }
 };
 
-/* ===================== DELETE CATEGORY ===================== */
+
 export const toggleCategoryStatus = async (req, res) => {
   try {
       const category = await Category.findById(req.params.id);

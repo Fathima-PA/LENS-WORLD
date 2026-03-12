@@ -123,10 +123,6 @@ const categoryOffer = categoryOffers.find(
   (offer) => offer.category.toString() === product.category._id.toString()
 );
 
-
-console.log("Product:", product.name);
-console.log("Product Offer:", productOffer);
-console.log("Category Offer:", categoryOffer);
   const finalPrice = getBestOfferPrice(
     product.displayPrice,
     productOffer,

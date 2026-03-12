@@ -52,16 +52,38 @@ export const createCoupon = async (req, res) => {
 export const getCoupons = async (req, res) => {
   try {
 
-    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    let { page = 1, limit = 5, search = "" } = req.query;
+
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const query = {};
+
+    // Search by coupon code
+    if (search) {
+      query.code = { $regex: search, $options: "i" };
+    }
+
+    const totalCoupons = await Coupon.countDocuments(query);
+
+    const coupons = await Coupon.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     res.json({
       success: true,
-      coupons
+      coupons,
+      totalPages: Math.ceil(totalCoupons / limit),
+      currentPage: page
     });
 
   } catch (error) {
     console.log(error);
-    res.json({ success: false });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch coupons"
+    });
   }
 };
 

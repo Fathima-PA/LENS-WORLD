@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Container, Table, Button, Form, Modal } from "react-bootstrap";
+import { Container, Table, Button, Form, Modal, Pagination } from "react-bootstrap";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 
@@ -9,7 +9,9 @@ const AdminCoupons = () => {
   const [showModal, setShowModal] = useState(false);
 const [editId, setEditId] = useState(null);
 const [isEdit, setIsEdit] = useState(false);
-
+const [search, setSearch] = useState("");
+const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
 
   const [formData, setFormData] = useState({
     code: "",
@@ -22,25 +24,33 @@ const [isEdit, setIsEdit] = useState(false);
 
   // FETCH COUPONS
   const fetchCoupons = async () => {
-    try {
+  try {
 
-      const res = await axios.get(
-        "http://localhost:3000/api/admin/coupons",
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        setCoupons(res.data.coupons);
+    const res = await axios.get(
+      "http://localhost:3000/api/admin/coupons",
+      {
+        params: {
+          page: currentPage,
+          limit: 5,
+          search: search
+        },
+        withCredentials: true
       }
+    );
 
-    } catch (error) {
-      console.log(error);
+    if (res.data.success) {
+      setCoupons(res.data.coupons);
+      setTotalPages(res.data.totalPages);
     }
-  };
 
-  useEffect(() => {
-    fetchCoupons();
-  }, []);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+ useEffect(() => {
+  fetchCoupons();
+}, [currentPage, search]);
 
   // CREATE COUPON
   const createCoupon = async () => {
@@ -147,16 +157,24 @@ const [isEdit, setIsEdit] = useState(false);
         <h3 className="fw-bold">Coupons</h3>
         <p className="text-muted">Dashboard › Coupons</p>
 
-        <div className="d-flex justify-content-end mb-3">
+       <div className="d-flex justify-content-between mb-3">
 
-          <Button
-            variant="primary"
-            onClick={() => setShowModal(true)}
-          >
-            + Create Coupon
-          </Button>
+  <Form.Control
+  type="search"
+  placeholder="Search coupon..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  style={{ width: "320px" }}
+/>
 
-        </div>
+  <Button
+    variant="primary"
+    onClick={() => setShowModal(true)}
+  >
+    + Create Coupon
+  </Button>
+
+</div>
 
         {/* COUPON TABLE */}
         <div className="bg-white p-3 rounded shadow-sm">
@@ -259,6 +277,35 @@ onClick={() => toggleCoupon(coupon._id)}
             </tbody>
 
           </Table>
+         <div className="d-flex justify-content-end mt-3">
+
+  <Pagination>
+
+    <Pagination.Prev
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage(currentPage - 1)}
+    />
+
+    {[...Array(totalPages)].map((_, index) => (
+
+      <Pagination.Item
+        key={index}
+        active={currentPage === index + 1}
+        onClick={() => setCurrentPage(index + 1)}
+      >
+        {index + 1}
+      </Pagination.Item>
+
+    ))}
+
+    <Pagination.Next
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage(currentPage + 1)}
+    />
+
+  </Pagination>
+
+</div>
 
         </div>
 
