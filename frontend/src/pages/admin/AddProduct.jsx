@@ -14,6 +14,7 @@ import AdminSidebar from "../../components/admin/AdminSidebar";
 import "../../styles/AdminCategories.css";
 import { getCroppedImage } from "../../data/cropImage";
 import ImageCropModal from "../../components/admin/ImageCropModal";
+import CustomToast from "../../components/common/CustomToast";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -41,6 +42,16 @@ const AddProduct = () => {
   const [cropImageSrc, setCropImageSrc] = useState(null);
   const [cropIndex, setCropIndex] = useState(null);
 
+  const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("success");
+
+
+const showMessage = (msg, type = "success") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
   useEffect(() => {
     if (!isEdit) return;
 
@@ -88,19 +99,19 @@ const handleAddVariant = () => {
   const validImages = images.filter(img => img);
 
   if (!variantName || !price || !stock || !color) {
-    alert("Variant name, color, price & stock required");
+    showMessage("Variant name, color, price & stock required", "danger");
     return;
   }
 
-  // NEW VARIANT → must upload 3 fresh images
+  
   if (editVariantIndex === null && validImages.length !== 3) {
-    alert("New variant must have exactly 3 images");
+    showMessage("New variant must have exactly 3 images", "danger");
     return;
   }
 
-  // EDIT VARIANT → must finally contain 3 images
+
   if (editVariantIndex !== null && validImages.length !== 3) {
-    alert("Variant must contain 3 images");
+    showMessage("Variant must contain 3 images", "danger");
     return;
   }
 
@@ -114,7 +125,7 @@ const handleAddVariant = () => {
     price,
     stock,
     images: validImages,
-    isNew: editVariantIndex === null, // ✅ FIXED
+    isNew: editVariantIndex === null, 
   };
 
   if (editVariantIndex !== null) {
@@ -136,7 +147,6 @@ const handleAddVariant = () => {
 };
 
 
-
   const handleEditVariant = (index) => {
     const v = variants[index];
     setVariantName(v.name);
@@ -153,10 +163,6 @@ const handleAddVariant = () => {
     setShowVariantModal(true);
   };
 
-  const handleDeleteVariant = (index) => {
-    if (!window.confirm("Delete this variant?")) return;
-    setVariants((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const closeVariantModal = () => {
     setShowVariantModal(false);
@@ -170,12 +176,12 @@ const handleAddVariant = () => {
 
   const handleSaveProduct = async () => {
     if (!name || !brand || !description || !category) {
-      alert("All product fields required");
+      showMessage("All product fields required", "danger");
       return;
     }
 
     if (variants.length === 0) {
-      alert("Add at least one variant");
+      showMessage("Add at least one variant", "danger");
       return;
     }
 
@@ -214,18 +220,20 @@ const handleAddVariant = () => {
           formData,
           { withCredentials: true }
         );
-        alert("Product updated");
+       showMessage("Product updated successfully");
       } else {
         await axios.post(
           "http://localhost:3000/api/admin/products",
           formData,
           { withCredentials: true }
         );
-        alert("Product created");
+        showMessage("Product created successfully");
       }
-      navigate("/admin/products");
+     setTimeout(() => {
+  navigate("/admin/products");
+}, 1200);
     } catch (err) {
-      alert(err.response?.data?.message || "Save failed");
+      showMessage(err.response?.data?.message || "Save failed", "danger");
     }
   };
 
@@ -480,6 +488,13 @@ const handleRemoveImage = (index) => {
           onDone={handleCropDone}
         />
       )}
+
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
     </div>
   );
 };

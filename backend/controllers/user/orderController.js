@@ -199,7 +199,7 @@ export const getMyOrders = async (req, res) => {
     limit = parseInt(limit);
 
 
-    const query = { user: req.user._id };
+    const query = { user: req.user._id,  paymentStatus: { $ne: "Failed" } };
 if (search) {
       query.$expr = {
         $regexMatch: {
@@ -250,6 +250,22 @@ export const getOrderDetails = async (req, res) => {
   }
 };
 
+
+const calculateRefund = (item, order) => {
+
+  const taxShare =
+    (item.total / order.subtotal) * order.tax;
+
+  const discountShare =
+    (item.total / order.subtotal) * order.discount;
+
+  const refund =
+    item.total + taxShare - discountShare;
+
+  return Math.round(refund);
+};
+
+
 // CANCEL ORDER
 export const cancelOrder = async (req, res) => {
   try {
@@ -262,49 +278,130 @@ export const cancelOrder = async (req, res) => {
     if (!order)
       return res.status(404).json({ message: "Order not found" });
 
-    if (!["Placed","Packaging"].includes(order.status))
+    if (!["Placed", "Packaging"].includes(order.status))
       return res.status(400).json({ message: "Cannot cancel now" });
 
-    order.items.forEach(item => {
-      if (item.status === "Active") {
-        item.cancelRequest = "Pending";
+    const activeItems = order.items.filter(i => i.status === "Active");
+
+    if (activeItems.length === 0)
+      return res.status(400).json({ message: "Order already cancelled" });
+
+    let refundAmount = 0;
+
+    // calculate refund
+    for (const item of activeItems) {
+      refundAmount += calculateRefund(item, order);
+    }
+
+    // cancel items + restore stock
+    for (const item of activeItems) {
+
+      item.status = "Cancelled";
+
+      const product = await Product.findById(item.productId);
+      const variant = product?.variants.id(item.variantId);
+
+      if (variant) {
+        variant.stock += item.quantity;
+        await product.save();
       }
-    });
+    }
+
+    order.status = "Cancelled";
+
+    if (order.paymentMethod !== "COD" && order.paymentStatus === "Paid") {
+
+      const user = await User.findById(order.user);
+
+      user.wallet += refundAmount;
+
+      user.walletHistory.push({
+        type: "CREDIT",
+        amount: refundAmount,
+        reason: "Order Cancel Refund"
+      });
+
+      await user.save();
+    }
 
     await order.save();
 
-    res.json({ message: "Cancel request sent to admin" });
+    res.json({ message: "Order cancelled successfully" });
 
-  } catch {
+  } catch (err) {
+    console.log(err);
     res.status(500).json({ message: "Cancel failed" });
   }
 };
 
 export const cancelOrderItem = async (req, res) => {
 
-  const { itemId, reason } = req.body;
+  try {
 
-  const order = await Order.findOne({
-    _id: req.params.id,
-    user: req.user._id
-  });
+    const { itemId } = req.body;
 
-  const item = order.items.id(itemId);
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
 
-  if (!item) return res.status(404).json({ message: "Item not found" });
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
 
-  if (item.cancelRequest !== "None")
-    return res.status(400).json({ message: "Already requested" });
+    if (!["Placed", "Packaging"].includes(order.status))
+      return res.status(400).json({ message: "Cannot cancel now" });
 
-  item.cancelRequest = "Pending";
-  item.cancelReason = reason;
+    const item = order.items.id(itemId);
 
-  await order.save();
+    if (!item)
+      return res.status(404).json({ message: "Item not found" });
 
-  res.json({ message: "Cancel request sent to admin" });
+    if (item.status === "Cancelled")
+      return res.status(400).json({ message: "Already cancelled" });
+
+    item.status = "Cancelled";
+
+    // restore stock
+    const product = await Product.findById(item.productId);
+    const variant = product?.variants.id(item.variantId);
+
+    if (variant) {
+      variant.stock += item.quantity;
+      await product.save();
+    }
+
+    if (order.paymentMethod !== "COD" && order.paymentStatus === "Paid") {
+
+      const user = await User.findById(order.user);
+
+      const refundAmount = calculateRefund(item, order);
+
+      user.wallet += refundAmount;
+
+      user.walletHistory.push({
+        type: "CREDIT",
+        amount: refundAmount,
+        reason: "Item Cancel Refund"
+      });
+
+      await user.save();
+    }
+
+    const allCancelled = order.items.every(i => i.status === "Cancelled");
+
+    if (allCancelled) {
+      order.status = "Cancelled";
+    }
+
+    await order.save();
+
+    res.json({ message: "Item cancelled successfully" });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Cancel failed" });
+  }
 };
-
-
 
 // RETURN ORDER
 export const returnOrder = async (req, res) => {
@@ -502,4 +599,66 @@ export const getWallet = async (req,res)=>{
 
  res.json(user);
 
+};
+export const retryRazorpayPayment = async (req,res)=>{
+  try{
+
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+
+    if(!order){
+      return res.status(404).json({
+        message:"Order not found"
+      });
+    }
+
+    if(order.paymentStatus === "Paid"){
+      return res.json({
+        success:false,
+        message:"Order already paid"
+      });
+    }
+
+    const razorpayOrder = await razorpay.orders.create({
+      amount: order.grandTotal * 100,
+      currency:"INR",
+      receipt: order._id.toString()
+    });
+
+    res.json({
+      success:true,
+      razorpayOrder,
+      orderId: order._id
+    });
+
+  }catch(err){
+    console.error(err);
+    res.status(500).json({
+      message:"Retry payment failed"
+    });
+  }
+};
+
+export const markPaymentFailed = async (req,res)=>{
+  try{
+
+    const { orderId } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if(!order){
+      return res.status(404).json({message:"Order not found"});
+    }
+
+    order.paymentStatus = "Failed";
+
+    await order.save();
+
+    res.json({success:true});
+
+  }catch(err){
+    console.error(err);
+    res.status(500).json({message:"Failed to update payment"});
+  }
 };

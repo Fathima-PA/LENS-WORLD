@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Container, Table, Button, Form, Modal, Pagination } from "react-bootstrap";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
+import CustomToast from "../../components/common/CustomToast";
 
 const AdminCoupons = () => {
 
@@ -12,6 +13,10 @@ const [isEdit, setIsEdit] = useState(false);
 const [search, setSearch] = useState("");
 const [currentPage, setCurrentPage] = useState(1);
 const [totalPages, setTotalPages] = useState(1);
+const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("success");
+const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     code: "",
@@ -21,6 +26,48 @@ const [totalPages, setTotalPages] = useState(1);
     maxDiscount: "",
     expiryDate: ""
   });
+
+
+
+  const showMessage = (msg, type = "success") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
+
+const validateForm = () => {
+  let newErrors = {};
+
+  if (!formData.code.trim()) {
+    newErrors.code = "Coupon code is required";
+  }
+
+  if (!formData.discountValue) {
+    newErrors.discountValue = "Discount value is required";
+  } else if (formData.discountValue <= 0) {
+    newErrors.discountValue = "Discount must be greater than 0";
+  }
+
+  if (!formData.minPurchase) {
+    newErrors.minPurchase = "Minimum purchase is required";
+  }
+
+  if (
+    formData.discountType === "percentage" &&
+    !formData.maxDiscount
+  ) {
+    newErrors.maxDiscount = "Maximum discount is required";
+  }
+
+  if (!formData.expiryDate) {
+    newErrors.expiryDate = "Expiry date is required";
+  }
+
+  setErrors(newErrors);
+
+  return Object.keys(newErrors).length === 0;
+};
+
 
   // FETCH COUPONS
   const fetchCoupons = async () => {
@@ -65,7 +112,7 @@ const [totalPages, setTotalPages] = useState(1);
 
       if (res.data.success) {
 
-        alert("Coupon created successfully");
+        showMessage("Coupon created successfully");
 
         setShowModal(false);
 
@@ -81,7 +128,7 @@ const [totalPages, setTotalPages] = useState(1);
         });
 
       } else {
-        alert(res.data.message);
+       showMessage(res.data.message, "danger");
       }
 
     } catch (error) {
@@ -101,11 +148,12 @@ const [totalPages, setTotalPages] = useState(1);
       );
 
       if (res.data.success) {
+        showMessage("Coupon status updated successfully");
         fetchCoupons();
       }
 
     } catch (error) {
-      console.log(error);
+       showMessage("Something went wrong", "danger");
     }
 
   };
@@ -122,7 +170,7 @@ const [totalPages, setTotalPages] = useState(1);
 
     if (res.data.success) {
 
-      alert("Coupon updated successfully");
+      showMessage("Coupon updated successfully");
 
       setShowModal(false);
       setIsEdit(false);
@@ -333,6 +381,9 @@ onClick={() => toggleCoupon(coupon._id)}
                 setFormData({ ...formData, code: e.target.value })
               }
             />
+            {errors.code && (
+  <small className="text-danger">{errors.code}</small>
+)}
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -343,13 +394,18 @@ onClick={() => toggleCoupon(coupon._id)}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  discountType: e.target.value
+                  discountType: e.target.value,
+                    maxDiscount:
+      e.target.value === "flat" ? "" : formData.maxDiscount
                 })
               }
             >
               <option value="percentage">Percentage (%)</option>
               <option value="flat">Flat (₹)</option>
             </Form.Select>
+                 {errors.code && (
+  <small className="text-danger">{errors.code}</small>
+)}
 
           </Form.Group>
 
@@ -366,7 +422,9 @@ onClick={() => toggleCoupon(coupon._id)}
                 })
               }
             />
-
+          {errors.discountValue && (
+  <small className="text-danger">{errors.discountValue}</small>
+)}
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -382,24 +440,31 @@ onClick={() => toggleCoupon(coupon._id)}
                 })
               }
             />
-
+      {errors.minPurchase && (
+  <small className="text-danger">{errors.minPurchase}</small>
+)}
           </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Maximum Discount</Form.Label>
+          {formData.discountType === "percentage" && (
+  <Form.Group className="mb-3">
+    <Form.Label>Maximum Discount</Form.Label>
 
-            <Form.Control
-              type="number"
-              value={formData.maxDiscount}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  maxDiscount: e.target.value
-                })
-              }
-            />
+    <Form.Control
+      type="number"
+      value={formData.maxDiscount}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          maxDiscount: e.target.value
+        })
+      }
+    />
 
-          </Form.Group>
+    {errors.maxDiscount && (
+      <small className="text-danger">{errors.maxDiscount}</small>
+    )}
+  </Form.Group>
+)}
 
           <Form.Group className="mb-3">
             <Form.Label>Expiry Date</Form.Label>
@@ -414,7 +479,9 @@ onClick={() => toggleCoupon(coupon._id)}
                 })
               }
             />
-
+       {errors.expiryDate && (
+  <small className="text-danger">{errors.expiryDate}</small>
+)}
           </Form.Group>
 
         </Modal.Body>
@@ -430,7 +497,15 @@ onClick={() => toggleCoupon(coupon._id)}
 
         <Button
 variant="primary"
-onClick={isEdit ? updateCoupon : createCoupon}
+onClick={() => {
+  if (!validateForm()) return;
+
+  if (isEdit) {
+    updateCoupon();
+  } else {
+    createCoupon();
+  }
+}}
 >
 {isEdit ? "Update" : "Create"}
 </Button>
@@ -438,6 +513,12 @@ onClick={isEdit ? updateCoupon : createCoupon}
         </Modal.Footer>
 
       </Modal>
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
 
     </div>
   );

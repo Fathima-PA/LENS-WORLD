@@ -28,16 +28,24 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
      fetchCoupons();
   }, []);
 
-  const fetchAddresses = async () => {
-    try {
-      const res = await api.get("/api/address/my");
-      setAddresses(res.data);
-      const def = res.data.find(a => a.isDefault);
-      setSelectedAddress(def);
-    } catch {
-      setErrorMsg("Failed to load addresses");
+ const fetchAddresses = async () => {
+  try {
+    const res = await api.get("/api/address/my");
+
+    const data = res.data || [];
+    setAddresses(data);
+
+    if (data.length > 0) {
+      const def = data.find(a => a.isDefault);
+      setSelectedAddress(def || data[0]); 
+    } else {
+      setSelectedAddress(null);
     }
-  };
+
+  } catch {
+    setErrorMsg("Failed to load addresses");
+  }
+};
 
   const fetchCart = async () => {
     try {
@@ -88,47 +96,62 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
 
       const { razorpayOrder, orderId } = res.data;
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: razorpayOrder.amount,
-        currency: "INR",
-        name: "LensWorld Opticals",
-        description: "Order Payment",
-        order_id: razorpayOrder.id,
+     const options = {
+  key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  amount: razorpayOrder.amount,
+  currency: "INR",
+  name: "LensWorld Opticals",
+  description: "Order Payment",
+  order_id: razorpayOrder.id,
 
-        handler: async function (response) {
+  handler: async function (response) {
 
-          const verify = await api.post("/api/order/verify-payment", {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            orderId
-          });
+    const verify = await api.post("/api/order/verify-payment", {
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_signature: response.razorpay_signature,
+      orderId
+    });
 
-          if (verify.data.success) {
-            setShowSuccessModal(true);
+    if (verify.data.success) {
+      setShowSuccessModal(true);
 
-            setTimeout(() => {
-              navigate(`/order-success/${orderId}`);
-            }, 2000);
-          }
+      setTimeout(() => {
+        navigate(`/order-success/${orderId}`);
+      }, 2000);
+    }
+  },
 
-        },
 
-        theme: {
-          color: "#3399cc"
-        }
-      };
+  modal:{
+  ondismiss: async function(){
 
-      const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", function (response) {
+    await api.post("/api/order/payment-failed",{
+      orderId
+    });
 
-  console.log("Payment failed:", response.error);
+    navigate(`/payment-failed/${orderId}`);
+  }
+},
 
-  navigate("/payment-failed");
+  theme: {
+    color: "#3399cc"
+  }
+};
+
+const rzp = new window.Razorpay(options);
+
+rzp.on("payment.failed", async function (response) {
+
+  await api.post("/api/order/payment-failed",{
+    orderId
+  });
+
+  navigate(`/payment-failed/${orderId}`);
 
 });
-      rzp.open();
+
+rzp.open();
 
       return;
     }

@@ -13,7 +13,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import "../../styles/AdminCategories.css";
-import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import CustomToast from "../../components/common/CustomToast";
 
 const AdminProducts = () => {
   const navigate = useNavigate();
@@ -23,6 +24,16 @@ const AdminProducts = () => {
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("success");
+
+
+const showMessage = (msg, type = "success") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
 
   const fetchProducts = async () => {
     try {
@@ -45,11 +56,16 @@ const AdminProducts = () => {
 const handleToggleStatus = async (product) => {
   const action = product.isActive ? "block" : "unblock";
 
-  const confirmed = window.confirm(
-    `Are you sure you want to ${action} this product?`
-  );
+  const result = await Swal.fire({
+  title: "Are you sure?",
+  text: `You want to ${action} this product`,
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonText: "Yes",
+  cancelButtonText: "Cancel",
+});
 
-  if (!confirmed) return;
+if (!result.isConfirmed) return;
 
   try {
     await axios.patch(
@@ -58,17 +74,18 @@ const handleToggleStatus = async (product) => {
       { withCredentials: true }
     );
 
-    toast.success(
-      product.isActive
-        ? "Product blocked successfully "
-        : "Product unblocked successfully "
-    );
+    showMessage(
+  product.isActive
+    ? "Product blocked successfully"
+    : "Product unblocked successfully"
+);
 
     fetchProducts();
   } catch (error) {
-    toast.error(
-      error.response?.data?.message || "Something went wrong"
-    );
+    showMessage(
+  error.response?.data?.message || "Something went wrong",
+  "danger"
+);
   }
 };
 
@@ -118,7 +135,7 @@ const handleToggleStatus = async (product) => {
     variant="light"
     onClick={() => {
       setSearch("");
-      setCurrentPage(1);
+     setPage(1);
     }}
   >
     ❌
@@ -268,6 +285,13 @@ const handleToggleStatus = async (product) => {
           </Col>
         </Row>
       </Container>
+
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
     </div>
   );
 };

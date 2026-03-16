@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Container, Table, Button, Form, Badge, Modal, Pagination } from "react-bootstrap";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import axios from "axios";
+import CustomToast from "../../components/common/CustomToast";
 
 const AdminOffers = () => {
 const [isEdit, setIsEdit] = useState(false);
@@ -23,11 +24,70 @@ const [formData, setFormData] = useState({
   startDate: "",
   endDate: ""
 });
+const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("success");
+const [errors, setErrors] = useState({});
 
 useEffect(() => {
   fetchProducts();
   fetchCategories();
 }, []);
+
+
+const showMessage = (msg, type = "success") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
+
+const validateForm = () => {
+  let newErrors = {};
+
+  if (!formData.title.trim()) {
+    newErrors.title = "Offer title is required";
+  }
+
+  if (activeTab === "product" && !formData.product) {
+    newErrors.product = "Please select a product";
+  }
+
+  if (activeTab === "category" && !formData.category) {
+    newErrors.category = "Please select a category";
+  }
+
+  if (!formData.discountValue || formData.discountValue <= 0) {
+    newErrors.discountValue = "Discount must be greater than 0";
+  }
+
+  if (!formData.startDate) {
+    newErrors.startDate = "Start date required";
+  }
+
+  if (!formData.endDate) {
+    newErrors.endDate = "End date required";
+  }
+
+  if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
+    newErrors.endDate = "End date must be after start date";
+  }
+  if (
+  formData.discountType === "percentage" &&
+  formData.discountValue > 90
+) {
+  newErrors.discountValue = "Percentage cannot exceed 90%";
+}
+if (
+  formData.discountType === "flat" &&
+  formData.discountValue >= formData.minPurchase
+) {
+  newErrors.discountValue =
+    "Discount must be less than minimum purchase amount";
+}
+  setErrors(newErrors);
+
+  return Object.keys(newErrors).length === 0;
+};
 
 const fetchProducts = async () => {
   try {
@@ -88,14 +148,19 @@ const fetchCategories = async () => {
 
     try {
 
-      const res = await axios.patch(`http://localhost:3000/api/admin/toggle-offer/${id}`, { withCredentials: true });
+      const res = await axios.patch(
+  `http://localhost:3000/api/admin/toggle-offer/${id}`,
+  {},
+  { withCredentials: true }
+);
 
       if (res.data.success) {
+        showMessage("Offer status updated successfully");
         fetchOffers();
       }
 
     } catch (error) {
-      console.log(error);
+      showMessage("Something went wrong", "danger");
     }
 
   };
@@ -103,10 +168,20 @@ const fetchCategories = async () => {
   const createOffer = async () => {
   try {
 
-    const payload = {
-      ...formData,
-      type: activeTab
-    };
+   const payload = {
+  title: formData.title,
+  type: activeTab,   // ⭐ important
+  discountType: formData.discountType,
+  discountValue: formData.discountValue,
+  startDate: formData.startDate,
+  endDate: formData.endDate
+};
+
+if (activeTab === "product") {
+  payload.product = formData.product;
+} else {
+  payload.category = formData.category;
+}
 
     const res = await axios.post(
       "http://localhost:3000/api/admin/add-offer",
@@ -115,11 +190,11 @@ const fetchCategories = async () => {
     );
 
 if (!res.data.success) {
-      alert(res.data.message);
+     showMessage(res.data.message, "danger");
       return;
     }
 
-      alert("Offer created successfully");
+    showMessage("Offer created successfully");
 
       setShowModal(false);
 
@@ -142,18 +217,33 @@ if (!res.data.success) {
   }
 };
 
-const updateOffer = async () => {
+  const updateOffer = async () => {
   try {
+
+    const payload = {
+      title: formData.title,
+      type: activeTab,   // ⭐ VERY IMPORTANT
+      discountType: formData.discountType,
+      discountValue: formData.discountValue,
+      startDate: formData.startDate,
+      endDate: formData.endDate
+    };
+
+    if (activeTab === "product") {
+      payload.product = formData.product;
+    } else {
+      payload.category = formData.category;
+    }
 
     const res = await axios.put(
       `http://localhost:3000/api/admin/update-offer/${editId}`,
-      formData,
+      payload,
       { withCredentials: true }
     );
 
     if (res.data.success) {
 
-      alert("Offer updated successfully");
+      showMessage("Offer updated successfully");
 
       setShowModal(false);
       setIsEdit(false);
@@ -201,7 +291,23 @@ const updateOffer = async () => {
           />
 
           {activeTab === "product" ? (
-            <Button variant="primary"  onClick={() => setShowModal(true)}>+ Add Product Offer</Button>
+            <Button
+variant="primary"
+onClick={() => {
+  setIsEdit(false);
+  setErrors({});
+  setFormData({
+    title: "",
+    product: "",
+    category: "",
+    discountType: "percentage",
+    discountValue: "",
+    startDate: "",
+    endDate: ""
+  });
+  setShowModal(true);
+}}
+>+ Add Product Offer</Button>
           ) : (
             <Button variant="primary"  onClick={() => setShowModal(true)}>+ Add Category Offer</Button>
           )}
@@ -378,6 +484,7 @@ onClick={() => toggleOffer(offer._id)}
           setFormData({ ...formData, title: e.target.value })
         }
       />
+      {errors.title && <small className="text-danger">{errors.title}</small>}
     </Form.Group>
 
     {activeTab === "product" ? (
@@ -385,6 +492,7 @@ onClick={() => toggleOffer(offer._id)}
       <Form.Group className="mb-3">
         <Form.Label>Product</Form.Label>
         <Form.Select
+        value={formData.product}
   onChange={(e) =>
     setFormData({ ...formData, product: e.target.value })
   }
@@ -401,6 +509,7 @@ onClick={() => toggleOffer(offer._id)}
 ))}
 
 </Form.Select>
+{errors.product && <small className="text-danger">{errors.product}</small>}
       </Form.Group>
 
     ) : (
@@ -408,6 +517,7 @@ onClick={() => toggleOffer(offer._id)}
       <Form.Group className="mb-3">
         <Form.Label>Category</Form.Label>
         <Form.Select
+        value={formData.category}
   onChange={(e) =>
     setFormData({ ...formData, category: e.target.value })
   }
@@ -424,6 +534,9 @@ onClick={() => toggleOffer(offer._id)}
 ))}
 
 </Form.Select>
+{errors.category && (
+  <small className="text-danger">{errors.category}</small>
+)}
       </Form.Group>
 
     )}
@@ -458,6 +571,9 @@ onClick={() => toggleOffer(offer._id)}
       })
     }
   />
+  {errors.discountValue && (
+  <small className="text-danger">{errors.discountValue}</small>
+)}
 </Form.Group>
 
     <Form.Group className="mb-3">
@@ -469,6 +585,9 @@ onClick={() => toggleOffer(offer._id)}
           setFormData({ ...formData, startDate: e.target.value })
         }
       />
+      {errors.startDate && (
+  <small className="text-danger">{errors.startDate}</small>
+)}
     </Form.Group>
 
    
@@ -481,6 +600,9 @@ onClick={() => toggleOffer(offer._id)}
           setFormData({ ...formData, endDate: e.target.value })
         }
       />
+      {errors.endDate && (
+  <small className="text-danger">{errors.endDate}</small>
+)}
     </Form.Group>
 
   </Modal.Body>
@@ -496,7 +618,16 @@ onClick={() => toggleOffer(offer._id)}
 
     <Button
 variant="primary"
-onClick={isEdit ? updateOffer : createOffer}
+onClick={() => {
+   console.log(validateForm());
+  if (!validateForm()) return;
+
+  if (isEdit) {
+    updateOffer();
+  } else {
+    createOffer();
+  }
+}}
 >
 {isEdit ? "Update" : "Create"}
 </Button>
@@ -508,7 +639,12 @@ onClick={isEdit ? updateOffer : createOffer}
         </div>
 
       </Container>
-
+<CustomToast
+show={showToast}
+setShow={setShowToast}
+message={toastMsg}
+type={toastType}
+/>
     </div>
   );
 };

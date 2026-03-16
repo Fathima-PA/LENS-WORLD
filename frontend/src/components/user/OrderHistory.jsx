@@ -39,20 +39,7 @@ const OrderHistory = () => {
     fetchOrders();
   },  [page,search]);
 
-  // useEffect(() => {
-
-  //   if (!search.trim()) {
-  //     setOrders(allOrders);
-  //     return;
-  //   }
-
-  //   const filtered = allOrders.filter(order =>
-  //     order.orderId.toLowerCase().includes(search.toLowerCase())
-  //   );
-
-  //   setOrders(filtered);
-
-  // }, [search, allOrders]);
+  
 
   const getStatusColor = (status) => {
     if (status === "Placed") return "orange";

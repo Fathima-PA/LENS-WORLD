@@ -134,16 +134,11 @@ const AdminOrders = () => {
 
                 <tbody>
                   {orders.map(order => {
-
-                    const hasCancelRequest = order.items?.some(
-                      i => i.cancelRequest === "Pending"
-                    );
-
                     const hasReturnRequest = order.items?.some(
                       i => i.returnRequest === "Pending"
                     );
 
-                    const needsAttention = hasCancelRequest || hasReturnRequest;
+                    const needsAttention =  hasReturnRequest;
 
                     return (
                       <tr key={order._id}>
@@ -200,12 +195,6 @@ const AdminOrders = () => {
 </td>
 
                         <td>
-
-                          {hasCancelRequest && (
-                            <Badge bg="warning" className="me-2">
-                              Cancel Request
-                            </Badge>
-                          )}
 
                           {hasReturnRequest && (
                             <Badge bg="dark">

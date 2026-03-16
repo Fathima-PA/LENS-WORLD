@@ -10,7 +10,7 @@ export const getAllOrders = async (req, res) => {
     page = parseInt(page);
     limit = parseInt(limit);
 
-    const query = {};
+    const query = { paymentStatus: { $ne: "Failed" }};
 
     if (status !== "all") {
       query.status = status;
@@ -105,88 +105,7 @@ const recalculateOrderStatus = (order) => {
 
 };
 
-// APPROVE CANCEL ITEM
 
-
-export const approveCancel = async (req, res) => {
-  try {
-
-    const { itemId } = req.body;
-
-    const order = await Order.findById(req.params.id);
-
-    const item = order.items.id(itemId);
-
-    if (!item)
-      return res.status(404).json({ message: "Item not found" });
-
-    if (item.status === "Cancelled") {
-      return res.status(400).json({ message: "Item already cancelled" });
-    }
-
-    item.cancelRequest = "Approved";
-    item.status = "Cancelled";
-
-
-    const product = await Product.findById(item.productId);
-    const variant = product?.variants.id(item.variantId);
-
-    if (variant) {
-      variant.stock += item.quantity;
-      await product.save();
-    }
-
-   
-
-    if (order.paymentMethod !== "COD") {
-
-      const user = await User.findById(order.user);
-
-      user.wallet += item.total;
-
-      user.walletHistory.push({
-        type: "CREDIT",
-        amount: item.total,
-        reason: "Order Item Cancel Refund"
-      });
-
-      await user.save();
-    }
-
-   
-
-    recalculateOrderStatus(order);
-
-    await order.save();
-
-    res.json({ message: "Cancel approved and refund added to wallet" });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error approving cancel" });
-  }
-};
-
-// REJECT CANCEL ITEM
-export const rejectCancel = async (req, res) => {
-  try {
-
-    const { itemId } = req.body;
-
-    const order = await Order.findById(req.params.id);
-
-    const item = order.items.id(itemId);
-
-    item.cancelRequest = "Rejected";
-
-    await order.save();
-
-    res.json({ message: "Cancel rejected" });
-
-  } catch {
-    res.status(500).json({ message: "Error rejecting cancel" });
-  }
-};
 
 // APPROVE RETURN ITEM
 

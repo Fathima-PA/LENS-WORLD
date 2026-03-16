@@ -11,12 +11,24 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [showReturn, setShowReturn] = useState(false);
   const [reason, setReason] = useState("");
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [errorMsg,setErrorMsg] = useState("");
 
   useEffect(() => {
     if (!id) return;
     fetchOrder();
   }, [id]);
 
+
+  useEffect(() => {
+  if (errorMsg) {
+    const timer = setTimeout(() => {
+      setErrorMsg("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }
+}, [errorMsg]);
   const fetchOrder = async () => {
     try {
       const res = await api.get(`/api/order/${id}`);
@@ -33,12 +45,15 @@ const OrderDetails = () => {
   const isDelivered = order.status === "Delivered";
 
   // CANCEL ORDER
-  const cancelOrder = async () => {
-    if (!window.confirm("Send cancel request?")) return;
-
+ const cancelOrder = async () => {
+  try {
     await api.patch(`/api/order/cancel/${order._id}`);
+    setShowCancelConfirm(false);
     fetchOrder();
-  };
+  } catch (err) {
+   setErrorMsg(err.response?.data?.message || "Cancel failed");
+  }
+};
 
   // RETURN ORDER
   const submitReturn = async () => {
@@ -49,7 +64,6 @@ const OrderDetails = () => {
 
   // CANCEL ITEM
   const cancelItem = async (itemId) => {
-    const reason = prompt("Reason (optional):");
 
     await api.patch(`/api/order/cancel-item/${order._id}`, {
       itemId,
@@ -61,6 +75,11 @@ const OrderDetails = () => {
 
   return (
     <div className="container py-4">
+      {errorMsg && (
+      <div className="alert alert-danger text-center">
+        {errorMsg}
+      </div>
+    )}
 
       {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -74,20 +93,14 @@ const OrderDetails = () => {
         <h5>ORDER DETAILS</h5>
 
         <div>
-          {canCancel && order.cancelRequest !== "Pending" && (
-            <button
-              className="btn btn-link text-danger"
-              onClick={cancelOrder}
-            >
-              Request Cancel Order
-            </button>
-          )}
-
-          {order.cancelRequest === "Pending" && (
-            <span className="text-warning small">
-              Cancel request pending
-            </span>
-          )}
+        {canCancel && (
+  <button
+  className="btn btn-link text-danger"
+  onClick={() => setShowCancelConfirm(true)}
+>
+  Cancel Order
+</button>
+)}
 
           {order.items.some(i => i.returnRequest === "Pending") && (
             <span className="text-warning small ms-2">
@@ -179,22 +192,16 @@ const OrderDetails = () => {
             </div>
 
             {/* CANCEL LOGIC */}
-            {item.status === "Active" &&
-              item.cancelRequest === "None" &&
-              canCancel && (
-                <button
-                  className="btn btn-link text-danger p-0 small"
-                  onClick={() => cancelItem(item._id)}
-                >
-                  Cancel Item
-                </button>
-              )}
+          {item.status === "Active" && canCancel && (
+  <button
+    className="btn btn-link text-danger p-0 small"
+    onClick={() => cancelItem(item._id)}
+  >
+    Cancel Item
+  </button>
+)}
+           
 
-            {item.cancelRequest === "Pending" && (
-              <div className="text-warning small fw-semibold">
-                Waiting for admin approval
-              </div>
-            )}
 
             {item.status === "Cancelled" && (
               <div className="text-danger small fw-semibold">
@@ -202,11 +209,6 @@ const OrderDetails = () => {
               </div>
             )}
 
-            {item.cancelRequest === "Rejected" && (
-              <div className="text-danger small fw-semibold">
-                Cancel request rejected
-              </div>
-            )}
 
             {/* RETURN LOGIC */}
             {item.returnRequest === "Pending" && (
@@ -336,6 +338,42 @@ const OrderDetails = () => {
           </div>
         </div>
       )}
+      {showCancelConfirm && (
+  <div
+    className="modal d-block"
+    style={{ background: "rgba(0,0,0,0.4)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content p-4 text-center">
+
+        <h5 className="mb-3">Cancel Order</h5>
+
+        <p className="text-muted">
+          Are you sure you want to cancel this order?
+        </p>
+
+        <div className="d-flex justify-content-center gap-3 mt-3">
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowCancelConfirm(false)}
+          >
+            No
+          </button>
+
+          <button
+            className="btn btn-danger"
+            onClick={cancelOrder}
+          >
+            Yes, Cancel
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

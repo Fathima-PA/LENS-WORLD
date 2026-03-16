@@ -51,7 +51,8 @@ export const getSalesReport = async (req, res) => {
 
     }
 
-    const orders = await Order.find(filter).populate("user");
+    const orders = await Order.find(filter).sort({createdAt:-1}).populate("user");
+    console.log(orders);
 
     let totalSales = 0;
     let totalDiscount = 0;
@@ -113,10 +114,32 @@ export const getSalesReport = async (req, res) => {
 ======================================== */
 
 export const downloadSalesPDF = async (req, res) => {
-
   try {
 
     const orders = await Order.find({ status: "Delivered" }).populate("user");
+
+    let totalSales = 0;
+    let totalDiscount = 0;
+    let codTotal = 0;
+    let onlineTotal = 0;
+
+    orders.forEach(order => {
+
+      totalSales += order.subtotal || 0;
+      totalDiscount += order.discount || 0;
+
+      if (order.paymentMethod === "COD") {
+        codTotal += order.grandTotal || 0;
+      } else {
+        onlineTotal += order.grandTotal || 0;
+      }
+
+    });
+
+    const netRevenue = orders.reduce(
+      (sum, order) => sum + (order.grandTotal || 0),
+      0
+    );
 
     const doc = new PDFDocument({ margin: 40 });
 
@@ -170,6 +193,27 @@ export const downloadSalesPDF = async (req, res) => {
 
     });
 
+    /* SUMMARY */
+
+  
+
+doc.moveDown(2);
+
+doc
+  .fontSize(14)
+  .text("Summary", 40, y + 20, { underline: true });
+
+doc.moveDown();
+
+doc
+  .fontSize(11)
+  .text(`Total Orders: ${orders.length}`, 40)
+  .text(`Total Sales (Subtotal): ₹${totalSales}`, 40)
+  .text(`Total Discount: ₹${totalDiscount}`, 40)
+  .text(`Net Revenue: ₹${netRevenue}`, 40)
+  .text(`COD Sales: ₹${codTotal}`, 40)
+  .text(`Online Sales: ₹${onlineTotal}`, 40);
+
     doc.end();
 
   } catch (error) {
@@ -181,7 +225,6 @@ export const downloadSalesPDF = async (req, res) => {
     });
 
   }
-
 };
 
 /* ========================================
@@ -193,6 +236,29 @@ export const downloadSalesExcel = async (req, res) => {
   try {
 
     const orders = await Order.find({ status: "Delivered" }).populate("user");
+
+    let totalSales = 0;
+    let totalDiscount = 0;
+    let codTotal = 0;
+    let onlineTotal = 0;
+
+    orders.forEach(order => {
+
+      totalSales += order.subtotal || 0;
+      totalDiscount += order.discount || 0;
+
+      if (order.paymentMethod === "COD") {
+        codTotal += order.grandTotal || 0;
+      } else {
+        onlineTotal += order.grandTotal || 0;
+      }
+
+    });
+
+    const netRevenue = orders.reduce(
+      (sum, order) => sum + (order.grandTotal || 0),
+      0
+    );
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Sales Report");
@@ -218,21 +284,34 @@ export const downloadSalesExcel = async (req, res) => {
       sheet.addRow({
 
         orderId: order._id.toString(),
-
         customer: order.user?.username || "User",
-
         payment: order.paymentMethod,
-
         subtotal: order.subtotal,
-
         discount: order.discount,
-
         total: order.grandTotal,
-
         date: new Date(order.createdAt).toLocaleDateString()
 
       });
 
+    });
+
+    /* SUMMARY SECTION */
+
+    sheet.addRow([]);
+    sheet.addRow([]);
+
+    const summaryTitle = sheet.addRow(["SUMMARY"]);
+    summaryTitle.font = { bold: true };
+
+    const row1 = sheet.addRow(["Total Orders", orders.length]);
+    const row2 = sheet.addRow(["Total Sales", `₹${totalSales}`]);
+    const row3 = sheet.addRow(["Total Discount", `₹${totalDiscount}`]);
+    const row4 = sheet.addRow(["Net Revenue", `₹${netRevenue}`]);
+    const row5 = sheet.addRow(["COD Sales", `₹${codTotal}`]);
+    const row6 = sheet.addRow(["Online Sales", `₹${onlineTotal}`]);
+
+    [row1,row2,row3,row4,row5,row6].forEach(row=>{
+      row.font = { bold: true };
     });
 
     res.setHeader(

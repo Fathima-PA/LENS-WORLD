@@ -30,24 +30,10 @@ const AdminOrderDetails = () => {
     setOrder(res.data);
   };
 
-  // APPROVE CANCEL
-  const approveCancel = async (itemId) => {
-    await axios.patch(
-      `http://localhost:3000/api/admin/orders/approve-cancel/${order._id}`,
-      { itemId },
-      { withCredentials: true }
-    );
-    fetchOrder();
-  };
+  
+  
 
-  const rejectCancel = async (itemId) => {
-    await axios.patch(
-      `http://localhost:3000/api/admin/orders/reject-cancel/${order._id}`,
-      { itemId },
-      { withCredentials: true }
-    );
-    fetchOrder();
-  };
+  
 
   // APPROVE RETURN
 
@@ -152,17 +138,6 @@ const AdminOrderDetails = () => {
                       
                       <td>
 
-  {/* CANCEL REQUEST */}
-  {item.cancelRequest === "Pending" && (
-    <>
-      <Badge bg="warning">Cancel Requested</Badge>
-      {item.cancelReason && (
-        <div className="small text-muted mt-1">
-          Reason: {item.cancelReason}
-        </div>
-      )}
-    </>
-  )}
 
   {/* RETURN REQUEST */}
   {item.returnRequest === "Pending" && (
@@ -192,25 +167,6 @@ const AdminOrderDetails = () => {
 
 </td>   
                         <td>
-
-                          {item.cancelRequest === "Pending" && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="success"
-                                onClick={()=>approveCancel(item._id)}
-                              >
-                                Approve
-                              </Button>{" "}
-                              <Button
-                                size="sm"
-                                variant="danger"
-                                onClick={()=>rejectCancel(item._id)}
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
 
                           {item.returnRequest === "Pending" && (
                             <>

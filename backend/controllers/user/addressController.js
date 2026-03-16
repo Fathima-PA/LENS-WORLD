@@ -3,14 +3,15 @@ import Address from "../../models/AddressModel.js";
 //  ADD ADDRESS
 export const addAddress = async (req, res) => {
   try {
-    const { address, phone, city, pincode, state } = req.body;
+    const {name, address, phone, city, pincode, state } = req.body;
 
-    if (!address || !phone || !city || !pincode || !state) {
+    if (!name||!address || !phone || !city || !pincode || !state) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const newAddress = await Address.create({
       user: req.user.id,
+      name,
       address,
       phone,
       city,

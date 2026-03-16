@@ -13,6 +13,7 @@ import api from "../../api";
 
 const AddAddress = ({ setActiveTab, refreshAddresses, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
+    name:"",
     address: "",
     phone: "",
     city: "",
@@ -20,7 +21,7 @@ const AddAddress = ({ setActiveTab, refreshAddresses, onSuccess, onCancel }) => 
     state: "",
   });
 
-  const { address, phone, city, pincode, state } = formData;
+  const { name,address, phone, city, pincode, state } = formData;
 
   const [errors, setErrors] = useState({});
 
@@ -51,6 +52,11 @@ const AddAddress = ({ setActiveTab, refreshAddresses, onSuccess, onCancel }) => 
 
   const validateForm = () => {
     let newErrors = {};
+    
+    if (!name.trim()) newErrors.name = "Name is required";
+    else if (name.trim().length < 5)
+      newErrors.address = "Name must be at least 5 characters";
+
 
     if (!address.trim()) newErrors.address = "Address is required";
     else if (address.trim().length < 5)
@@ -88,6 +94,7 @@ const AddAddress = ({ setActiveTab, refreshAddresses, onSuccess, onCancel }) => 
     showPopup("✅ Address added successfully", "success");
 
     setFormData({
+      name:"",
       address: "",
       phone: "",
       city: "",
@@ -143,6 +150,21 @@ const AddAddress = ({ setActiveTab, refreshAddresses, onSuccess, onCancel }) => 
 
           <Form onSubmit={handleSubmit} autoComplete="off">
             <Row className="mb-4">
+               <Col md={6}>
+                <Form.Label className="text-muted">Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="name"
+                  value={name}
+                  onChange={handleChange}
+                  className="border-0 border-bottom rounded-0"
+                  autoComplete="off"
+                  isInvalid={!!errors.name}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.name}
+                </Form.Control.Feedback>
+              </Col>
               <Col md={6}>
                 <Form.Label className="text-muted">Address</Form.Label>
                 <Form.Control

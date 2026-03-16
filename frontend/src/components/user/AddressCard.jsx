@@ -55,7 +55,9 @@ const AddressCard = ({ setActiveTab }) => {
             <div className="mb-2">
               <span className="badge bg-success">Default</span>
             </div>
-
+            <div>
+              <b>Name:</b> {defaultAddress.name}
+            </div>
             <div>
               <b>Address:</b> {defaultAddress.address}
             </div>

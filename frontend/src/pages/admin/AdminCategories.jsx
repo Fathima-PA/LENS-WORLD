@@ -13,7 +13,8 @@ import axios from "axios";
 import "../../styles/AdminCategories.css";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import CustomToast from "../../components/common/CustomToast";
 
 
 const AdminCategories = () => {
@@ -21,6 +22,16 @@ const AdminCategories = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("success");
+
+const showMessage = (msg, type = "success") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
 
   const fetchCategories = async () => {
     try {
@@ -48,11 +59,16 @@ const handleEdit = (id) => {
 const handleToggleStatus = async (categorie) => {
   const action = categorie.isActive ? "block" : "unblock";
 
-  const confirmed = window.confirm(
-    `Are you sure you want to ${action} this product?`
-  );
+ const result = await Swal.fire({
+  title: "Are you sure?",
+  text: `You want to ${action} this category`,
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonText: "Yes",
+  cancelButtonText: "Cancel",
+});
 
-  if (!confirmed) return;
+if (!result.isConfirmed) return;
 
   try {
     await axios.patch(
@@ -61,16 +77,17 @@ const handleToggleStatus = async (categorie) => {
       { withCredentials: true }
     );
 
-    toast.success(
+   showMessage(
       categorie.isActive
-        ? "Categorie blocked successfully "
-        : "Categorie unblocked successfully "
+        ? "Category blocked successfully"
+        : "Category unblocked successfully"
     );
 
      fetchCategories();
   } catch (error) {
-    toast.error(
-      error.response?.data?.message || "Something went wrong"
+    showMessage(
+      error.response?.data?.message || "Something went wrong",
+      "danger"
     );
   }
 };
@@ -254,6 +271,12 @@ const navigate = useNavigate();
           </Col>
         </Row>
       </Container>
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
     </div>
   );
 };

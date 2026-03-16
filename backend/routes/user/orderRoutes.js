@@ -1,7 +1,7 @@
 import express from "express";
 import { placeOrderCOD,getMyOrders,  getOrderDetails,
   cancelOrder,
-  returnOrder,cancelOrderItem,downloadInvoice,verifyRazorpayPayment,getWallet} from "../../controllers/user/orderController.js";
+  returnOrder,cancelOrderItem,downloadInvoice,verifyRazorpayPayment,getWallet,retryRazorpayPayment,markPaymentFailed} from "../../controllers/user/orderController.js";
 import {applyCoupon,getAvailableCoupons} from "../../controllers/user/couponController.js"
 import { protect } from "../../middlewares/authMiddleware.js";
 
@@ -11,6 +11,8 @@ console.log("ORDER ROUTES LOADED");
 router.post("/place-cod",protect,placeOrderCOD);
 router.get("/my", protect, getMyOrders);
 router.post("/verify-payment", verifyRazorpayPayment);
+router.post("/retry-payment/:orderId", retryRazorpayPayment);
+router.post("/payment-failed", markPaymentFailed);
 router.post("/apply-coupon", applyCoupon);
 router.get("/available-coupons", getAvailableCoupons);
 router.get("/wallet",protect,getWallet);

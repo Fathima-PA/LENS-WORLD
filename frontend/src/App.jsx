@@ -104,7 +104,7 @@ useEffect(() => {
  <Route path="/wishlist" element={user?<Wishlist />:<Login />} />
  <Route path="/orders" element={<OrderHistory />} />
 <Route path="/profile/order/:id" element={<OrderDetails />} />
-<Route path="/payment-failed" element={<PaymentFailed/>}/>
+<Route path="/payment-failed/:orderId" element={<PaymentFailed/>}/>
 <Route path="/wallet" element={<Wallet />} />
           <Route
             path="/admin/login"

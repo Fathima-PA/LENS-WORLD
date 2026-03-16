@@ -7,7 +7,7 @@ const addressSchema = new mongoose.Schema(
   ref: "User",
   required: true,
 },
-
+    name:String,
     address: String,
     city: String,
     state: String,

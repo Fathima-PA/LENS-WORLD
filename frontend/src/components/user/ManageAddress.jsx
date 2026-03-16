@@ -15,6 +15,7 @@ const ManageAddress = ({ setActiveTab }) => {
   const [editingId, setEditingId] = useState(null);
 
   const [editForm, setEditForm] = useState({
+    name:"",
     address: "",
     phone: "",
     city: "",
@@ -25,6 +26,7 @@ const ManageAddress = ({ setActiveTab }) => {
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [deleteId, setDeleteId] = useState(null);
 
   const showPopup = (msg, type = "success") => {
     setToastMsg(msg);
@@ -44,18 +46,16 @@ const ManageAddress = ({ setActiveTab }) => {
   useEffect(() => {
     fetchAddresses();
   }, []);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this address?")) return;
-
-    try {
-      await api.delete(`/api/address/${id}`);
-      showPopup(" Address deleted", "success");
-      fetchAddresses();
-    } catch (error) {
-      showPopup(error.response?.data?.message || error.message, "danger");
-    }
-  };
+const handleDelete = async () => {
+  try {
+    await api.delete(`/api/address/${deleteId}`);
+    showPopup("Address deleted", "success");
+    setDeleteId(null);
+    fetchAddresses();
+  } catch (error) {
+    showPopup(error.response?.data?.message || error.message, "danger");
+  }
+};
 const handleSetDefault = async (id) => {
   try {
     await api.put(`/api/address/set-default/${id}`);
@@ -69,6 +69,7 @@ const handleSetDefault = async (id) => {
   const handleEditClick = (item) => {
     setEditingId(item._id);
     setEditForm({
+      name: item.name || "",
       address: item.address || "",
       phone: item.phone || "",
       city: item.city || "",
@@ -138,6 +139,17 @@ const handleSetDefault = async (id) => {
                     {editingId === item._id ? (
                       <>
                         <Row className="g-2">
+
+                          <Col md={12}>
+                            <Form.Label className="fw-semibold">
+                              Name
+                            </Form.Label>
+                            <Form.Control
+                              name="name"
+                              value={editForm.name}
+                              onChange={handleEditChange}
+                            />
+                          </Col>
                           <Col md={12}>
                             <Form.Label className="fw-semibold">
                               Address
@@ -213,6 +225,7 @@ const handleSetDefault = async (id) => {
                       </>
                     ) : (
                       <>
+                      <div><b>Name:</b> {item.name}</div>
                         <div><b>Address:</b> {item.address}</div>
                         <div><b>Phone:</b> {item.phone}</div>
                         <div><b>City:</b> {item.city}</div>
@@ -238,12 +251,12 @@ const handleSetDefault = async (id) => {
     </Button>
 
     <Button
-      size="sm"
-      variant="outline-danger"
-      onClick={() => handleDelete(item._id)}
-    >
-      Delete
-    </Button>
+  size="sm"
+  variant="outline-danger"
+  onClick={() => setDeleteId(item._id)}
+>
+  Delete
+</Button>
   </div>
 
                       </>
@@ -255,6 +268,43 @@ const handleSetDefault = async (id) => {
           )}
         </Card.Body>
       </Card>
+
+      {deleteId && (
+  <div
+    className="modal d-block"
+    style={{ background: "rgba(0,0,0,0.4)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content p-4 text-center">
+
+        <h5 className="mb-3">Delete Address</h5>
+
+        <p className="text-muted">
+          Are you sure you want to delete this address?
+        </p>
+
+        <div className="d-flex justify-content-center gap-3 mt-3">
+
+          <Button
+            variant="secondary"
+            onClick={() => setDeleteId(null)}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="danger"
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 };
