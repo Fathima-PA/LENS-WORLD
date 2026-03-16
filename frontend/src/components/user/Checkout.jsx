@@ -3,6 +3,8 @@ import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import AddAddress from "../../components/user/AddAddress";
 import { Modal, Button } from "react-bootstrap";
+import CustomToast from "../../components/common/CustomToast";
+
 
 const Checkout = () => {
 
@@ -20,6 +22,9 @@ const [discount,setDiscount] = useState(0);
 const [appliedCoupon,setAppliedCoupon] = useState(null);
 const [showCoupons,setShowCoupons] = useState(false);
 const [availableCoupons,setAvailableCoupons] = useState([]);
+const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("success");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +33,12 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
      fetchCoupons();
   }, []);
 
+
+const showToastMessage = (msg, type = "success") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
  const fetchAddresses = async () => {
   try {
     const res = await api.get("/api/address/my");
@@ -43,7 +54,7 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
     }
 
   } catch {
-    setErrorMsg("Failed to load addresses");
+    showToastMessage("Failed to load addresses");
   }
 };
 
@@ -52,7 +63,7 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
       const res = await api.get("/api/cart");
       setCart(Array.isArray(res.data) ? res.data : res.data.items);
     } catch {
-      setErrorMsg("Failed to load cart");
+       showToastMessage("Failed to load cart");
     }
   };
 
@@ -81,7 +92,7 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
   try {
 
     if (!selectedAddress) {
-      setErrorMsg("Please select address");
+      showToastMessage("Please select address", "danger");
       return;
     }
 
@@ -90,7 +101,6 @@ const [availableCoupons,setAvailableCoupons] = useState([]);
       paymentMethod,
       couponCode: appliedCoupon
     });
-  console.log("Order from backend:", res.data);
     // ---------- RAZORPAY ----------
     if (res.data.razorpay) {
 
@@ -171,7 +181,7 @@ rzp.open();
 const applyCoupon = async ()=>{
 
   if(appliedCoupon){
-    alert("Coupon already applied");
+  showToastMessage("Coupon already applied", "warning");
     return;
   }
 
@@ -187,7 +197,10 @@ const applyCoupon = async ()=>{
 
   }catch(err){
 
-    alert(err.response?.data?.message);
+    showToastMessage(
+  err.response?.data?.message || "Coupon error",
+  "danger"
+);
 
   }
 
@@ -220,6 +233,8 @@ const removeCoupon = ()=>{
           <p className="text-muted">Redirecting to order details...</p>
         </Modal.Body>
       </Modal>
+
+      
    <Modal show={showCoupons} onHide={()=>setShowCoupons(false)} centered>
 
   <Modal.Header closeButton>
@@ -510,7 +525,7 @@ const removeCoupon = ()=>{
             <button
               className="btn btn-dark w-100 mt-3"
               onClick={placeOrder}
-              disabled={!selectedAddress}
+             
             >
               Place Order ({paymentMethod})
             </button>
@@ -519,6 +534,12 @@ const removeCoupon = ()=>{
         </div>
 
       </div>
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
     </div>
   );
 };

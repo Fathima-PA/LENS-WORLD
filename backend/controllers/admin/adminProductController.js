@@ -204,17 +204,33 @@ const formattedVariants = variants.map((variant) => {
   }
 
 
-  const oldVariant = existingProduct.variants.find(
-    (v) => v._id.toString() === id
-  );
+const oldVariant = existingProduct.variants.find(
+  (v) => v._id.toString() === id
+);
+
+const newImages = (req.files || [])
+  .slice(fileIndex, fileIndex + 3)
+  .map((file) => file.path || file.secure_url);
+
+if (newImages.length === 3) {
+  fileIndex += 3;
 
   return {
     name,
     color,
     price,
     stock,
-    images: oldVariant?.images || [],
+    images: newImages,
   };
+}
+
+return {
+  name,
+  color,
+  price,
+  stock,
+  images: oldVariant?.images || [],
+};
 });
 
 
