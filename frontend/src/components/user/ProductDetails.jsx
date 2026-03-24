@@ -273,33 +273,66 @@ const ProductDetails = () => {
   </h4>
 
   <div className="row g-4">
-    {related.map((p) => (
-      <div
-        className="col-md-3 text-center"
-        key={p._id}
-        style={{ cursor: "pointer" }}
-        onClick={() => navigate(`/product/${p._id}`)}
-      >
-        <div className="border p-3 h-100">
+    {related.map((p) => {
 
-          <img
-            src={p.variants[0]?.images[0]}
-            alt={p.name}
-            className="img-fluid mb-2"
-            style={{ height: 150, objectFit: "contain" }}
-          />
+  return (
+    <div
+      className="col-md-3 text-center"
+      key={p._id}
+      style={{ cursor: "pointer" }}
+      onClick={() => navigate(`/product/${p._id}`)}
+    >
+      <div className="border p-3 h-100">
 
-          <p className="fw-semibold mb-1">
-            {p.name}
-          </p>
+        <img
+          src={p.image}
+          alt={p.name}
+          className="img-fluid mb-2"
+          style={{ height: 150, objectFit: "contain" }}
+        />
 
-          <p className="text-muted">
-            ₹{p.variants[0]?.price}
-          </p>
+        <p className="fw-semibold mb-1">
+          {p.name}
+        </p>
 
-        </div>
+        {/* ✅ SAME AS PRODUCT LIST */}
+        <p className="fw-semibold text-warning mb-1">
+
+          {p.finalPrice < p.displayPrice ? (
+            <>
+              <span style={{
+                textDecoration: "line-through",
+                color: "#888",
+                marginRight: 6
+              }}>
+                ₹{p.displayPrice}
+              </span>
+
+              <span style={{ color: "red" }}>
+                ₹{p.finalPrice}
+              </span>
+            </>
+          ) : (
+            <>₹{p.displayPrice}</>
+          )}
+
+        </p>
+
+        {p.finalPrice < p.displayPrice && (
+          <span className="badge bg-danger">
+            {Math.max(
+              1,
+              Math.round(((p.displayPrice - p.finalPrice) / p.displayPrice) * 100)
+            )}
+            % OFF
+          </span>
+        )}
+
       </div>
-    ))}
+    </div>
+  );
+
+})}
   </div>
 </div>
     </div>

@@ -13,6 +13,7 @@ const OrderDetails = () => {
   const [reason, setReason] = useState("");
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [errorMsg,setErrorMsg] = useState("");
+  const [selectedItemId, setSelectedItemId] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -57,10 +58,29 @@ const OrderDetails = () => {
 
   // RETURN ORDER
   const submitReturn = async () => {
-    await api.patch(`/api/order/return/${order._id}`, { reason });
+  try {
+    if (selectedItemId) {
+      // 👉 ITEM RETURN
+      await api.patch(`/api/order/return-item/${order._id}`, {
+        itemId: selectedItemId,
+        reason,
+      });
+    } else {
+      // 👉 FULL ORDER RETURN
+      await api.patch(`/api/order/return/${order._id}`, {
+        reason,
+      });
+    }
+
     setShowReturn(false);
+    setReason("");
+    setSelectedItemId(null);
+
     fetchOrder();
-  };
+  } catch (err) {
+    setErrorMsg(err.response?.data?.message || "Return failed");
+  }
+};
 
   // CANCEL ITEM
   const cancelItem = async (itemId) => {
@@ -116,7 +136,10 @@ const OrderDetails = () => {
             ) && (
               <button
                 className="btn btn-link text-warning"
-                onClick={() => setShowReturn(true)}
+                onClick={() =>{
+              setSelectedItemId(null); 
+               setShowReturn(true)    
+                }}
               >
                 Request Return
               </button>
@@ -199,6 +222,21 @@ const OrderDetails = () => {
   >
     Cancel Item
   </button>
+
+
+)}
+{isDelivered &&
+  item.status === "Active" &&
+  item.returnRequest === "None" && (
+    <button
+      className="btn btn-link text-warning p-0 small"
+      onClick={() => {
+        setSelectedItemId(item._id);
+        setShowReturn(true);
+      }}
+    >
+      Return Item
+    </button>
 )}
            
 

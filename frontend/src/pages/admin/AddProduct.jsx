@@ -207,11 +207,14 @@ const handleAddVariant = () => {
       )
     );
 
-    variants.forEach((v) => {
-      v.images.forEach((img) => {
-        if (img instanceof File) formData.append("images", img);
-      });
-    });
+  variants.forEach((v, index) => {
+  v.images.forEach((img) => {
+    if (img instanceof File) {
+      formData.append("images", img);
+      formData.append("variantIndex", index); // 👈 ADD THIS LINE
+    }
+  });
+});
 
     try {
       if (isEdit) {

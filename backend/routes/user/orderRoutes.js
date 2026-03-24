@@ -1,7 +1,7 @@
 import express from "express";
 import { placeOrderCOD,getMyOrders,  getOrderDetails,
   cancelOrder,
-  returnOrder,cancelOrderItem,downloadInvoice,verifyRazorpayPayment,getWallet,retryRazorpayPayment,markPaymentFailed} from "../../controllers/user/orderController.js";
+  returnOrder,returnSingleItem,cancelOrderItem,downloadInvoice,verifyRazorpayPayment,getWallet,retryRazorpayPayment,markPaymentFailed} from "../../controllers/user/orderController.js";
 import {applyCoupon,getAvailableCoupons} from "../../controllers/user/couponController.js"
 import { protect } from "../../middlewares/authMiddleware.js";
 
@@ -19,6 +19,7 @@ router.get("/wallet",protect,getWallet);
 router.get("/:id", protect, getOrderDetails);
 router.patch("/cancel/:id", protect, cancelOrder);
 router.patch("/return/:id", protect, returnOrder);
+router.patch("/return-item/:id",protect,returnSingleItem)
 router.patch("/cancel-item/:id", protect, cancelOrderItem);
 router.get("/invoice/:id", protect, downloadInvoice);
 

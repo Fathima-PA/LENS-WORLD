@@ -75,6 +75,15 @@ if (!categoryDoc.isActive) {
       category,
       variants: formattedVariants,
     });
+    const totalStock = formattedVariants.reduce(
+  (sum, v) => sum + Number(v.stock),
+  0
+);
+
+/* ✅ UPDATE CATEGORY STOCK */
+await Category.findByIdAndUpdate(category, {
+  $inc: { stock: totalStock }
+});
 
     res.status(201).json({
       message: "Product created successfully",
@@ -99,11 +108,17 @@ export const getProducts = async (req, res) => {
     }
 
     if (filter === "instock") {
-        query["variants.stock"] = { $gt: 0 };
+       query.variants = {
+    $elemMatch: { stock: { $gt: 0 } }
+  };
     }
 
     if (filter === "outofstock") {
-      query["variants.stock"] = 0;
+      query.variants = {
+  $not: {
+    $elemMatch: { stock: { $gt: 0 } }
+  }
+};
     }
 
     const total = await Product.countDocuments(query);
@@ -165,9 +180,29 @@ export const updateProductWithVariant = async (req, res) => {
     if (!existingProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
+const oldTotalStock = existingProduct.variants.reduce(
+  (sum, v) => sum + Number(v.stock),
+  0
+);
 
     const { name, brand, description, category } = req.body;
     const variants = JSON.parse(req.body.variants || "[]");
+    const files = req.files || [];
+const variantIndexes = req.body.variantIndex || [];
+
+const indexArray = Array.isArray(variantIndexes)
+  ? variantIndexes
+  : [variantIndexes];
+
+const imageMap = {};
+
+
+files.forEach((file, i) => {
+  const idx = indexArray[i];
+
+  if (!imageMap[idx]) imageMap[idx] = [];
+  imageMap[idx].push(file.path || file.secure_url);
+});
 
     if (!name || !brand || !description || !category) {
       return res.status(400).json({ message: "All product fields required" });
@@ -175,24 +210,21 @@ export const updateProductWithVariant = async (req, res) => {
 
 let fileIndex = 0;
 
-const formattedVariants = variants.map((variant) => {
+
+const formattedVariants = variants.map((variant, index) => {
   const { id, name, color, price, stock, isNew } = variant;
 
   if (!name || !price || !stock || !color) {
     throw new Error("Variant fields missing");
   }
 
+  const newImages = imageMap[index] || [];
 
+  // 🔹 NEW VARIANT
   if (isNew) {
-    const newImages = (req.files || [])
-      .slice(fileIndex, fileIndex + 3)
-      .map((file) => file.path || file.secure_url);
-
     if (newImages.length !== 3) {
-      throw new Error("Each new variant must have exactly 3 images");
+      throw new Error("New variant must have 3 images");
     }
-
-    fileIndex += 3;
 
     return {
       name,
@@ -203,37 +235,33 @@ const formattedVariants = variants.map((variant) => {
     };
   }
 
+  // 🔹 EXISTING VARIANT
+  const oldVariant = existingProduct.variants.find(
+    (v) => v._id.toString() === id
+  );
 
-const oldVariant = existingProduct.variants.find(
-  (v) => v._id.toString() === id
-);
-
-const newImages = (req.files || [])
-  .slice(fileIndex, fileIndex + 3)
-  .map((file) => file.path || file.secure_url);
-
-if (newImages.length === 3) {
-  fileIndex += 3;
+  if (!oldVariant) {
+    throw new Error("Variant not found");
+  }
 
   return {
+    _id: oldVariant._id,
     name,
     color,
     price,
     stock,
-    images: newImages,
+    images: newImages.length === 3 ? newImages : oldVariant.images,
   };
-}
-
-return {
-  name,
-  color,
-  price,
-  stock,
-  images: oldVariant?.images || [],
-};
 });
 
+// ✅ NEW STOCK
+const newTotalStock = formattedVariants.reduce(
+  (sum, v) => sum + Number(v.stock),
+  0
+);
 
+// ✅ DIFFERENCE
+const stockDifference = newTotalStock - oldTotalStock;
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       {
@@ -245,6 +273,10 @@ return {
       },
       { new: true }
     );
+    /* ✅ ADD HERE */
+await Category.findByIdAndUpdate(category, {
+  $inc: { stock: stockDifference }
+});
 
     res.json({
       message: "Product updated successfully",

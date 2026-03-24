@@ -98,10 +98,7 @@ const recalculateOrderStatus = (order) => {
     return;
   }
 
-  if (returned > 0) {
-    order.status = "Returned";
-    return;
-  }
+  
 
 };
 

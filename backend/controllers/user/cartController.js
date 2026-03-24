@@ -141,7 +141,7 @@ export const getCart = async (req, res) => {
   total: item.price * item.quantity,
 
   isActive: product.isActive,
-  isAvailable: product.isActive && variant.stock > 0
+  isAvailable:  variant.stock > 0
 });
     }
     cart.items = cart.items.filter(item =>

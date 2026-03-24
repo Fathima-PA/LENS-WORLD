@@ -114,8 +114,9 @@ const showToastMessage = (msg, type = "success") => {
   description: "Order Payment",
   order_id: razorpayOrder.id,
 
-  handler: async function (response) {
+ handler: async function (response) {
 
+  try {
     const verify = await api.post("/api/order/verify-payment", {
       razorpay_order_id: response.razorpay_order_id,
       razorpay_payment_id: response.razorpay_payment_id,
@@ -129,8 +130,16 @@ const showToastMessage = (msg, type = "success") => {
       setTimeout(() => {
         navigate(`/order-success/${orderId}`);
       }, 2000);
+    } else {
+      await api.post("/api/order/payment-failed",{ orderId });
+      navigate(`/payment-failed/${orderId}`);
     }
-  },
+
+  } catch (err) {
+    await api.post("/api/order/payment-failed",{ orderId });
+    navigate(`/payment-failed/${orderId}`);
+  }
+},
 
 
   modal:{
@@ -173,9 +182,10 @@ rzp.open();
       navigate(`/order-success/${res.data.orderId}`);
     }, 2000);
 
-  } catch (err) {
-    setErrorMsg(err.response?.data?.message || "Order failed");
-  }
+  }catch (err) {
+  const msg = err.response?.data?.message || "Order failed";
+  setErrorMsg(msg);
+}
 };
 
 const applyCoupon = async ()=>{

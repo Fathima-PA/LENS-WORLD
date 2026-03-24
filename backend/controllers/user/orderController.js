@@ -7,6 +7,7 @@ import razorpay from "../../config/razorpay.js";
 import crypto from "crypto";
 import User from "../../models/userModel.js";
 import Coupon from "../../models/couponModel.js";
+import Category from "../../models/CategoryModel.js";
 export const placeOrderCOD = async (req,res)=>{
   try{
 
@@ -177,6 +178,9 @@ console.log("Razorpay Order:", razorpayOrder);
       const variant=product.variants.id(item.variantId);
       variant.stock-=item.quantity;
       await product.save();
+      await Category.findByIdAndUpdate(product.category, {
+    $inc: { stock: -item.quantity,sold: item.quantity }
+  });
     }
     cart.items=[];
     await cart.save();
@@ -429,6 +433,60 @@ export const returnOrder = async (req, res) => {
 };
 
 
+export const returnSingleItem = async (req, res) => {
+  try {
+    const { itemId, reason } = req.body;
+
+    if (!itemId || !reason) {
+      return res.status(400).json({ message: "Item and reason required" });
+    }
+
+     const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status !== "Delivered") {
+      return res.status(400).json({
+        message: "Order not delivered yet",
+      });
+    }
+
+    const item = order.items.id(itemId);
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    if (item.status !== "Active") {
+      return res.status(400).json({
+        message: "Item cannot be returned",
+      });
+    }
+
+    if (item.returnRequest !== "None") {
+      return res.status(400).json({
+        message: "Return already requested",
+      });
+    }
+
+    // ✅ Set return request
+    item.returnRequest = "Pending";
+    item.returnReason = reason;
+
+    await order.save();
+
+    res.json({ message: "Return request submitted for item" });
+
+  } catch (error) {
+    console.error("RETURN ITEM ERROR:", error);
+    res.status(500).json({ message: "Return failed" });
+  }
+};
 export const downloadInvoice = async (req, res) => {
   try {
     const order = await Order.findOne({
@@ -570,16 +628,21 @@ export const verifyRazorpayPayment = async (req,res)=>{
       const variant = product.variants.id(item.variantId);
       if(!variant) continue;
 
-      variant.stock -= item.quantity;
+       if(variant.stock < item.quantity){
+    return res.status(400).json({
+      message:"Stock issue after payment"
+    });
+  }
 
-      await product.save();
+  variant.stock -= item.quantity;
+  await product.save();
     }
 
     // clear cart
-    await Cart.findOneAndUpdate(
-      { userId: order.user },
-      { $set: { items: [] } }
-    );
+   await Cart.updateOne(
+  { userId: order.user },
+  { $set: { items: [] } }
+);
 
     res.json({
       success:true,

@@ -238,9 +238,56 @@ export const getRelatedProducts = async (req, res) => {
       isActive: true,
     })
       .limit(4)
-      .select("name brand variants");
+      .select("name brand variants category")
+      .lean();
 
-    res.json(products);
+    const today = new Date();
+
+    const productOffers = await Offer.find({
+      type: "product",
+      isActive: true,
+      startDate: { $lte: today },
+      endDate: { $gte: today },
+    });
+
+    const categoryOffers = await Offer.find({
+      type: "category",
+      isActive: true,
+      startDate: { $lte: today },
+      endDate: { $gte: today },
+    });
+
+    const formatted = products.map(p => {
+      const v = p.variants?.[0];
+
+      if (!v) return null;
+
+      const productOffer = productOffers.find(
+        offer => offer.product?.toString() === p._id.toString()
+      );
+
+      const categoryOffer = categoryOffers.find(
+        offer => offer.category?.toString() === p.category.toString()
+      );
+
+      const finalPrice = getBestOfferPrice(
+        v.price,
+        productOffer,
+        categoryOffer
+      );
+
+      return {
+        _id: p._id,
+        name: p.name,
+        brand: p.brand,
+        displayPrice: v.price,
+        finalPrice,
+        image: v.images?.[0] || ""
+      };
+    });
+
+    res.json(formatted.filter(Boolean));
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
