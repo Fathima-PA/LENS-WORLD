@@ -92,6 +92,79 @@ const OrderDetails = () => {
 
     fetchOrder();
   };
+  const handleRetryPayment = async () => {
+  try {
+    const res = await api.post(`/api/order/retry-payment/${order._id}`);
+
+    const { razorpayOrder } = res.data;
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // ✅ FIX
+      amount: razorpayOrder.amount,
+      currency: "INR",
+      name: "LensWorld Opticals",
+      description: "Retry Payment",
+      order_id: razorpayOrder.id,
+
+      handler: async function (response) {
+        try {
+          await api.post("/api/order/verify-payment", {
+            orderId: order._id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature
+          });
+
+          fetchOrder(); // refresh UI after success
+
+        } catch (err) {
+          setErrorMsg("Payment verification failed");
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          console.log("Payment popup closed");
+          setErrorMsg("Payment cancelled"); // optional
+        }
+      },
+
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+
+    // ✅ Only here mark failed
+    rzp.on("payment.failed", async function (response) {
+      console.log("Payment failed:", response.error);
+
+      setErrorMsg(response.error?.description || "Payment Failed");
+
+      try {
+        await api.post("/api/order/payment-failed", {
+          orderId: order._id
+        });
+
+        fetchOrder(); // refresh UI
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    rzp.open();
+
+  } catch (err) {
+    console.log(err);
+    setErrorMsg("Retry payment failed"); // ✅ FIX
+  }
+};
+
+const showRetry =
+  order.paymentMethod === "RAZORPAY" &&
+  (order.paymentStatus === "Pending" ||
+   order.paymentStatus === "Failed");
 
   return (
     <div className="container py-4">
@@ -113,13 +186,22 @@ const OrderDetails = () => {
         <h5>ORDER DETAILS</h5>
 
         <div>
-        {canCancel && (
+      {showRetry ? (
   <button
-  className="btn btn-link text-danger"
-  onClick={() => setShowCancelConfirm(true)}
->
-  Cancel Order
-</button>
+    className="btn btn-warning ms-2"
+    onClick={handleRetryPayment}
+  >
+    Retry Payment
+  </button>
+) : (
+  canCancel && (
+    <button
+      className="btn btn-link text-danger"
+      onClick={() => setShowCancelConfirm(true)}
+    >
+      Cancel Order
+    </button>
+  )
 )}
 
           {order.items.some(i => i.returnRequest === "Pending") && (
@@ -215,15 +297,15 @@ const OrderDetails = () => {
             </div>
 
             {/* CANCEL LOGIC */}
-          {item.status === "Active" && canCancel && (
+         {!showRetry &&
+ item.status === "Active" &&
+ canCancel && (
   <button
     className="btn btn-link text-danger p-0 small"
     onClick={() => cancelItem(item._id)}
   >
     Cancel Item
   </button>
-
-
 )}
 {isDelivered &&
   item.status === "Active" &&

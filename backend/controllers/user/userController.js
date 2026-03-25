@@ -116,14 +116,16 @@ export const loginUser = async (req, res) => {
    res.cookie("accessToken", accessToken, {
   httpOnly: true,
   secure: false,
-  sameSite: "lax",   
+  sameSite: "lax", 
+  path: "/",  
   maxAge: 15 * 60 * 1000,
 });
 
 res.cookie("refreshToken", refreshToken, {
   httpOnly: true,
   secure: false,
-  sameSite: "lax",   
+  sameSite: "lax", 
+  path: "/",  
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
@@ -289,7 +291,18 @@ export const updateProfilePhoto = async (req, res) => {
 };
 // GET LOGGED IN USER 
 export const getMe = async (req, res) => {
-  res.status(200).json(req.user);
-};
+  try {
+    res.set("Cache-Control", "no-store");
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+   const user = req.user.toObject();
+    const { refreshToken, __v, ...safeUser } = user;
 
+    return res.status(200).json(safeUser);
+
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 

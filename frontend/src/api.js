@@ -4,11 +4,13 @@ const api = axios.create({
   baseURL: "http://localhost:3000",
   withCredentials: true,
 });
-
+console.log("🔥 API FILE LOADED");
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    console.log("❌ Error intercepted:", error.response?.status); // ✅ ADD
 
     const publicRoutes = [
       "/api/users/login",
@@ -16,35 +18,76 @@ api.interceptors.response.use(
       "/api/auth/google",
     ];
 
-    if (publicRoutes.some((route) => originalRequest.url.includes(route))) {
-      return Promise.reject(error); 
-    }
+    const publicApis = [
+  "/api/products",
+  "/api/categories",
+  "/api/users/me",
+  "/api/wishlist",
+];
+
+    if (
+  publicRoutes.some(route => originalRequest.url.includes(route)) ||
+  publicApis.some(route => originalRequest.url.includes(route))
+) {
+  return Promise.reject(error);
+}
 
     if (originalRequest.url.includes("/api/auth/refresh")) {
       return Promise.reject(error);
     }
-   if (error.response?.status === 403) {
-  localStorage.setItem(
-    "blockedMsg",
-    error.response?.data?.message || "Your account is blocked"
-  );
 
-  localStorage.removeItem("isLoggedIn");
-  window.location.href = "/login";
+    if (error.response?.status === 403) {
+      console.log("🚫 User blocked"); // ✅ ADD
 
-  return Promise.reject(error);
-}
+      localStorage.setItem(
+        "blockedMsg",
+        error.response?.data?.message || "Your account is blocked"
+      );
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+      localStorage.removeItem("isLoggedIn");
+      // window.location.href = "/login";
 
-      try {
-        await api.get("/api/auth/refresh");
-        return api(originalRequest);
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      return Promise.reject(error);
     }
+
+   if (error.response?.status === 401 && !originalRequest._retry) {
+
+  // ✅ skip for public APIs
+  if (
+    publicApis.some(route => originalRequest.url.includes(route))
+  ) {
+    return Promise.reject(error);
+  }
+
+  // ✅ skip refresh if not logged in
+  if (!localStorage.getItem("isLoggedIn")) {
+    return Promise.reject(error);
+  }
+
+  // ❗ avoid loop on login page
+  if (window.location.pathname === "/login") {
+    return Promise.reject(error);
+  }
+
+  originalRequest._retry = true;
+
+  try {
+    const refreshRes = await api.get("/api/auth/refresh");
+
+    if (refreshRes.status === 200) {
+      return api(originalRequest);
+    }
+
+  } catch (err) {
+    localStorage.removeItem("isLoggedIn");
+
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(err);
+  }
+}
 
     return Promise.reject(error);
   }

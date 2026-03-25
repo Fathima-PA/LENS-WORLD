@@ -97,11 +97,30 @@ const OrderHistory = () => {
                 #{order.orderId.slice(-6).toUpperCase()}
               </div>
 
-              <div className="col-2">
-                <span style={{ color: getStatusColor(order.status), fontWeight: 600 }}>
-                  {order.status.toUpperCase()}
-                </span>
-              </div>
+            <div className="col-2">
+  <span
+    style={{
+      color:
+        order.paymentMethod === "RAZORPAY" &&
+        (order.paymentStatus === "Pending" ||
+         order.paymentStatus === "Failed")
+          ? "orange"
+          : getStatusColor(order.status),
+      fontWeight: 600
+    }}
+  >
+    {order.paymentMethod === "RAZORPAY" &&
+    (order.paymentStatus === "Pending" ||
+     order.paymentStatus === "Failed")
+      ? "PENDING"
+      : order.status.toUpperCase()}
+  </span>
+
+  {/* optional small text */}
+  {order.paymentStatus === "Failed" && (
+    <div className="text-danger small">Payment Failed</div>
+  )}
+</div>
 
               <div className="col-3 text-muted">
                 {new Date(order.date).toLocaleString()}

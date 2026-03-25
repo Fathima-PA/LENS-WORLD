@@ -52,26 +52,26 @@ function App() {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const { user } = useSelector((state) => state.auth);
+  const { user  } = useSelector((state) => state.auth);
   const { admin } = useSelector((state) => state.adminAuth);
 
 useEffect(() => {
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-  if (!isLoggedIn) return; 
-
   dispatch(loadUserThunk());
 }, [dispatch]);
 
-useEffect(() => {
-  if (!user) return;
+// if (isLoading) {
+//   return <p>Loading...</p>;
+// }
 
-  const interval = setInterval(() => {
-    dispatch(loadUserThunk());
-  }, 5000);
+// useEffect(() => {
+//   if (!user) return;
 
-  return () => clearInterval(interval);
-}, [user, dispatch]);
+//   const interval = setInterval(() => {
+//     dispatch(loadUserThunk());
+//   }, 5000);
+
+//   return () => clearInterval(interval);
+// }, [user, dispatch]);
 
   useEffect(() => {
     if (
@@ -87,6 +87,7 @@ useEffect(() => {
     <Header />
 
       <div className="flex-grow-1">
+       
         <Routes>
           {/* USER ROUTES */}
           <Route path="/" element={ <Home />} />
@@ -146,7 +147,6 @@ useEffect(() => {
 <Route path="/admin/coupons" element={<AdminCoupons />} />
 <Route path="/admin/sales-report" element={<AdminSalesReport />} />
         </Routes>
-
       </div>
     {!location.pathname.startsWith("/admin") && <Footer />}
     </div>

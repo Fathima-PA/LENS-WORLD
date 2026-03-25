@@ -33,6 +33,7 @@ export const googleLogin = async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
+      path: "/",
       maxAge: 15 * 60 * 1000,
     });
 
@@ -40,6 +41,7 @@ export const googleLogin = async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -299,6 +301,7 @@ const user = await User.findOne(query);
 
 export const refreshAccessToken = async (req, res) => {
   try {
+     console.log("🔁 Refresh API called"); 
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
@@ -320,15 +323,17 @@ res.cookie("accessToken", newAccessToken, {
   httpOnly: true,
   secure: false,
  sameSite: "lax",
+ path: "/",
   maxAge: 15 * 60 * 1000,
 });
-
+console.log("✅ New access token generated");
 return res.status(200).json({
   message: "Access token refreshed",
   accessToken: newAccessToken,
 });
 
   } catch (error) {
+    console.log("❌ Refresh failed:", error.message); 
     res.status(401).json({ message: "Refresh token expired" });
   }
 };

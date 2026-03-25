@@ -134,7 +134,14 @@ export const approveReturn = async (req, res) => {
       variant.stock += item.quantity;
       await product.save();
     }
-
+if (product?.category) {
+  await Category.findByIdAndUpdate(product.category, {
+    $inc: {
+      stock: item.quantity,    
+      sold: -item.quantity      
+    }
+  });
+}
    
 
     if (order.paymentMethod !== "COD") {

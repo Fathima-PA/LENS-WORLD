@@ -145,18 +145,6 @@ if(paymentMethod === "WALLET"){
           paymentStatus: paymentMethod === "RAZORPAY" ? "Pending" : "Paid"
     });
 
-    if (couponCode) {
-
-  const coupon = await Coupon.findOne({ code: couponCode });
-
-  if (coupon) {
-    coupon.usedBy.push(userId);
-    await coupon.save();
-  }
-
-}
-
-
 
 if(paymentMethod === "RAZORPAY"){
 
@@ -203,7 +191,7 @@ export const getMyOrders = async (req, res) => {
     limit = parseInt(limit);
 
 
-    const query = { user: req.user._id,  paymentStatus: { $ne: "Failed" } };
+    const query = { user: req.user._id };
 if (search) {
       query.$expr = {
         $regexMatch: {
@@ -222,6 +210,8 @@ if (search) {
           _id: order._id, 
       orderId: order._id,
       status: order.status,
+      paymentStatus: order.paymentStatus || "Pending",
+      paymentMethod: order.paymentMethod,
       date: order.createdAt,
       total: order.grandTotal,
       items: order.items.length
@@ -310,7 +300,14 @@ export const cancelOrder = async (req, res) => {
         await product.save();
       }
     }
-
+if (product?.category) {
+  await Category.findByIdAndUpdate(product.category, {
+    $inc: {
+      stock: item.quantity,     
+      sold: -item.quantity       
+    }
+  });
+}
     order.status = "Cancelled";
 
     if (order.paymentMethod !== "COD" && order.paymentStatus === "Paid") {
@@ -372,7 +369,16 @@ export const cancelOrderItem = async (req, res) => {
     if (variant) {
       variant.stock += item.quantity;
       await product.save();
+      
     }
+    if (product?.category) {
+  await Category.findByIdAndUpdate(product.category, {
+    $inc: {
+      stock: item.quantity,      
+      sold: -item.quantity       
+    }
+  });
+}
 
     if (order.paymentMethod !== "COD" && order.paymentStatus === "Paid") {
 
@@ -616,31 +622,48 @@ export const verifyRazorpayPayment = async (req,res)=>{
 
     order.paymentStatus = "Paid";
     order.paymentId = razorpay_payment_id;
+   // ✅ APPLY COUPON ONLY AFTER SUCCESS
+if (order.couponCode) {
+  const coupon = await Coupon.findOne({ code: order.couponCode });
 
+  if (coupon && !coupon.usedBy.includes(order.user)) {
+    coupon.usedBy.push(order.user);
+    await coupon.save();
+  }
+}
     await order.save();
 
-    // reduce stock
-    for(const item of order.items){
+  // reduce stock
+for (const item of order.items) {
 
-      const product = await Product.findById(item.productId);
-      if(!product) continue;
+  const product = await Product.findById(item.productId);
+  if (!product) continue;
 
-      const variant = product.variants.id(item.variantId);
-      if(!variant) continue;
+  const variant = product.variants.id(item.variantId);
+  if (!variant) {
+    console.log("Variant not found");
+    continue;
+  }
 
-       if(variant.stock < item.quantity){
-    return res.status(400).json({
-      message:"Stock issue after payment"
-    });
+  if (variant.stock < item.quantity) {
+    console.log("Stock issue after payment");
+    continue; // ✅ FIXED
   }
 
   variant.stock -= item.quantity;
   await product.save();
-    }
 
-    // clear cart
-   await Cart.updateOne(
-  { userId: order.user },
+  await Category.findByIdAndUpdate(product.category, {
+  $inc: {
+    stock: -item.quantity,
+    sold: item.quantity
+  }
+});
+}
+
+// clear cart
+await Cart.updateOne(
+  { userId: order.user },   // ✅ FIXED
   { $set: { items: [] } }
 );
 

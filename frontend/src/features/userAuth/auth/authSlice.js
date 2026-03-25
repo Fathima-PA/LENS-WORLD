@@ -64,7 +64,10 @@ export const loadUserThunk = createAsyncThunk(
   "auth/loadUser",
   async (_, thunkAPI) => {
     try {
-      return await authService.getMe();
+      const data = await authService.getMe();
+      console.log("✅ loadUserThunk success:", data); // debug
+
+      return data;
     } catch {
       return thunkAPI.rejectWithValue("Not logged in");
     }
@@ -220,14 +223,18 @@ const authSlice = createSlice({
       })
 
       /* ===== LOAD USER ===== */
-      .addCase(loadUserThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload;
-      })
-      .addCase(loadUserThunk.rejected, (state) => {
-        state.isLoading = false;
-        state.user = null;
-      })
+  
+.addCase(loadUserThunk.pending, (state) => {
+  state.isLoading = true;
+})
+.addCase(loadUserThunk.fulfilled, (state, action) => {
+  state.isLoading = false;
+  state.user = action.payload;
+})
+.addCase(loadUserThunk.rejected, (state) => {
+  state.isLoading = false;
+  state.user = null;
+})
 
       /* ===== GOOGLE LOGIN ===== */
       .addCase(googleLogin.fulfilled, (state, action) => {

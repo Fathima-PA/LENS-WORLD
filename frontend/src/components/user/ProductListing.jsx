@@ -1,5 +1,6 @@
 import { useEffect, useState, } from "react";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
 
@@ -19,6 +20,16 @@ const ProductListing = () => {
   const [priceRange, setPriceRange] = useState("");
 
   const [wishlist, setWishlist] = useState([]);
+   const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState("success");
+
+  const showMessage = (msg, type = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   let navigate = useNavigate();
 
@@ -79,7 +90,8 @@ const ProductListing = () => {
     );
 
   } catch {
-    alert("Please login first");
+    showMessage("Please login first", "warning");
+     setTimeout(() => navigate("/login"), 1500);
   }
 };
 
@@ -92,15 +104,22 @@ const ProductListing = () => {
     fetchProducts();
   }, [search, sort, selectedCategory, priceRange, page]);
 
-  useEffect(() => {
+
+  const { user } = useSelector((state) => state.auth);
+ useEffect(() => {
+  if (!user) return;   // ✅ IMPORTANT FIX
+
   const loadWishlist = async () => {
     try {
       const data = await getWishlist();
       setWishlist(data.map(i => i.productId));
-    } catch {}
+    } catch (err) {
+      console.log(err);
+    }
   };
+
   loadWishlist();
-}, []);
+}, [user]);
 
 
   const resetFilters = () => {
@@ -113,7 +132,17 @@ const ProductListing = () => {
 
   return (
     <div className="container-fluid bg-light min-vh-100 py-4">
-  
+  {showToast && (
+  <div
+    className={`position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-${toastType} shadow`}
+    style={{ zIndex: 3000, minWidth: "300px" }}
+  >
+    {toastType === "success" && "✔ "}
+    {toastType === "danger" && "✖ "}
+    {toastType === "warning" && "⚠ "}
+    {toastMsg}
+  </div>
+)}
       <div className="d-flex justify-content-between align-items-center mb-3 px-3">
         <span className="fw-semibold">
           {products.length} PRODUCTS FOUND
