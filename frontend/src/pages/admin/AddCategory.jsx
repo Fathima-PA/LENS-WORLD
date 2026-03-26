@@ -42,6 +42,15 @@ const AddCategory = () => {
 
 
   const handleSubmit = async () => {
+
+     const nameRegex = /[a-zA-Z0-9]/;
+
+if (!nameRegex.test(name)) {
+  setToastMsg("Category name must contain valid characters");
+      setToastType("danger");
+      setShowToast(true);
+  return;
+}
     if (!name) {
       setToastMsg("Category name is required");
       setToastType("danger");

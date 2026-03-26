@@ -38,29 +38,69 @@ const [errors, setErrors] = useState({});
 const validateForm = () => {
   let newErrors = {};
 
-  if (!formData.code.trim()) {
+  
+  const code = formData.code.trim();
+
+  if (!code) {
     newErrors.code = "Coupon code is required";
+  } else if (!/^[A-Z0-9]+$/.test(code.toUpperCase())) {
+    newErrors.code = "Only uppercase letters & numbers allowed";
+  } else if (code.length < 4) {
+    newErrors.code = "Minimum 4 characters required";
   }
 
-  if (!formData.discountValue) {
+
+  const discount = Number(formData.discountValue);
+
+  if (!discount) {
     newErrors.discountValue = "Discount value is required";
-  } else if (formData.discountValue <= 0) {
-    newErrors.discountValue = "Discount must be greater than 0";
+  } else if (discount <= 0) {
+    newErrors.discountValue = "Must be greater than 0";
+  } else if (
+    formData.discountType === "percentage" &&
+    discount > 100
+  ) {
+    newErrors.discountValue = "Percentage cannot exceed 100";
   }
 
-  if (!formData.minPurchase) {
+ 
+  const minPurchase = Number(formData.minPurchase);
+
+  if (!minPurchase) {
     newErrors.minPurchase = "Minimum purchase is required";
+  } else if (minPurchase <= 0) {
+    newErrors.minPurchase = "Must be greater than 0";
+  }
+
+  const maxDiscount = Number(formData.maxDiscount);
+
+  if (formData.discountType === "percentage") {
+    if (!maxDiscount) {
+      newErrors.maxDiscount = "Maximum discount is required";
+    } else if (maxDiscount <= 0) {
+      newErrors.maxDiscount = "Must be greater than 0";
+    }
   }
 
   if (
-    formData.discountType === "percentage" &&
-    !formData.maxDiscount
+    formData.discountType === "flat" &&
+    discount >= minPurchase
   ) {
-    newErrors.maxDiscount = "Maximum discount is required";
+    newErrors.discountValue =
+      "Flat discount must be less than minimum purchase";
   }
 
   if (!formData.expiryDate) {
     newErrors.expiryDate = "Expiry date is required";
+  } else {
+    const today = new Date();
+    const selectedDate = new Date(formData.expiryDate);
+
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      newErrors.expiryDate = "Expiry date cannot be in the past";
+    }
   }
 
   setErrors(newErrors);

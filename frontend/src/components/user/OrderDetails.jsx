@@ -60,13 +60,11 @@ const OrderDetails = () => {
   const submitReturn = async () => {
   try {
     if (selectedItemId) {
-      // 👉 ITEM RETURN
       await api.patch(`/api/order/return-item/${order._id}`, {
         itemId: selectedItemId,
         reason,
       });
     } else {
-      // 👉 FULL ORDER RETURN
       await api.patch(`/api/order/return/${order._id}`, {
         reason,
       });
@@ -99,7 +97,7 @@ const OrderDetails = () => {
     const { razorpayOrder } = res.data;
 
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // ✅ FIX
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
       amount: razorpayOrder.amount,
       currency: "INR",
       name: "LensWorld Opticals",
@@ -115,7 +113,7 @@ const OrderDetails = () => {
             razorpay_signature: response.razorpay_signature
           });
 
-          fetchOrder(); // refresh UI after success
+          fetchOrder(); 
 
         } catch (err) {
           setErrorMsg("Payment verification failed");
@@ -125,7 +123,7 @@ const OrderDetails = () => {
       modal: {
         ondismiss: function () {
           console.log("Payment popup closed");
-          setErrorMsg("Payment cancelled"); // optional
+          setErrorMsg("Payment cancelled"); 
         }
       },
 
@@ -147,7 +145,7 @@ const OrderDetails = () => {
           orderId: order._id
         });
 
-        fetchOrder(); // refresh UI
+        fetchOrder(); 
       } catch (err) {
         console.log(err);
       }
@@ -157,7 +155,7 @@ const OrderDetails = () => {
 
   } catch (err) {
     console.log(err);
-    setErrorMsg("Retry payment failed"); // ✅ FIX
+    setErrorMsg("Retry payment failed"); 
   }
 };
 

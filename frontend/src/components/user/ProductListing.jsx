@@ -107,7 +107,7 @@ const ProductListing = () => {
 
   const { user } = useSelector((state) => state.auth);
  useEffect(() => {
-  if (!user) return;   // ✅ IMPORTANT FIX
+  if (!user) return;  
 
   const loadWishlist = async () => {
     try {

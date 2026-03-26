@@ -66,10 +66,17 @@ const Cart = () => {
   // CHECKOUT
   const handleCheckout = () => {
     const invalidItems = cart.filter(i => !i.isAvailable);
-
+    const cartLength = cart.length;
     if (invalidItems.length > 0) {
       showMessage("Remove unavailable products before checkout", "warning");
       return;
+    }
+    if(cartLength===0){
+       showMessage("Cart is empty", "warning");
+       setTimeout(() => {
+      navigate("/product");
+    }, 1000);
+       return;
     }
 
     navigate("/checkout");

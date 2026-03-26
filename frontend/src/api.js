@@ -4,13 +4,13 @@ const api = axios.create({
   baseURL: "http://localhost:3000",
   withCredentials: true,
 });
-console.log("🔥 API FILE LOADED");
+// console.log("🔥 API FILE LOADED");
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    console.log("❌ Error intercepted:", error.response?.status); // ✅ ADD
+    // console.log("❌ Error intercepted:", error.response?.status);
 
     const publicRoutes = [
       "/api/users/login",
@@ -22,7 +22,6 @@ api.interceptors.response.use(
   "/api/products",
   "/api/categories",
   "/api/users/me",
-  "/api/wishlist",
 ];
 
     if (
@@ -37,7 +36,7 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 403) {
-      console.log("🚫 User blocked"); // ✅ ADD
+      // console.log("🚫 User blocked"); 
 
       localStorage.setItem(
         "blockedMsg",
@@ -45,26 +44,26 @@ api.interceptors.response.use(
       );
 
       localStorage.removeItem("isLoggedIn");
-      // window.location.href = "/login";
+      window.location.href = "/login";
 
       return Promise.reject(error);
     }
 
    if (error.response?.status === 401 && !originalRequest._retry) {
 
-  // ✅ skip for public APIs
+
   if (
     publicApis.some(route => originalRequest.url.includes(route))
   ) {
     return Promise.reject(error);
   }
 
-  // ✅ skip refresh if not logged in
+ 
   if (!localStorage.getItem("isLoggedIn")) {
     return Promise.reject(error);
   }
 
-  // ❗ avoid loop on login page
+
   if (window.location.pathname === "/login") {
     return Promise.reject(error);
   }

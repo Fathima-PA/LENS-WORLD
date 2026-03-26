@@ -42,12 +42,20 @@ const showMessage = (msg, type = "success") => {
 };
 
 const validateForm = () => {
+  
   let newErrors = {};
 
-  if (!formData.title.trim()) {
+  const title = formData.title.trim();
+
+  if (!title) {
     newErrors.title = "Offer title is required";
+  } else if (!/[a-zA-Z0-9]/.test(title)) {
+    newErrors.title = "Title must contain valid characters";
+  } else if (title.length < 3) {
+    newErrors.title = "Title must be at least 3 characters";
   }
 
+  
   if (activeTab === "product" && !formData.product) {
     newErrors.product = "Please select a product";
   }
@@ -56,10 +64,55 @@ const validateForm = () => {
     newErrors.category = "Please select a category";
   }
 
-  if (!formData.discountValue || formData.discountValue <= 0) {
-    newErrors.discountValue = "Discount must be greater than 0";
+  
+  const discount = Number(formData.discountValue);
+
+if (!discount) {
+  newErrors.discountValue = "Discount is required";
+} 
+else if (discount <= 0) {
+  newErrors.discountValue = "Must be greater than 0";
+} 
+
+// ✅ PERCENTAGE VALIDATION
+if (formData.discountType === "percentage") {
+  if (discount > 50) {
+    newErrors.discountValue = "Percentage cannot exceed 50%";
+  }
+}
+
+// ✅ FLAT VALIDATION
+if (formData.discountType === "flat") {
+  if (discount < 1) {
+    newErrors.discountValue = "Flat discount must be at least ₹1";
   }
 
+  if (activeTab === "product") {
+  const selectedProduct = products.find(
+    (p) => p._id === formData.product
+  );
+
+  if (selectedProduct) {
+    const price = selectedProduct?.variants?.[0]?.price;
+    if (!price) {
+      newErrors.discountValue = "Invalid product price";
+    } else {
+      if (discount >= price) {
+        newErrors.discountValue =
+          "Flat discount must be less than product price";
+      }
+
+      const finalPrice = price - discount;
+
+      if (finalPrice < 100) {
+        newErrors.discountValue =
+          "Final price cannot be less than ₹100";
+      }
+  }
+}
+  }
+}
+  
   if (!formData.startDate) {
     newErrors.startDate = "Start date required";
   }
@@ -68,22 +121,26 @@ const validateForm = () => {
     newErrors.endDate = "End date required";
   }
 
-  if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
-    newErrors.endDate = "End date must be after start date";
+  if (formData.startDate && formData.endDate) {
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      newErrors.startDate = "Start date cannot be in the past";
+    }
+
+    if (end < today) {
+      newErrors.endDate = "End date cannot be in the past";
+    }
+
+    if (start > end) {
+      newErrors.endDate = "End date must be after start date";
+    }
   }
-  if (
-  formData.discountType === "percentage" &&
-  formData.discountValue > 90
-) {
-  newErrors.discountValue = "Percentage cannot exceed 90%";
-}
-if (
-  formData.discountType === "flat" &&
-  formData.discountValue >= formData.minPurchase
-) {
-  newErrors.discountValue =
-    "Discount must be less than minimum purchase amount";
-}
+
   setErrors(newErrors);
 
   return Object.keys(newErrors).length === 0;
@@ -170,7 +227,7 @@ const fetchCategories = async () => {
 
    const payload = {
   title: formData.title,
-  type: activeTab,   // ⭐ important
+  type: activeTab,   
   discountType: formData.discountType,
   discountValue: formData.discountValue,
   startDate: formData.startDate,
@@ -619,8 +676,10 @@ onClick={() => toggleOffer(offer._id)}
     <Button
 variant="primary"
 onClick={() => {
-   console.log(validateForm());
-  if (!validateForm()) return;
+ const isValid = validateForm();  
+    console.log(isValid);
+
+    if (!isValid) return;
 
   if (isEdit) {
     updateOffer();

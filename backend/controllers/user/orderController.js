@@ -153,7 +153,6 @@ if(paymentMethod === "RAZORPAY"){
     currency:"INR",
     receipt: order._id.toString()
   });
-console.log("Razorpay Order:", razorpayOrder);
   return res.json({
     razorpay:true,
     orderId:order._id,
@@ -282,12 +281,10 @@ export const cancelOrder = async (req, res) => {
 
     let refundAmount = 0;
 
-    // calculate refund
     for (const item of activeItems) {
       refundAmount += calculateRefund(item, order);
     }
 
-    // cancel items + restore stock
     for (const item of activeItems) {
 
       item.status = "Cancelled";
@@ -362,7 +359,6 @@ export const cancelOrderItem = async (req, res) => {
 
     item.status = "Cancelled";
 
-    // restore stock
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
 
@@ -480,7 +476,7 @@ export const returnSingleItem = async (req, res) => {
       });
     }
 
-    // ✅ Set return request
+    
     item.returnRequest = "Pending";
     item.returnReason = reason;
 
@@ -622,7 +618,7 @@ export const verifyRazorpayPayment = async (req,res)=>{
 
     order.paymentStatus = "Paid";
     order.paymentId = razorpay_payment_id;
-   // ✅ APPLY COUPON ONLY AFTER SUCCESS
+   
 if (order.couponCode) {
   const coupon = await Coupon.findOne({ code: order.couponCode });
 
@@ -633,7 +629,7 @@ if (order.couponCode) {
 }
     await order.save();
 
-  // reduce stock
+  
 for (const item of order.items) {
 
   const product = await Product.findById(item.productId);
@@ -647,7 +643,7 @@ for (const item of order.items) {
 
   if (variant.stock < item.quantity) {
     console.log("Stock issue after payment");
-    continue; // ✅ FIXED
+    continue; 
   }
 
   variant.stock -= item.quantity;
@@ -661,9 +657,9 @@ for (const item of order.items) {
 });
 }
 
-// clear cart
+
 await Cart.updateOne(
-  { userId: order.user },   // ✅ FIXED
+  { userId: order.user },   
   { $set: { items: [] } }
 );
 

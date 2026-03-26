@@ -3,7 +3,8 @@ import { Container, Row, Col } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-
+import { useEffect } from "react";
+import api from "../../api";
 import ProfileSidebar from "../../components/user/ProfileSidebar";
 import AccountInfoCard from "../../components/user/AccountInfoCard";
 import AddressCard from "../../components/user/AddressCard";
@@ -24,6 +25,8 @@ const params = new URLSearchParams(location.search);
 
   const [activeTab, setActiveTab] = useState(params.get("tab") || "dashboard");
   const { user } = useSelector((state) => state.auth);
+
+
 
   return (
     <Container fluid className="py-4" style={{ background: "#fafafa" }}>

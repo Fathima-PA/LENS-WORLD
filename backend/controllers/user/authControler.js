@@ -23,6 +23,12 @@ export const googleLogin = async (req, res) => {
       });
     }
 
+    if (user.isBlocked) {
+      return res.status(403).json({
+        message: "Your account has been blocked by admin",
+      });
+    }
+
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 

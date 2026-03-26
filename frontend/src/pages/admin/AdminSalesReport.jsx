@@ -3,6 +3,7 @@ import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import CustomToast from "../../components/common/CustomToast";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -15,7 +16,16 @@ const AdminSalesReport = () => {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("danger");
 
+
+const showMessage = (msg, type = "danger") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
   const fetchReport = async (type = filterType) => {
 
     try {
@@ -79,7 +89,30 @@ const AdminSalesReport = () => {
       }
     ]
   };
+const validateCustomDates = () => {
+  if (!startDate || !endDate) {
+    showMessage("Please select both start and end dates");
+    return false;
+  }
 
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  if (start > end) {
+    showMessage("Start date cannot be after end date");
+    return false;
+  }
+
+  if (start > today || end > today) {
+    showMessage("Future dates are not allowed");
+    return false;
+  }
+
+  return true;
+};
   return (
 
     <div className="d-flex">
@@ -165,7 +198,10 @@ const AdminSalesReport = () => {
 
                 <button
                   className="btn btn-dark"
-                  onClick={() => fetchReport("custom")}
+                  onClick={() => {
+  if (!validateCustomDates()) return;
+  fetchReport("custom");
+}}
                 >
                   Generate
                 </button>
@@ -369,6 +405,12 @@ const AdminSalesReport = () => {
         )}
 
       </div>
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
 
     </div>
 

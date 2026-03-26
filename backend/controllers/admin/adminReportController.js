@@ -52,7 +52,7 @@ export const getSalesReport = async (req, res) => {
     }
 
     const orders = await Order.find(filter).sort({createdAt:-1}).populate("user");
-    console.log(orders);
+    
 
     let totalSales = 0;
     let totalDiscount = 0;

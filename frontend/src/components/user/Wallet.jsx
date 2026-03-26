@@ -20,7 +20,11 @@ const Wallet = () => {
       setHistory(res.data.walletHistory);
 
     }catch(err){
-      console.error("Wallet fetch error",err);
+     if (err.response?.status === 401) {
+      showMessage("Please login again");
+      navigate("/login");
+      return;
+    }
     }
   };
 

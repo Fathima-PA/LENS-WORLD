@@ -29,7 +29,6 @@ export const sendOtp = createAsyncThunk(
   }
 );
 
-// FINAL REGISTER (AFTER OTP VERIFIED)
 export const completeRegister = createAsyncThunk(
   "auth/completeRegister",
   async (data, thunkAPI) => {
@@ -65,7 +64,7 @@ export const loadUserThunk = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const data = await authService.getMe();
-      console.log("✅ loadUserThunk success:", data); // debug
+      // console.log("✅ loadUserThunk success:", data); 
 
       return data;
     } catch {
@@ -96,6 +95,12 @@ export const googleLogin = createAsyncThunk(
 
       return response.data;
     } catch (error) {
+       if (error.response?.status === 403) {
+        return thunkAPI.rejectWithValue(
+          error.response.data.message || "Account blocked"
+        );
+      }
+
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -241,6 +246,10 @@ const authSlice = createSlice({
         state.isSuccess = true;
         state.user = action.payload.user;
       })
+      .addCase(googleLogin.rejected, (state, action) => {
+  state.isError = true;
+  state.message = action.payload;
+})
 
       /* ===== UPDATE PROFILE ===== */
       .addCase(updateProfileThunk.fulfilled, (state, action) => {

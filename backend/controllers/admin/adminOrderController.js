@@ -1,6 +1,7 @@
 import Order from "../../models/OrderModel.js";
 import User from "../../models/userModel.js";
 import Product from "../../models/ProductModel.js";
+import Category from "../../models/CategoryModel.js";
 
 // GET ORDERS
 export const getAllOrders = async (req, res) => {

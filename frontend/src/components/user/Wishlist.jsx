@@ -1,16 +1,26 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
+import CustomToast from "../../components/common/CustomToast";
 
 
 const Wishlist = () => {
   const [items, setItems] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+const [toastType, setToastType] = useState("danger");
+
+const showMessage = (msg, type = "danger") => {
+  setToastMsg(msg);
+  setToastType(type);
+  setShowToast(true);
+};
 
 const fetchWishlist = async () => {
   try {
     const res = await api.get("/api/wishlist");
 
     if (!Array.isArray(res.data)) {
-      if (res.data.warning) alert(res.data.warning);
+      if (res.data.warning) showMessage(res.data.warning);
       setItems(res.data.items || []);
       return;
     }
@@ -19,12 +29,13 @@ const fetchWishlist = async () => {
 
   } catch (error) {
     if (error.response?.status === 401) {
-      alert("Please login again");
+      showMessage("Please login again");
       navigate("/login");
       return;
     }
+    
 
-    alert(error.response?.data?.message || "Something went wrong");
+    showMessage(error.response?.data?.message || "Something went wrong");
   }
 };
 
@@ -168,6 +179,12 @@ const fetchWishlist = async () => {
           </div>
         ))
       )}
+      <CustomToast
+  show={showToast}
+  setShow={setShowToast}
+  message={toastMsg}
+  type={toastType}
+/>
 
     </div>
   );

@@ -98,20 +98,41 @@ const handleAddVariant = () => {
 
   const validImages = images.filter(img => img);
 
-  if (!variantName || !price || !stock || !color) {
-    showMessage("Variant name, color, price & stock required", "danger");
+   if (!variantName.trim() || !price || !stock || !color) {
+    showMessage("All variant fields are required", "danger");
+    return;
+  }
+  const nameRegex = /[a-zA-Z0-9]/;
+
+if (!nameRegex.test(variantName)) {
+  showMessage("Variant name must contain valid characters", "danger");
+  return;
+}
+
+  if (variantName.trim().length < 2) {
+    showMessage("Variant name must be at least 2 characters", "danger");
+    return;
+  }
+
+
+  if (isNaN(price) || Number(price) <= 0) {
+    showMessage("Price must be greater than 0", "danger");
+    return;
+  }
+
+  if (isNaN(stock) || Number(stock) < 0) {
+    showMessage("Stock cannot be negative", "danger");
     return;
   }
 
   
-  if (editVariantIndex === null && validImages.length !== 3) {
-    showMessage("New variant must have exactly 3 images", "danger");
+  if (validImages.length !== 3) {
+    showMessage("Exactly 3 images required", "danger");
     return;
   }
-
-
-  if (editVariantIndex !== null && validImages.length !== 3) {
-    showMessage("Variant must contain 3 images", "danger");
+ 
+  if (editVariantIndex === null && validImages.length !== 3) {
+    showMessage("New variant must have exactly 3 images", "danger");
     return;
   }
 
@@ -175,16 +196,43 @@ const handleAddVariant = () => {
   };
 
   const handleSaveProduct = async () => {
-    if (!name || !brand || !description || !category) {
-      showMessage("All product fields required", "danger");
-      return;
-    }
+    if (!name.trim() || !brand.trim() || !description.trim() || !category) {
+    showMessage("All product fields are required", "danger");
+    return;
+  }
 
-    if (variants.length === 0) {
-      showMessage("Add at least one variant", "danger");
-      return;
-    }
+ 
+  if (name.trim().length < 3) {
+    showMessage("Product name must be at least 3 characters", "danger");
+    return;
+  }
 
+  if (brand.trim().length < 2) {
+    showMessage("Brand must be valid", "danger");
+    return;
+  }
+  if (description.trim().length < 5) {
+    showMessage("Description too short", "danger");
+    return;
+  }
+
+  if (variants.length === 0) {
+    showMessage("Add at least one variant", "danger");
+    return;
+  }
+
+
+  const validNameRegex = /^[a-zA-Z0-9\s]+$/;
+
+if (!validNameRegex.test(name)) {
+  showMessage("Product name must contain only letters and numbers", "danger");
+  return;
+}
+
+if (!validNameRegex.test(brand)) {
+  showMessage("Brand must contain only letters and numbers", "danger");
+  return;
+}
     const formData = new FormData();
 
     formData.append("name", name);

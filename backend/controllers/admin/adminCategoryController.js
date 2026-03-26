@@ -36,7 +36,9 @@ export const createCategory = async (req, res) => {
     if (!req.file)
       return res.status(400).json({ message: "Category image is required" });
 
-    const exists = await Category.findOne({ name: name.trim().toUpperCase() });
+   const exists = await Category.findOne({
+  name: { $regex: `^${name.trim()}$`, $options: "i" }
+});
     if (exists)
       return res.status(400).json({ message: "Category already exists" });
 

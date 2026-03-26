@@ -31,7 +31,11 @@ const OrderHistory = () => {
         setTotalPages(res.data.totalPages); 
 
     } catch (err) {
-      console.log(err);
+      if (error.response?.status === 401) {
+      showMessage("Please login again");
+      navigate("/login");
+      return;
+    }
     }
   };
 
