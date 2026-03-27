@@ -3,7 +3,7 @@ import axios from "axios";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 
 import { Toast, ToastContainer } from "react-bootstrap"; 
-
+import api from "../../api";
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,8 +37,8 @@ const ResetPassword = () => {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/reset-password",
+      const res = await api.post(
+        "/api/auth/reset-password",
         { email, password }
       );
 

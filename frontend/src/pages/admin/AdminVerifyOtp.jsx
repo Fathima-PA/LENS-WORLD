@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Toast, ToastContainer } from "react-bootstrap";
-
+import api from "../../api";
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
@@ -32,8 +32,8 @@ const VerifyOtp = () => {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/verify-otp",
+      const res = await api.post(
+        "/api/auth/verify-otp",
         { email, otp, purpose, role: finalRole },
         { withCredentials: true }
       );
@@ -54,8 +54,8 @@ const VerifyOtp = () => {
 
   const resendOtp = async () => {
     try {
-      await axios.post(
-        "http://localhost:3000/api/auth/send-otp",
+      await api.post(
+        "/api/auth/send-otp",
         { email, purpose, role: finalRole },
         { withCredentials: true }
       );

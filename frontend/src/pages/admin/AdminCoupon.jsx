@@ -3,7 +3,7 @@ import { Container, Table, Button, Form, Modal, Pagination } from "react-bootstr
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import CustomToast from "../../components/common/CustomToast";
-
+import api from "../../api";
 const AdminCoupons = () => {
 
   const [coupons, setCoupons] = useState([]);
@@ -113,8 +113,8 @@ const validateForm = () => {
   const fetchCoupons = async () => {
   try {
 
-    const res = await axios.get(
-      "http://localhost:3000/api/admin/coupons",
+    const res = await api.get(
+      "/api/admin/coupons",
       {
         params: {
           page: currentPage,
@@ -144,8 +144,8 @@ const validateForm = () => {
 
     try {
 
-      const res = await axios.post(
-        "http://localhost:3000/api/admin/create-coupon",
+      const res = await api.post(
+        "/api/admin/create-coupon",
         formData,
         { withCredentials: true }
       );
@@ -182,8 +182,8 @@ const validateForm = () => {
 
     try {
 
-      const res = await axios.patch(
-        `http://localhost:3000/api/admin/toggle-coupon/${id}`,
+      const res = await api.patch(
+        `/api/admin/toggle-coupon/${id}`,
         { withCredentials: true }
       );
 
@@ -202,8 +202,8 @@ const validateForm = () => {
 
   try {
 
-    const res = await axios.put(
-      `http://localhost:3000/api/admin/update-coupon/${editId}`,
+    const res = await api.put(
+      `/api/admin/update-coupon/${editId}`,
       formData,
       { withCredentials: true }
     );

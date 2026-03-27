@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { Toast, ToastContainer } from "react-bootstrap";
-
+import api from "../../api";
 const AddCategory = () => {
   const navigate = useNavigate();
   const { id } = useParams(); 
@@ -23,8 +23,8 @@ const AddCategory = () => {
 
     const fetchCategory = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3000/api/admin/categories/${id}`,
+        const res = await api.get(
+          `/api/admin/categories/${id}`,
           { withCredentials: true }
         );
 
@@ -64,15 +64,15 @@ if (!nameRegex.test(name)) {
       if (image) formData.append("image", image);
 
       if (isEdit) {
-        await axios.put(
-          `http://localhost:3000/api/admin/categories/${id}`,
+        await api.put(
+          `/api/admin/categories/${id}`,
           formData,
           { withCredentials: true }
         );
         setToastMsg("Category updated successfully ");
       } else {
-        await axios.post(
-          "http://localhost:3000/api/admin/categories",
+        await api.post(
+          "/api/admin/categories",
           formData,
           { withCredentials: true }
         );

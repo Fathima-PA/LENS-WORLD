@@ -3,7 +3,7 @@ import authService from "../../../services/user/authService";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../../firebase";
 import axios from "axios";
-
+import api from "../../../api";
 const initialState = {
   user: null,
 
@@ -82,8 +82,8 @@ export const googleLogin = createAsyncThunk(
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
 
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/google",
+      const response = await api.post(
+        "/api/auth/google",
         {
           name: firebaseUser.displayName,
           email: firebaseUser.email,
@@ -199,7 +199,7 @@ const authSlice = createSlice({
       .addCase(completeRegister.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        // state.user = action.payload.user;
+        state.user = action.payload.user;
         state.tempRegister = null;
       })
       .addCase(completeRegister.rejected, (state, action) => {

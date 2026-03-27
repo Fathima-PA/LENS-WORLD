@@ -21,20 +21,25 @@ const Cart = () => {
   const fetchCart = async () => {
     try {
       const res = await api.get("/api/cart");
-
+    let data = [];
       if (!Array.isArray(res.data)) {
         if (res.data.warning) {
           showMessage(res.data.warning, "warning");
           navigate("/product");
         }
-        setCart(res.data.items || []);
-        return;
+        // setCart(res.data.items || []);
+         data = res.data.items || [];
+        // return;
+      }else{
+         data = res.data;
       }
 
       setCart(res.data);
+      return data;
 
     } catch (error) {
       showMessage("Something went wrong", "danger");
+      return [];
     }
   };
 
@@ -64,23 +69,37 @@ const Cart = () => {
   };
 
   // CHECKOUT
-  const handleCheckout = () => {
-    const invalidItems = cart.filter(i => !i.isAvailable);
-    const cartLength = cart.length;
-    if (invalidItems.length > 0) {
-      showMessage("Remove unavailable products before checkout", "warning");
-      return;
-    }
-    if(cartLength===0){
-       showMessage("Cart is empty", "warning");
-       setTimeout(() => {
-      navigate("/product");
-    }, 1000);
-       return;
-    }
+  const handleCheckout = async () => {
 
-    navigate("/checkout");
-  };
+    const latestCart = await fetchCart(); 
+  const invalidItems = latestCart.filter(
+    (item) => !item.isAvailable || !item.isActive
+  );
+
+  if (invalidItems.length > 0) {
+    showMessage(
+      "Remove unavailable or blocked products before checkout",
+      "warning"
+    );
+    return;
+  }
+
+  // if (cart.length === 0) {
+  //   showMessage("Cart is empty", "warning");
+  //   setTimeout(() => {
+  //     navigate("/product");
+  //   }, 1000);
+  //   return;
+  // }/
+
+   if (latestCart.length === 0) {
+    showMessage("Cart is empty", "warning");
+    navigate("/product");
+    return;
+  }
+
+  navigate("/checkout");
+};
 
   // TOTAL
   const subTotal = cart.reduce((sum, item) => sum + item.total, 0);
@@ -146,17 +165,15 @@ const Cart = () => {
                     Remove
                   </button>
 
-                  {!item.isActive && (
-                    <div className="text-danger small fw-semibold">
-                      This product is currently unavailable
-                    </div>
-                  )}
-
-                  {!item.isAvailable && (
-                    <div className="text-warning small fw-semibold">
-                      Out of stock
-                    </div>
-                  )}
+                  {!item.isActive ? (
+  <div className="text-danger small fw-semibold mt-1">
+    This product is currently unavailable
+  </div>
+) : !item.isAvailable ? (
+  <div className="text-warning small fw-semibold mt-1">
+    This product is out of stock
+  </div>
+) : null}
                 </div>
 <div className="text-end">
 

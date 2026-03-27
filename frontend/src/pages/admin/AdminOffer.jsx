@@ -3,6 +3,8 @@ import { Container, Table, Button, Form, Badge, Modal, Pagination } from "react-
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import axios from "axios";
 import CustomToast from "../../components/common/CustomToast";
+import api from "../../api";
+
 
 const AdminOffers = () => {
 const [isEdit, setIsEdit] = useState(false);
@@ -74,14 +76,14 @@ else if (discount <= 0) {
   newErrors.discountValue = "Must be greater than 0";
 } 
 
-// ✅ PERCENTAGE VALIDATION
+
 if (formData.discountType === "percentage") {
   if (discount > 50) {
     newErrors.discountValue = "Percentage cannot exceed 50%";
   }
 }
 
-// ✅ FLAT VALIDATION
+
 if (formData.discountType === "flat") {
   if (discount < 1) {
     newErrors.discountValue = "Flat discount must be at least ₹1";
@@ -149,7 +151,7 @@ if (formData.discountType === "flat") {
 const fetchProducts = async () => {
   try {
 
-    const res = await axios.get("http://localhost:3000/api/admin/products",{
+    const res = await api.get("/api/admin/products",{
           withCredentials: true,
     }); 
       setProducts(res.data.data);
@@ -162,7 +164,7 @@ const fetchProducts = async () => {
 const fetchCategories = async () => {
   try {
 
-    const res = await axios.get("http://localhost:3000/api/admin/categories",{
+    const res = await api.get("/api/admin/categories",{
           withCredentials: true,
     });
 
@@ -178,8 +180,8 @@ const fetchCategories = async () => {
  const fetchOffers = async () => {
   try {
 
-    const res = await axios.get(
-      `http://localhost:3000/api/admin/offers`,
+    const res = await api.get(
+      `/api/admin/offers`,
       { withCredentials: true,params:{
         type: activeTab,
             page: currentPage,
@@ -205,8 +207,8 @@ const fetchCategories = async () => {
 
     try {
 
-      const res = await axios.patch(
-  `http://localhost:3000/api/admin/toggle-offer/${id}`,
+      const res = await api.patch(
+  `/api/admin/toggle-offer/${id}`,
   {},
   { withCredentials: true }
 );
@@ -240,8 +242,8 @@ if (activeTab === "product") {
   payload.category = formData.category;
 }
 
-    const res = await axios.post(
-      "http://localhost:3000/api/admin/add-offer",
+    const res = await api.post(
+      "/api/admin/add-offer",
       payload,
       { withCredentials: true }
     );
@@ -279,7 +281,7 @@ if (!res.data.success) {
 
     const payload = {
       title: formData.title,
-      type: activeTab,   // ⭐ VERY IMPORTANT
+      type: activeTab,   
       discountType: formData.discountType,
       discountValue: formData.discountValue,
       startDate: formData.startDate,
@@ -292,8 +294,8 @@ if (!res.data.success) {
       payload.category = formData.category;
     }
 
-    const res = await axios.put(
-      `http://localhost:3000/api/admin/update-offer/${editId}`,
+    const res = await api.put(
+      `/api/admin/update-offer/${editId}`,
       payload,
       { withCredentials: true }
     );

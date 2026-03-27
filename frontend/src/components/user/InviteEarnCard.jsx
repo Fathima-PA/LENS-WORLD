@@ -1,19 +1,28 @@
-import { Card, Button } from "react-bootstrap";
+import { Card, Button,Toast, ToastContainer } from "react-bootstrap";
 import { useSelector } from "react-redux";
+import { useState } from "react";
 
 const InviteEarnCard = () => {
 
   const { user } = useSelector((state) => state.auth);
 
+    const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+
+ const showMessage = (msg) => {
+    setToastMsg(msg);
+    setShowToast(true);
+  };
   const copyCode = () => {
     if (user?.referralCode) {
       navigator.clipboard.writeText(user.referralCode);
-      alert("Referral code copied!");
+     showMessage("Referral code copied! ✅");
     }
   };
 
   return (
-    <Card className="shadow-sm border-0 rounded">
+    <>
+ <Card className="shadow-sm border-0 rounded">
       <Card.Body>
 
         <Card.Title className="fw-semibold mb-3">
@@ -49,6 +58,24 @@ const InviteEarnCard = () => {
 
       </Card.Body>
     </Card>
+
+
+
+    <ToastContainer position="top-center">
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          delay={2000}
+          autohide
+          bg="success"
+        >
+          <Toast.Body className="text-white text-center fw-semibold">
+            {toastMsg}
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+    </>
+   
   );
 };
 

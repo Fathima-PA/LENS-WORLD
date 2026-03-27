@@ -80,7 +80,7 @@ export const updateCategory = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     if (name) {
       const exists = await Category.findOne({
-        name: name.trim(),
+         name: { $regex: `^${name.trim()}$`, $options: "i" },
         _id: { $ne: category._id },
       });
 

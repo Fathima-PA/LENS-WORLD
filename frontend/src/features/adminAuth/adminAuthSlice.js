@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import api from "../../api";
 
 export const loadAdminThunk = createAsyncThunk(
   "adminAuth/loadAdmin",
   async (_, thunkAPI) => {
     try {
-      const res = await axios.get("http://localhost:3000/api/admin/me", {
+      const res = await api.get("/api/admin/me", {
         withCredentials: true,
       });
       return res.data;

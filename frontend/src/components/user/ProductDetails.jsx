@@ -4,7 +4,7 @@ import axios from "axios";
 import "react-inner-image-zoom/lib/styles.min.css";
 import InnerImageZoom from 'react-inner-image-zoom'
 import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
-
+import api from "../../api";
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -31,8 +31,8 @@ const ProductDetails = () => {
   ====================== */
   const fetchProduct = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:3000/api/products/${id}`
+      const res = await api.get(
+        `/api/products/${id}`
       );
 
       const data = res.data;
@@ -54,8 +54,8 @@ const ProductDetails = () => {
   ====================== */
   const fetchRelated = async (categoryId, productId) => {
     try {
-      const res = await axios.get(
-        "http://localhost:3000/api/products/related/items",
+      const res = await api.get(
+        "/api/products/related/items",
         {
           params: { categoryId, productId },
         }
@@ -68,8 +68,8 @@ const ProductDetails = () => {
 
   const handleAddToCart = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/cart/add",
+      const res = await api.post(
+        "/api/cart/add",
         {
           productId: product._id,
           variantId: activeVariant._id,

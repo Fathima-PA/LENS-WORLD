@@ -15,7 +15,7 @@ import "../../styles/AdminCategories.css";
 import { getCroppedImage } from "../../data/cropImage";
 import ImageCropModal from "../../components/admin/ImageCropModal";
 import CustomToast from "../../components/common/CustomToast";
-
+import api from "../../api";
 const AddProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -46,6 +46,9 @@ const AddProduct = () => {
 const [toastMsg, setToastMsg] = useState("");
 const [toastType, setToastType] = useState("success");
 
+const [errors, setErrors] = useState({});
+const [variantErrors, setVariantErrors] = useState({});
+
 
 const showMessage = (msg, type = "success") => {
   setToastMsg(msg);
@@ -56,8 +59,8 @@ const showMessage = (msg, type = "success") => {
     if (!isEdit) return;
 
     const fetchProduct = async () => {
-      const res = await axios.get(
-        `http://localhost:3000/api/admin/products/${id}`,
+      const res = await api.get(
+        `/api/admin/products/${id}`,
         { withCredentials: true }
       );
 
@@ -86,8 +89,8 @@ const showMessage = (msg, type = "success") => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res = await axios.get(
-        "http://localhost:3000/api/admin/categories",
+      const res = await api.get(
+        "/api/admin/categories",
         { withCredentials: true }
       );
       setCategories(res.data.data);
@@ -95,41 +98,38 @@ const showMessage = (msg, type = "success") => {
     fetchCategories();
   }, []);
 const handleAddVariant = () => {
-
+let newErrors = {};
   const validImages = images.filter(img => img);
 
-   if (!variantName.trim() || !price || !stock || !color) {
-    showMessage("All variant fields are required", "danger");
-    return;
-  }
-  const nameRegex = /[a-zA-Z0-9]/;
-
-if (!nameRegex.test(variantName)) {
-  showMessage("Variant name must contain valid characters", "danger");
-  return;
-}
-
-  if (variantName.trim().length < 2) {
-    showMessage("Variant name must be at least 2 characters", "danger");
-    return;
+  
+  if (!variantName.trim()) {
+    newErrors.variantName = "Variant name is required";
+  } else if (!/[a-zA-Z0-9]/.test(variantName)) {
+    newErrors.variantName = "Invalid characters";
+  } else if (variantName.trim().length < 2) {
+    newErrors.variantName = "At least 2 characters required";
   }
 
-
-  if (isNaN(price) || Number(price) <= 0) {
-    showMessage("Price must be greater than 0", "danger");
-    return;
+ if (!price) {
+    newErrors.price = "Price is required";
+  } else if (isNaN(price) || Number(price) <= 0) {
+    newErrors.price = "Must be greater than 0";
   }
 
-  if (isNaN(stock) || Number(stock) < 0) {
-    showMessage("Stock cannot be negative", "danger");
-    return;
+ if (!stock) {
+    newErrors.stock = "Stock is required";
+  } else if (isNaN(stock) || Number(stock) < 0) {
+    newErrors.stock = "Cannot be negative";
   }
 
   
-  if (validImages.length !== 3) {
-    showMessage("Exactly 3 images required", "danger");
-    return;
+ if (validImages.length !== 3) {
+    newErrors.images = "Exactly 3 images required";
   }
+
+  setVariantErrors(newErrors);
+
+  if (Object.keys(newErrors).length > 0) return;
  
   if (editVariantIndex === null && validImages.length !== 3) {
     showMessage("New variant must have exactly 3 images", "danger");
@@ -196,43 +196,46 @@ if (!nameRegex.test(variantName)) {
   };
 
   const handleSaveProduct = async () => {
-    if (!name.trim() || !brand.trim() || !description.trim() || !category) {
-    showMessage("All product fields are required", "danger");
-    return;
-  }
+    let newErrors = {};
+  //   if (!name.trim() || !brand.trim() || !description.trim() || !category) {
+  //   showMessage("All product fields are required", "danger");
+  //   return;
+  // }
 
  
-  if (name.trim().length < 3) {
-    showMessage("Product name must be at least 3 characters", "danger");
-    return;
+  if (!name.trim()) {
+    newErrors.name = "Product name is required";
+  } else if (name.trim().length < 3) {
+    newErrors.name = "Product name must be at least 3 characters";
+  } else if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
+    newErrors.name = "Only letters and numbers allowed";
   }
 
-  if (brand.trim().length < 2) {
-    showMessage("Brand must be valid", "danger");
-    return;
+    if (!brand.trim()) {
+    newErrors.brand = "Brand is required";
+  } else if (brand.trim().length < 2) {
+    newErrors.brand = "Brand must be at least 2 characters";
+  } else if (!/^[a-zA-Z0-9\s]+$/.test(brand)) {
+    newErrors.brand = "Only letters and numbers allowed";
   }
-  if (description.trim().length < 5) {
-    showMessage("Description too short", "danger");
-    return;
+  if (!description.trim()) {
+    newErrors.description = "Description is required";
+  } else if (description.trim().length < 5) {
+    newErrors.description = "Description too short";
+  }
+
+  if (!category) {
+    newErrors.category = "Category is required";
   }
 
   if (variants.length === 0) {
     showMessage("Add at least one variant", "danger");
     return;
   }
+ setErrors(newErrors);
 
+  if (Object.keys(newErrors).length > 0) return;
 
-  const validNameRegex = /^[a-zA-Z0-9\s]+$/;
-
-if (!validNameRegex.test(name)) {
-  showMessage("Product name must contain only letters and numbers", "danger");
-  return;
-}
-
-if (!validNameRegex.test(brand)) {
-  showMessage("Brand must contain only letters and numbers", "danger");
-  return;
-}
     const formData = new FormData();
 
     formData.append("name", name);
@@ -259,22 +262,22 @@ if (!validNameRegex.test(brand)) {
   v.images.forEach((img) => {
     if (img instanceof File) {
       formData.append("images", img);
-      formData.append("variantIndex", index); // 👈 ADD THIS LINE
+      formData.append("variantIndex", index); 
     }
   });
 });
 
     try {
       if (isEdit) {
-        await axios.put(
-          `http://localhost:3000/api/admin/products/${id}`,
+        await api.put(
+          `/api/admin/products/${id}`,
           formData,
           { withCredentials: true }
         );
        showMessage("Product updated successfully");
       } else {
-        await axios.post(
-          "http://localhost:3000/api/admin/products",
+        await api.post(
+          "/api/admin/products",
           formData,
           { withCredentials: true }
         );
@@ -346,12 +349,14 @@ const handleRemoveImage = (index) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+              {errors.name && <small className="text-danger">{errors.name}</small>}
               <Form.Control
                 className="mb-3"
                 placeholder="Brand"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
               />
+              {errors.brand && <small className="text-danger">{errors.brand}</small>}
               <Form.Control
                 as="textarea"
                 rows={3}
@@ -359,6 +364,7 @@ const handleRemoveImage = (index) => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+              {errors.description && <small className="text-danger">{errors.description}</small>}
               <Form.Select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -370,12 +376,18 @@ const handleRemoveImage = (index) => {
                   </option>
                 ))}
               </Form.Select>
+              {errors.category && (
+  <small className="text-danger">{errors.category}</small>
+)}
             </Card>
 
             <Card className="p-4">
               <div className="d-flex justify-content-between mb-3">
                 <h5>Variants</h5>
-                <Button onClick={() => setShowVariantModal(true)}>
+                <Button onClick={() => {
+                  setVariantErrors({});
+                  setShowVariantModal(true)
+                }}>
                   + Add Variant
                 </Button>
               </div>
@@ -435,6 +447,9 @@ const handleRemoveImage = (index) => {
             value={variantName}
             onChange={(e) => setVariantName(e.target.value)}
           />
+          {variantErrors.variantName && (
+  <small className="text-danger">{variantErrors.variantName}</small>
+)}
 
           <Form.Group className="mb-2">
             <Form.Label>Color</Form.Label>
@@ -452,7 +467,9 @@ const handleRemoveImage = (index) => {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
-
+    {variantErrors.price && (
+  <small className="text-danger">{variantErrors.price}</small>
+)}
           <Form.Control
             className="mb-3"
             type="number"
@@ -460,7 +477,9 @@ const handleRemoveImage = (index) => {
             value={stock}
             onChange={(e) => setStock(e.target.value)}
           />
-
+        {variantErrors.stock && (
+  <small className="text-danger">{variantErrors.stock}</small>
+)}
           <Form.Group className="mb-3">
             <Form.Label>Upload 3 Images</Form.Label>
 
@@ -523,6 +542,9 @@ const handleRemoveImage = (index) => {
               Exactly 3 images are required
             </small>
           </Form.Group>
+          {variantErrors.images && (
+  <small className="text-danger">{variantErrors.images}</small>
+)}
         </Modal.Body>
 
         <Modal.Footer>

@@ -4,9 +4,10 @@ import {
   loginUser,
   reset,
   googleLogin,
+  loadUserThunk 
 } from "../../features/userAuth/auth/authSlice";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../api";
 
 import { Toast, ToastContainer } from "react-bootstrap";
 
@@ -84,13 +85,15 @@ useEffect(() => {
     }
 
     if (isSuccess && user) {
-      showMessage("Login successful ", "success");
+  showMessage("Login successful ", "success");
 
-      setTimeout(() => {
-       navigate("/home", { replace: true });
-        dispatch(reset());
-      }, 1000);
-    }
+  dispatch(loadUserThunk());
+
+  setTimeout(() => {
+    navigate("/home", { replace: true });
+    dispatch(reset());
+  }, 1000);
+}
   }, [isError, isSuccess, user, message, navigate, dispatch]);
 
   
@@ -128,7 +131,7 @@ useEffect(() => {
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/send-otp", {
+      const res = await api.post("/api/auth/send-otp", {
         email: email.toLowerCase().trim(),
         purpose: "FORGOT_PASSWORD",
       });

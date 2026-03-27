@@ -4,7 +4,7 @@ import AdminSidebar from "../../components/admin/AdminSidebar";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import CustomToast from "../../components/common/CustomToast";
-
+import api from "../../api";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const AdminSalesReport = () => {
@@ -32,8 +32,8 @@ const showMessage = (msg, type = "danger") => {
 
       setLoading(true);
 
-      const res = await axios.get(
-        "http://localhost:3000/api/admin/sales-report",
+      const res = await api.get(
+        "/api/admin/sales-report",
         {
           params: {
             type,

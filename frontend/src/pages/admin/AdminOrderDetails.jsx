@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Table, Badge, Button } from "react-bootstrap";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-
+import api from "../../api";
 const statusColor = {
   Placed: "secondary",
   Packaging: "info",
@@ -23,8 +23,8 @@ const AdminOrderDetails = () => {
   }, []);
 
   const fetchOrder = async () => {
-    const res = await axios.get(
-      `http://localhost:3000/api/admin/orders/${id}`,
+    const res = await api.get(
+      `/api/admin/orders/${id}`,
       { withCredentials: true }
     );
     setOrder(res.data);
@@ -38,8 +38,8 @@ const AdminOrderDetails = () => {
   // APPROVE RETURN
 
   const approveReturn = async (itemId) => {
-    await axios.patch(
-      `http://localhost:3000/api/admin/orders/approve-return/${order._id}`,
+    await api.patch(
+      `/api/admin/orders/approve-return/${order._id}`,
       { itemId },
       { withCredentials: true }
     );
@@ -47,8 +47,8 @@ const AdminOrderDetails = () => {
   };
 
   const rejectReturn = async (itemId) => {
-    await axios.patch(
-      `http://localhost:3000/api/admin/orders/reject-return/${order._id}`,
+    await api.patch(
+      `/api/admin/orders/reject-return/${order._id}`,
       { itemId },
       { withCredentials: true }
     );

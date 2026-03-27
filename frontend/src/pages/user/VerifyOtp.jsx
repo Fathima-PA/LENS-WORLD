@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Toast, ToastContainer } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { completeRegister, reset } from "../../features/userAuth/auth/authSlice";
-
+import api from "../../api";
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
@@ -52,8 +52,8 @@ const VerifyOtp = () => {
 
     try {
       // 1️⃣ VERIFY OTP FIRST
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/verify-otp",
+      const res = await api.post(
+        "/api/auth/verify-otp",
         { email, otp, purpose }
       );
 
@@ -106,7 +106,7 @@ const VerifyOtp = () => {
     if (!canResend) return;
 
     try {
-      await axios.post("http://localhost:3000/api/auth/send-otp", {
+      await api.post("/api/auth/send-otp", {
         email,
         purpose,
       });

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
-
+import api from "../../api";
 
 const ProductListing = () => {
   const [products, setProducts] = useState([]);
@@ -38,8 +38,8 @@ const ProductListing = () => {
   ====================== */
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:3000/api/products/categories"
+      const res = await api.get(
+        "/api/products/categories"
       );
       setCategories(res.data);
     } catch (error) {
@@ -52,7 +52,7 @@ const ProductListing = () => {
   ====================== */
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/products", {
+      const res = await api.get("/api/products", {
         params: {
           search,
           sort,

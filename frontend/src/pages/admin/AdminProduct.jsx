@@ -15,7 +15,7 @@ import AdminSidebar from "../../components/admin/AdminSidebar";
 import "../../styles/AdminCategories.css";
 import Swal from "sweetalert2";
 import CustomToast from "../../components/common/CustomToast";
-
+import api from "../../api";
 const AdminProducts = () => {
   const navigate = useNavigate();
 
@@ -37,8 +37,8 @@ const showMessage = (msg, type = "success") => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:3000/api/admin/products",
+      const res = await api.get(
+        "/api/admin/products",
         {
           params: { search, filter, page, limit: 10 },
           withCredentials: true,
@@ -68,8 +68,8 @@ const handleToggleStatus = async (product) => {
 if (!result.isConfirmed) return;
 
   try {
-    await axios.patch(
-      `http://localhost:3000/api/admin/products/toggle/${product._id}`,
+    await api.patch(
+      `/api/admin/products/toggle/${product._id}`,
       {},
       { withCredentials: true }
     );

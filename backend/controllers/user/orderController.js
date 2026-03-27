@@ -110,19 +110,39 @@ const grandTotal = subtotal + tax + shipping - discount;
 
 }
 
-if(paymentMethod === "WALLET"){
+// if(paymentMethod === "WALLET"){
 
-  const user = await User.findById(userId);
+//   const user = await User.findById(userId);
 
-  if(user.wallet < grandTotal){
-    return res.status(400).json({
-      message:"Insufficient wallet balance"
-    });
-  }
+//   if(user.wallet < grandTotal){
+//     return res.status(400).json({
+//       message:"Insufficient wallet balance"
+//     });
+//   }
 
-  user.wallet -= grandTotal;
+//   user.wallet -= grandTotal;
+//   await user.save();
+
+// }
+
+if (paymentMethod === "WALLET") {
+
+  const user = await User.findById(req.user._id);
+
+  if (user.wallet < grandTotal) {
+  return res.status(400).json({ message: "Insufficient wallet balance" });
+}
+
+user.wallet -= grandTotal;
+
+user.walletHistory.push({
+  type: "DEBIT",
+  amount: grandTotal,
+  reason: "Order Payment",
+  date: new Date()
+});
+
   await user.save();
-
 }
 
     const order=await Order.create({
@@ -285,25 +305,29 @@ export const cancelOrder = async (req, res) => {
       refundAmount += calculateRefund(item, order);
     }
 
-    for (const item of activeItems) {
+   for (const item of activeItems) {
 
-      item.status = "Cancelled";
+  item.status = "Cancelled";
 
-      const product = await Product.findById(item.productId);
-      const variant = product?.variants.id(item.variantId);
+  const product = await Product.findById(item.productId);
+  if (!product) continue;
 
-      if (variant) {
-        variant.stock += item.quantity;
-        await product.save();
+  const variant = product.variants.id(item.variantId);
+
+  if (variant) {
+    variant.stock += item.quantity;
+    await product.save();
+  }
+
+  // ✅ MOVE CATEGORY UPDATE HERE
+  if (product.category) {
+    await Category.findByIdAndUpdate(product.category, {
+      $inc: {
+        stock: item.quantity,
+        sold: -item.quantity
       }
-    }
-if (product?.category) {
-  await Category.findByIdAndUpdate(product.category, {
-    $inc: {
-      stock: item.quantity,     
-      sold: -item.quantity       
-    }
-  });
+    });
+  }
 }
     order.status = "Cancelled";
 

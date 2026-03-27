@@ -13,7 +13,7 @@ import {
   ToastContainer,
   Modal,
 } from "react-bootstrap";
-
+import api from "../../api";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 
@@ -42,8 +42,8 @@ const AdminCustomers = () => {
 
  const fetchUsers = async () => {
   try {
-    const res = await axios.get(
-      "http://localhost:3000/api/admin/users",
+    const res = await api.get(
+      "/api/admin/users",
       {
         params: {
           page: currentPage,
@@ -78,8 +78,8 @@ useEffect(() => {
     if (!selectedUser) return;
 
     try {
-      await axios.put(
-        `http://localhost:3000/api/admin/block/${selectedUser._id}`,
+      await api.put(
+        `/api/admin/block/${selectedUser._id}`,
         {},
         { withCredentials: true }
       );

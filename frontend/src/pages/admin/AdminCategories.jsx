@@ -15,7 +15,7 @@ import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import CustomToast from "../../components/common/CustomToast";
-
+import api from "../../api";
 
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -35,8 +35,8 @@ const showMessage = (msg, type = "success") => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:3000/api/admin/categories",
+      const res = await api.get(
+        "/api/admin/categories",
         {
           params: { page: currentPage, limit: 5, search },
           withCredentials: true,
@@ -71,8 +71,8 @@ const handleToggleStatus = async (categorie) => {
 if (!result.isConfirmed) return;
 
   try {
-    await axios.patch(
-      `http://localhost:3000/api/admin/categories/toggle/${categorie._id}`,
+    await api.patch(
+      `/api/admin/categories/toggle/${categorie._id}`,
       {},
       { withCredentials: true }
     );

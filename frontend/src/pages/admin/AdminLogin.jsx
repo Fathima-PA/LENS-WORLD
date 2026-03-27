@@ -13,7 +13,7 @@ import {
   Toast,
   ToastContainer,
 } from "react-bootstrap";
-
+import api from "../../api";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
 
 const AdminLogin = () => {
@@ -41,8 +41,8 @@ const AdminLogin = () => {
     e.preventDefault();
 
     try {
-      await axios.post(
-        "http://localhost:3000/api/admin/login",
+      await api.post(
+        "/api/admin/login",
         { email, password },
         { withCredentials: true }
       );
@@ -67,8 +67,8 @@ const AdminLogin = () => {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/send-otp",
+      const res = await api.post(
+        "/api/auth/send-otp",
         {
           email,
           purpose: "FORGOT_PASSWORD",

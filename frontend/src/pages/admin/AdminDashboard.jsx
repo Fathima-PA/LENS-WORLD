@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import api from "../../api";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -37,8 +37,8 @@ const AdminDashboard = () => {
 
       try {
 
-        const res = await axios.get(
-          "http://localhost:3000/api/admin/dashboard",
+        const res = await api.get(
+          "/api/admin/dashboard",
           { withCredentials: true }
         );
 
@@ -61,8 +61,8 @@ const AdminDashboard = () => {
 
       try {
 
-        const res = await axios.get(
-          `http://localhost:3000/api/admin/dashboard-chart?type=${chartFilter}`,
+        const res = await api.get(
+          `/api/admin/dashboard-chart?type=${chartFilter}`,
           { withCredentials: true }
         );
 

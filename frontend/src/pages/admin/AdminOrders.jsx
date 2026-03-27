@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-
+import api from "../../api";
 const AdminOrders = () => {
 
   const navigate = useNavigate();
@@ -27,8 +27,8 @@ const AdminOrders = () => {
   // FETCH ORDERS
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:3000/api/admin/orders",
+      const res = await api.get(
+        "/api/admin/orders",
         {
           params: { search, status, page, limit: 8 },
           withCredentials: true
@@ -50,8 +50,8 @@ const AdminOrders = () => {
   
   const changeStatus = async (orderId, newStatus) => {
     try {
-      await axios.patch(
-        `http://localhost:3000/api/admin/orders/status/${orderId}`,
+      await api.patch(
+        `/api/admin/orders/status/${orderId}`,
         { status: newStatus },
         { withCredentials: true }
       );
