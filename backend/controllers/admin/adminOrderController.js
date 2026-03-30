@@ -103,7 +103,30 @@ const recalculateOrderStatus = (order) => {
 
 };
 
+const calculateRefund = (item, order) => {
 
+  const totalItemsAmount = order.items.reduce(
+    (sum, i) => sum + (i.total || 0),
+    0
+  );
+
+  if (!totalItemsAmount) return 0;
+
+  // convert to paise
+  const itemTotal = Math.round(item.total * 100);
+  const total = Math.round(totalItemsAmount * 100);
+  const tax = Math.round(order.tax * 100);
+  const discount = Math.round(order.discount * 100);
+
+  const ratio = itemTotal / total;
+
+  const taxShare = Math.round(ratio * tax);
+  const discountShare = Math.round(ratio * discount);
+
+  const refundPaise = itemTotal + taxShare - discountShare;
+
+  return refundPaise / 100; // back to rupees
+};
 
 // APPROVE RETURN ITEM
 
@@ -145,20 +168,23 @@ if (product?.category) {
 }
    
 
-    if (order.paymentMethod !== "COD") {
 
-      const user = await User.findById(order.user);
+    if (order.paymentStatus === "Paid"&& order.paymentMethod !== "COD") {
 
-      user.wallet += item.total;
+  const user = await User.findById(order.user);
 
-      user.walletHistory.push({
-        type: "CREDIT",
-        amount: item.total,
-        reason: "Order Return Refund"
-      });
+  const refundAmount = calculateRefund(item, order);
 
-      await user.save();
-    }
+  user.wallet += refundAmount;
+
+  user.walletHistory.push({
+    type: "CREDIT",
+    amount: refundAmount,
+    reason: "Order Return Refund"
+  });
+
+  await user.save();
+}
 
    
 

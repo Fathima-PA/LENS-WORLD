@@ -266,16 +266,27 @@ export const getOrderDetails = async (req, res) => {
 
 const calculateRefund = (item, order) => {
 
-  const taxShare =
-    (item.total / order.subtotal) * order.tax;
+  const totalItemsAmount = order.items.reduce(
+    (sum, i) => sum + (i.total || 0),
+    0
+  );
 
-  const discountShare =
-    (item.total / order.subtotal) * order.discount;
+  if (!totalItemsAmount) return 0;
 
-  const refund =
-    item.total + taxShare - discountShare;
+  // convert to paise
+  const itemTotal = Math.round(item.total * 100);
+  const total = Math.round(totalItemsAmount * 100);
+  const tax = Math.round(order.tax * 100);
+  const discount = Math.round(order.discount * 100);
 
-  return Math.round(refund);
+  const ratio = itemTotal / total;
+
+  const taxShare = Math.round(ratio * tax);
+  const discountShare = Math.round(ratio * discount);
+
+  const refundPaise = itemTotal + taxShare - discountShare;
+
+  return refundPaise / 100; // back to rupees
 };
 
 

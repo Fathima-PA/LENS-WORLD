@@ -9,6 +9,7 @@ import ExcelJS from "exceljs";
 export const getSalesReport = async (req, res) => {
 
   try {
+    res.set("Cache-Control", "no-store");
 
     const { type, startDate, endDate } = req.query;
 
@@ -25,14 +26,14 @@ export const getSalesReport = async (req, res) => {
 
     }
 
-    if (type === "weekly") {
+   if (type === "weekly") {
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
 
-      const weekAgo = new Date();
-      weekAgo.setDate(now.getDate() - 7);
+  weekAgo.setHours(0, 0, 0, 0); // ✅ FIX
 
-      filter.createdAt = { $gte: weekAgo };
-
-    }
+  filter.createdAt = { $gte: weekAgo };
+}
 
     if (type === "yearly") {
 
@@ -42,14 +43,18 @@ export const getSalesReport = async (req, res) => {
 
     }
 
-    if (type === "custom") {
+  if (type === "custom") {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
 
-      filter.createdAt = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
+  start.setHours(0, 0, 0, 0);   // ✅ ADD
+  end.setHours(23, 59, 59, 999); // ✅ ADD
 
-    }
+  filter.createdAt = {
+    $gte: start,
+    $lte: end
+  };
+}
 
     const orders = await Order.find(filter).sort({createdAt:-1}).populate("user");
     

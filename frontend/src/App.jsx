@@ -46,6 +46,8 @@ import AdminOffers from "./pages/admin/AdminOffer";
 import AdminCoupons from "./pages/admin/AdminCoupon";
 import AdminSalesReport from "./pages/admin/AdminSalesReport";
 
+import NotFound from "./pages/user/NotFound";
+
 
 
 function App() {
@@ -89,6 +91,9 @@ useEffect(() => {
       <div className="flex-grow-1">
        
         <Routes>
+  {/* your routes */}
+
+  <Route path="*" element={<NotFound />} />
           {/* USER ROUTES */}
           <Route path="/" element={ <Home />} />
           <Route path="/login" element={<Login />} />

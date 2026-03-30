@@ -109,6 +109,22 @@ export const getCart = async (req, res) => {
     let removed = false;
     const validItems = [];
 
+const today = new Date();
+
+const productOffers = await Offer.find({
+  type: "product",
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today }
+});
+
+const categoryOffers = await Offer.find({
+  type: "category",
+  isActive: true,
+  startDate: { $lte: today },
+  endDate: { $gte: today }
+});
+    
     for (const item of cart.items) {
 
       const product = item.productId;
@@ -125,7 +141,26 @@ export const getCart = async (req, res) => {
         removed = true;
         continue;
       }
-     validItems.push({
+
+
+      const productOffer = productOffers.find(
+    o => o.product?.toString() === product._id.toString()
+  );
+
+  const categoryOffer = categoryOffers.find(
+    o => o.category?.toString() === product.category?.toString()
+  ); 
+
+const latestPrice = getBestOfferPrice(
+  variant.price,
+  productOffer,
+  categoryOffer
+);
+if (item.price !== latestPrice) {
+  item.price = latestPrice;
+}
+
+    validItems.push({
   itemId: item._id.toString(),
   productId: product._id,
   name: product.name,
@@ -133,12 +168,13 @@ export const getCart = async (req, res) => {
   image: variant.images?.[0] || "",
   color: variant.color,
 
-  originalPrice: variant.price, 
+  originalPrice: variant.price,
 
-  price: item.price,
+  // ✅ ALWAYS use latest price
+  price: latestPrice,
   stock: variant.stock,
   quantity: item.quantity,
-  total: item.price * item.quantity,
+  total: Number((latestPrice * item.quantity).toFixed(2)),
 
   isActive: product.isActive,
   isAvailable: variant.stock > 0 && item.quantity <= variant.stock

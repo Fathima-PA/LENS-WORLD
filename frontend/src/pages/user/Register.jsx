@@ -60,7 +60,14 @@ const Register = () => {
     else if (!/^\d{10}$/.test(phone))
       newErrors.phone = "Phone must be 10 digits";
 
-    if (!password.trim()) newErrors.password = "Password is required";
+//   if (!password.trim()) {
+//   newErrors.password = "Password is required";
+// } else if (
+//   !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(password)
+// ) {
+//   newErrors.password =
+//     "Password must be 8+ chars, include uppercase, lowercase, number & special char";
+// }
 
     if (!confirmPassword.trim())
       newErrors.confirmPassword = "Confirm password is required";

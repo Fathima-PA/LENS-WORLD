@@ -22,7 +22,7 @@ const adminAuthSlice = createSlice({
   name: "adminAuth",
   initialState: {
     admin: null,
-    isLoading: false,
+    isLoading: true,
   },
   reducers: {
     adminLogout: (state) => {

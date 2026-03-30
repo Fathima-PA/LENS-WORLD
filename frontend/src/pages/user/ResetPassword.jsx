@@ -30,7 +30,15 @@ const ResetPassword = () => {
       showMessage("Please fill all fields ❗", "danger");
       return;
     }
-
+ if (
+    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(password)
+  ) {
+    showMessage(
+      "Password must be 8+ chars, include uppercase, lowercase, number & special char ❗",
+      "danger"
+    );
+    return;
+  }
     if (password !== confirmPassword) {
       showMessage("Passwords do not match ❗", "danger");
       return;

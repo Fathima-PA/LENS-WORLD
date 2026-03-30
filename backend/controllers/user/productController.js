@@ -42,16 +42,16 @@ export const getProducts = async (req, res) => {
       },
     });
 
-    if (minPrice || maxPrice) {
-      pipeline.push({
-        $match: {
-          displayPrice: {
-            ...(minPrice && { $gte: Number(minPrice) }),
-            ...(maxPrice && { $lte: Number(maxPrice) }),
-          },
-        },
-      });
-    }
+    // if (minPrice || maxPrice) {
+    //   pipeline.push({
+    //     $match: {
+    //       displayPrice: {
+    //         ...(minPrice && { $gte: Number(minPrice) }),
+    //         ...(maxPrice && { $lte: Number(maxPrice) }),
+    //       },
+    //     },
+    //   });
+    // }
 
     let sortStage = {};
     switch (sort) {
@@ -96,7 +96,14 @@ pipeline.push({
   },
 });
 
-    const products = await Product.aggregate(pipeline);
+const products = await Product.find(matchStage)
+  .populate("category")
+  .sort(sortStage)
+  .skip(skip)
+  .limit(Number(limit))
+  .lean(); // important   
+
+
     const today = new Date();
 
 const productOffers = await Offer.find({
@@ -113,33 +120,49 @@ const categoryOffers = await Offer.find({
   endDate: { $gte: today },
 });
 
+
+const productOfferMap = new Map();
+productOffers.forEach(o => {
+  productOfferMap.set(o.product.toString(), o);
+});
+
+const categoryOfferMap = new Map();
+categoryOffers.forEach(o => {
+  categoryOfferMap.set(o.category.toString(), o);
+});
 const updatedProducts = products.map((product) => {
 
-  const productOffer = productOffers.find(
-  (offer) => offer.product.toString() === product._id.toString()
-);
+  const productOffer = productOfferMap.get(product._id.toString());
+const categoryOffer = categoryOfferMap.get(product.category._id.toString());
 
-const categoryOffer = categoryOffers.find(
-  (offer) => offer.category.toString() === product.category._id.toString()
-);
+const defaultVariant = product.variants[0];
 
-  const finalPrice = getBestOfferPrice(
-    product.displayPrice,
-    productOffer,
-    categoryOffer
-  );
+const finalPrice = getBestOfferPrice(
+  defaultVariant.price,
+  productOffer,
+  categoryOffer
+);
 
   return {
     ...product,
+    displayPrice: defaultVariant.price,
     finalPrice,
   };
 
 });
+let filteredProducts = updatedProducts;
 
-    const totalProducts = await Product.countDocuments(matchStage);
+if (minPrice || maxPrice) {
+  filteredProducts = updatedProducts.filter(p => {
+    if (minPrice && p.finalPrice < Number(minPrice)) return false;
+    if (maxPrice && p.finalPrice > Number(maxPrice)) return false;
+    return true;
+  });
+}
+const totalProducts = filteredProducts.length;
 
     res.status(200).json({
-      products:updatedProducts,
+      products: filteredProducts,
       totalProducts,
       totalPages: Math.ceil(totalProducts / limit),
       currentPage: Number(page),

@@ -45,7 +45,6 @@ const showMessage = (msg, type = "danger") => {
       );
 
       setReport(res.data);
-
       setLoading(false);
 
     } catch (error) {
@@ -99,6 +98,8 @@ const validateCustomDates = () => {
   const end = new Date(endDate);
   const today = new Date();
 
+const todayStr = today.toISOString().split("T")[0];
+
   today.setHours(0, 0, 0, 0);
 
   if (start > end) {
@@ -106,10 +107,10 @@ const validateCustomDates = () => {
     return false;
   }
 
-  if (start > today || end > today) {
-    showMessage("Future dates are not allowed");
-    return false;
-  }
+if (startDate > todayStr || endDate > todayStr) {
+  showMessage("Future dates are not allowed");
+  return false;
+}
 
   return true;
 };

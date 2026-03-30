@@ -15,6 +15,10 @@ const OrderDetails = () => {
   const [errorMsg,setErrorMsg] = useState("");
   const [selectedItemId, setSelectedItemId] = useState(null);
 
+
+  const [showItemCancelConfirm, setShowItemCancelConfirm] = useState(false);
+const [selectedCancelItemId, setSelectedCancelItemId] = useState(null);
+
   useEffect(() => {
     if (!id) return;
     fetchOrder();
@@ -81,15 +85,20 @@ const OrderDetails = () => {
 };
 
   // CANCEL ITEM
-  const cancelItem = async (itemId) => {
-
+const confirmCancelItem = async () => {
+  try {
     await api.patch(`/api/order/cancel-item/${order._id}`, {
-      itemId,
+      itemId: selectedCancelItemId,
       reason,
     });
 
+    setShowItemCancelConfirm(false);
+    setSelectedCancelItemId(null);
     fetchOrder();
-  };
+  } catch (err) {
+    setErrorMsg("Item cancel failed");
+  }
+};
   const handleRetryPayment = async () => {
   try {
     const res = await api.post(`/api/order/retry-payment/${order._id}`);
@@ -300,7 +309,8 @@ const showRetry =
  canCancel && (
   <button
     className="btn btn-link text-danger p-0 small"
-    onClick={() => cancelItem(item._id)}
+    onClick={() => {setSelectedCancelItemId(item._id);
+  setShowItemCancelConfirm(true);}}
   >
     Cancel Item
   </button>
@@ -482,6 +492,43 @@ const showRetry =
           <button
             className="btn btn-danger"
             onClick={cancelOrder}
+          >
+            Yes, Cancel
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
+
+{showItemCancelConfirm && (
+  <div
+    className="modal d-block"
+    style={{ background: "rgba(0,0,0,0.4)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content p-4 text-center">
+
+        <h5 className="mb-3">Cancel Item</h5>
+
+        <p className="text-muted">
+          Are you sure you want to cancel this item?
+        </p>
+
+        <div className="d-flex justify-content-center gap-3 mt-3">
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowItemCancelConfirm(false)}
+          >
+            No
+          </button>
+
+          <button
+            className="btn btn-danger"
+            onClick={confirmCancelItem}
           >
             Yes, Cancel
           </button>

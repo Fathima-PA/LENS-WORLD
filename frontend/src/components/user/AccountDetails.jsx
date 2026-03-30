@@ -384,6 +384,7 @@ const handleVerifyEmailOtp = async () => {
       </Card>
 
       {/* CHANGE PASSWORD */}
+      {user?.authProvider  !== "google" && (
       <Card className="shadow-sm border-0 rounded">
         <Card.Body>
           <Card.Title className="fw-semibold mb-4">CHANGE PASSWORD</Card.Title>
@@ -428,6 +429,7 @@ const handleVerifyEmailOtp = async () => {
           </Button>
         </Card.Body>
       </Card>
+      )}
     </>
   );
 };

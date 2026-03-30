@@ -38,8 +38,8 @@ export const adminLogin = async (req, res) => {
 
     res.cookie("adminToken", adminToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+    secure: true,      // ✅ MUST (for HTTPS tunnel)
+  sameSite: "none", 
       maxAge: 24 * 60 * 60 * 1000,
     });
 
