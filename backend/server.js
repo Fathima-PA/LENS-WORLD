@@ -1,5 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, ".env") });
+
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/user/userRoutes.js";
 import cors from "cors";
@@ -13,12 +19,6 @@ import orderRoutes from "./routes/user/orderRoutes.js"
 import cookieParser from "cookie-parser";
 
 
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-dotenv.config({ path: path.join(__dirname, ".env") });
 
 
 
