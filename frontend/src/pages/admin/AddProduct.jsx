@@ -11,7 +11,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-import "../../styles/AdminCategories.css";
+import "../../styles/adminCategories.css";
 import { getCroppedImage } from "../../data/cropImage";
 import ImageCropModal from "../../components/admin/ImageCropModal";
 import CustomToast from "../../components/common/CustomToast";
