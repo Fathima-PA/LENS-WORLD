@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-import "../../styles/AdminCategories.css";
+import "../../styles/adminCategories.css";
 import Swal from "sweetalert2";
 import CustomToast from "../../components/common/CustomToast";
 import api from "../../api";
