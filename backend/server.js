@@ -13,8 +13,12 @@ import orderRoutes from "./routes/user/orderRoutes.js"
 import cookieParser from "cookie-parser";
 
 
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 
 
