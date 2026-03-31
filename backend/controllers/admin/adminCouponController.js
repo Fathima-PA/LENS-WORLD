@@ -13,7 +13,6 @@ export const createCoupon = async (req, res) => {
     } = req.body;
 
     const existingCoupon = await Coupon.findOne({ code });
-
     if (existingCoupon) {
       return res.json({
         success: false,
