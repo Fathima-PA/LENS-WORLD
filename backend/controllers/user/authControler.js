@@ -63,6 +63,7 @@ sameSite: "none",
       },
     });
   } catch (error) {
+    console.error("GOOGLE LOGIN ERROR 👉", error);
     res.status(500).json({ message: "Google login failed" });
   }
 };
