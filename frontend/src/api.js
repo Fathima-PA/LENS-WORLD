@@ -4,13 +4,11 @@ const api = axios.create({
  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
-// console.log("🔥 API FILE LOADED");
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // console.log("❌ Error intercepted:", error.response?.status);
 
     const publicRoutes = [
       "/api/users/login",

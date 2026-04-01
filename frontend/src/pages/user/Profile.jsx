@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useEffect } from "react";
 import api from "../../api";
@@ -21,13 +22,25 @@ import Wallet from "../../components/user/Wallet";
 
 const Profile = () => {
   const location = useLocation();
-const params = new URLSearchParams(location.search);
-
-  const [activeTab, setActiveTab] = useState(params.get("tab") || "dashboard");
+  const navigate = useNavigate();
+const [activeTab, setActiveTab] = useState(() => {
+  const params = new URLSearchParams(location.search);
+  return params.get("tab") || "dashboard";
+});
   const { user } = useSelector((state) => state.auth);
 
+const handleTabChange = (tab) => {
+  setActiveTab(tab);
+  navigate(`?tab=${tab}`);
+};
+useEffect(() => {
+  const params = new URLSearchParams(location.search); // 🔥 MOVE HERE
+  const tab = params.get("tab");
 
-
+  if (tab) {
+    setActiveTab(tab);
+  }
+}, [location.search]);
   return (
     <Container fluid className="py-4" style={{ background: "#fafafa" }}>
       <h5 className="text-center fw-semibold mb-4">
@@ -39,7 +52,7 @@ const params = new URLSearchParams(location.search);
           <Col md={3}>
             <ProfileSidebar
               activeTab={activeTab}
-              setActiveTab={setActiveTab}
+              setActiveTab={handleTabChange}
             />
           </Col>
        <Col md={9}>
@@ -47,7 +60,7 @@ const params = new URLSearchParams(location.search);
     <>
       <Row className="g-4">
         <Col md={6}>
-          <AccountInfoCard setActiveTab={setActiveTab} />
+          <AccountInfoCard setActiveTab={handleTabChange} />
         </Col>
        
       </Row>
