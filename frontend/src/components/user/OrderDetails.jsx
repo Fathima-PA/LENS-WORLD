@@ -422,7 +422,7 @@ const showRetry =
         className="btn btn-outline-dark btn-sm mt-3"
         onClick={() =>
           window.open(
-            `http://localhost:3000/api/order/invoice/${order._id}`,
+            `${import.meta.env.VITE_API_URL}/api/order/invoice/${order._id}`,
             "_blank"
           )
         }

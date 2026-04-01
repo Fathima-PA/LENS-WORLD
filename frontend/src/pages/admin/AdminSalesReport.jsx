@@ -61,7 +61,7 @@ const showMessage = (msg, type = "danger") => {
   const downloadPDF = () => {
 
     window.open(
-      "http://localhost:3000/api/admin/sales-report/pdf",
+      `${import.meta.env.VITE_API_URL}/api/admin/sales-report/pdf`,
       "_blank"
     );
 
@@ -70,7 +70,7 @@ const showMessage = (msg, type = "danger") => {
   const downloadExcel = () => {
 
     window.open(
-      "http://localhost:3000/api/admin/sales-report/excel",
+      `${import.meta.env.VITE_API_URL}/api/admin/sales-report/excel`,
       "_blank"
     );
 
