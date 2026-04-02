@@ -120,8 +120,45 @@ export const getSalesReport = async (req, res) => {
 
 export const downloadSalesPDF = async (req, res) => {
   try {
+const { type, startDate, endDate } = req.query;
+let filter = { status: "Delivered" };
 
-    const orders = await Order.find({ status: "Delivered" }).populate("user");
+const now = new Date();
+
+if (type === "daily") {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  filter.createdAt = { $gte: today, $lte: end };
+}
+
+else if (type === "weekly") {
+  const weekAgo = new Date();
+  weekAgo.setDate(now.getDate() - 7);
+  weekAgo.setHours(0, 0, 0, 0);
+
+  filter.createdAt = { $gte: weekAgo, $lte: now };
+}
+
+else if (type === "yearly") {
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+
+  filter.createdAt = { $gte: yearStart, $lte: now };
+}
+
+else if (type === "custom") {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+
+  filter.createdAt = { $gte: start, $lte: end };
+}
+   const orders = await Order.find(filter).populate("user");
 
     let totalSales = 0;
     let totalDiscount = 0;
@@ -239,8 +276,45 @@ doc
 export const downloadSalesExcel = async (req, res) => {
 
   try {
+const { type, startDate, endDate } = req.query;
+let filter = { status: "Delivered" };
 
-    const orders = await Order.find({ status: "Delivered" }).populate("user");
+const now = new Date();
+
+if (type === "daily") {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  filter.createdAt = { $gte: today, $lte: end };
+}
+
+else if (type === "weekly") {
+  const weekAgo = new Date();
+ weekAgo.setDate(weekAgo.getDate() - 7);
+  weekAgo.setHours(0, 0, 0, 0);
+
+  filter.createdAt = { $gte: weekAgo, $lte: now };
+}
+
+else if (type === "yearly") {
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+
+  filter.createdAt = { $gte: yearStart, $lte: now };
+}
+
+else if (type === "custom") {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+
+  filter.createdAt = { $gte: start, $lte: end };
+}
+    const orders = await Order.find(filter).populate("user");
 
     let totalSales = 0;
     let totalDiscount = 0;

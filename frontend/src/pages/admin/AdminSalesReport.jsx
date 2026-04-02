@@ -60,21 +60,25 @@ const showMessage = (msg, type = "danger") => {
 
   const downloadPDF = () => {
 
-    window.open(
-      `${import.meta.env.VITE_API_URL}/api/admin/sales-report/pdf`,
-      "_blank"
-    );
+  let url = `${import.meta.env.VITE_API_URL}/api/admin/sales-report/pdf?type=${filterType}`;
 
-  };
+  if (filterType === "custom") {
+    url += `&startDate=${startDate}&endDate=${endDate}`;
+  }
 
-  const downloadExcel = () => {
+  window.open(url, "_blank");
+};
 
-    window.open(
-      `${import.meta.env.VITE_API_URL}/api/admin/sales-report/excel`,
-      "_blank"
-    );
+const downloadExcel = () => {
 
-  };
+  let url = `${import.meta.env.VITE_API_URL}/api/admin/sales-report/excel?type=${filterType}`;
+
+  if (filterType === "custom") {
+    url += `&startDate=${startDate}&endDate=${endDate}`;
+  }
+
+  window.open(url, "_blank");
+};
 
   const chartData = {
     labels: ["COD", "Online"],

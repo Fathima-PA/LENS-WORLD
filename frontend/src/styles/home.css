@@ -76,6 +76,28 @@
 .category img {
   width: 100%;
 }
+.category-left {
+  height: 420px;
+}
+
+.category-img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.men-image-box {
+  height: 450px;
+  position: relative;
+  overflow: hidden;
+}
+
+.men-img {
+  width: 80%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 .overlay {
   position: absolute;

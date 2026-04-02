@@ -524,6 +524,8 @@ export const returnSingleItem = async (req, res) => {
     res.status(500).json({ message: "Return failed" });
   }
 };
+
+
 export const downloadInvoice = async (req, res) => {
   try {
     const order = await Order.findOne({
@@ -568,15 +570,17 @@ export const downloadInvoice = async (req, res) => {
     /* ---------------- TABLE HEADER ---------------- */
     const tableTop = doc.y;
     const itemX = 40;
-    const qtyX = 300;
-    const priceX = 350;
-    const totalX = 450;
+    const qtyX = 260;
+    const priceX = 310;
+    const totalX = 390;
+    const statusX = 470;
 
     doc.font("Helvetica-Bold");
     doc.text("Item", itemX, tableTop);
     doc.text("Qty", qtyX, tableTop);
     doc.text("Price", priceX, tableTop);
     doc.text("Total", totalX, tableTop);
+    doc.text("Status", statusX, tableTop);
 
     doc.moveTo(itemX, tableTop + 15)
       .lineTo(550, tableTop + 15)
@@ -588,10 +592,23 @@ export const downloadInvoice = async (req, res) => {
     let position = tableTop + 25;
 
     order.items.forEach((item) => {
+
       doc.text(item.name, itemX, position);
       doc.text(item.quantity.toString(), qtyX, position);
       doc.text(`₹${item.price}`, priceX, position);
       doc.text(`₹${item.total}`, totalX, position);
+
+      // 🎨 STATUS COLOR
+      if (item.status === "Cancelled") {
+        doc.fillColor("red");
+      } else if (item.status === "Returned") {
+        doc.fillColor("orange");
+      } else {
+        doc.fillColor("green");
+      }
+
+      doc.text(item.status || "Active", statusX, position);
+      doc.fillColor("black"); // reset color
 
       position += 25;
     });
