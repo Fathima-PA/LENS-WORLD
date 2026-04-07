@@ -25,7 +25,7 @@ const Header = () => {
 
   const handleAdminLogout = async () => {
     try {
-      await axios.post(
+      await api.post(
         "/api/admin/logout",
         {},
         { withCredentials: true }
