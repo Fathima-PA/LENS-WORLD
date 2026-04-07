@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutThunk,reset } from "../../features/userAuth/auth/authSlice";
 import axios from "axios";
 import { adminLogout } from "../../features/adminAuth/adminAuthSlice";
-
+import api from "../../api"
 
 const Header = () => {
   const user = useSelector((state) => state.auth.user);
@@ -26,7 +26,7 @@ const Header = () => {
   const handleAdminLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:3000/api/admin/logout",
+        "/api/admin/logout",
         {},
         { withCredentials: true }
       );
