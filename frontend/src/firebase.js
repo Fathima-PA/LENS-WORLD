@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
- apiKey: "AIzaSyCzJOFDLjCqLrZggTc1mSBRCbbT7h9ZBe8",
-  authDomain: "lens-world.firebaseapp.com",
-  projectId: "lens-world",
-  storageBucket: "lens-world.firebasestorage.app",
-  messagingSenderId: "254247514334",
-  appId: "1:254247514334:web:c873a8d8a731cff648524f",
-  measurementId: "G-JSP8S1ZGER"
+ apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId:  import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

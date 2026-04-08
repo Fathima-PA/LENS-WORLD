@@ -55,7 +55,7 @@ function App() {
   const location = useLocation();
 
   const { user  } = useSelector((state) => state.auth);
-  const { admin } = useSelector((state) => state.adminAuth);
+  const { admin, isLoading } = useSelector((state) => state.adminAuth);
 
 useEffect(() => {
   dispatch(loadUserThunk());
@@ -120,37 +120,143 @@ useEffect(() => {
              <Route path="/admin/reset-password" element={<AdminResetPassword />} />
           <Route
             path="/admin/dashboard"
-            element={admin ? <AdminDashboard /> : <Navigate to="/admin/login" />}
+           element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AdminDashboard />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}
           />
           <Route path="/admin/customers"
-  element={admin ? <AdminCustomers /> : <Navigate to="/admin/login" />}
+  element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AdminCustomers />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}
 />
     <Route path="/admin/categories"
-  element={admin ?<AdminCategories /> : <Navigate to="/admin/login" />}
+  element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AdminCategories />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}
 />
-<Route path="/admin/categories/add" element={admin?<AddCategory />:<Navigate to="/admin/login" />} />
-<Route path="/admin/categories/edit/:id" element={admin?<AddCategory />:<Navigate to="/admin/login" />} />
-<Route path="/admin/orders" element={<AdminOrders />} />
+<Route path="/admin/categories/add" element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AddCategory />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}/>
+<Route path="/admin/categories/edit/:id" element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AddCategory />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}/>
+<Route path="/admin/orders" element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AdminOrders />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+} />
 
 
 <Route
   path="/admin/products"
-  element={admin ? <AdminProducts /> : <Navigate to="/admin/login" />}
+  element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AdminProducts />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}
 />
 
 <Route
   path="/admin/products/add"
-  element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
+ element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AddProduct />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}
 />
 
 <Route
   path="/admin/products/edit/:id"
-  element={admin ? <AddProduct /> : <Navigate to="/admin/login" />}
+  element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+     <AddProduct />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+}
 />
-<Route path="/admin/orders/:id" element={<AdminOrderDetails />} />
-<Route path="/admin/offers" element={<AdminOffers />} />
-<Route path="/admin/coupons" element={<AdminCoupons />} />
-<Route path="/admin/sales-report" element={<AdminSalesReport />} />
+
+<Route path="/admin/orders/:id" element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+    <AdminOrderDetails />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+} />
+
+<Route path="/admin/offers"element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+    <AdminOffers />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+} />
+<Route path="/admin/coupons"element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+    <AdminCoupons />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+} />
+<Route path="/admin/sales-report" element={
+  isLoading ? (
+    <p>Loading...</p>
+  ) : admin ? (
+   <AdminSalesReport />
+  ) : (
+    <Navigate to="/admin/login" />
+  )
+} />
         </Routes>
       </div>
     {!location.pathname.startsWith("/admin") && <Footer />}

@@ -11,6 +11,7 @@ const AdminCoupons = () => {
 const [editId, setEditId] = useState(null);
 const [isEdit, setIsEdit] = useState(false);
 const [search, setSearch] = useState("");
+const [debouncedSearch, setDebouncedSearch] = useState("");
 const [currentPage, setCurrentPage] = useState(1);
 const [totalPages, setTotalPages] = useState(1);
 const [showToast, setShowToast] = useState(false);
@@ -34,6 +35,13 @@ const [errors, setErrors] = useState({});
   setToastType(type);
   setShowToast(true);
 };
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
 
 const validateForm = () => {
   let newErrors = {};
@@ -119,7 +127,7 @@ const validateForm = () => {
         params: {
           page: currentPage,
           limit: 5,
-          search: search
+          search: debouncedSearch
         },
         withCredentials: true
       }
@@ -137,7 +145,7 @@ const validateForm = () => {
 
  useEffect(() => {
   fetchCoupons();
-}, [currentPage, search]);
+}, [currentPage, debouncedSearch]);
 
   // CREATE COUPON
   const createCoupon = async () => {

@@ -75,7 +75,7 @@ const VerifyOtp = () => {
         dispatch(reset());
 
         setTimeout(() => {
-          navigate("/home", { replace: true });
+          navigate("/login", { replace: true });
         }, 1200);
       }
       if (purpose === "VERIFY_NEW_EMAIL") {

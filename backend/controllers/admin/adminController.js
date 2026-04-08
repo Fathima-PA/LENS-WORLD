@@ -2,13 +2,15 @@ import User from "../../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { paginate } from "../../utils/paginate.js";
 import { buildQuery } from "../../utils/buildQuery.js";
+import { STATUS_CODES } from "../../utils/statusCodes.js";
+
 
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Email and password are required" });
     }
 
     const admin = await User.findOne({
@@ -17,17 +19,17 @@ export const adminLogin = async (req, res) => {
     });
 
     if (!admin) {
-      return res.status(401).json({ message: "Admin not found" });
+      return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: "Admin not found" });
     }
 
     if (admin.isBlocked) {
-      return res.status(403).json({ message: "Your account is blocked" });
+      return res.status(STATUS_CODES.FORBIDDEN).json({ message: "Your account is blocked" });
     }
 
     const isMatch = await admin.matchPassword(password.trim());
 
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid password" });
+      return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: "Invalid password" });
     }
 
     const adminToken = jwt.sign(
@@ -54,7 +56,7 @@ export const adminLogin = async (req, res) => {
     });
   } catch (error) {
     console.log("ADMIN LOGIN ERROR 👉", error);
-    res.status(500).json({ message: error.message });
+    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -96,7 +98,7 @@ export const getUsers = async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error("GET USERS ERROR 👉", error);
-    res.status(500).json({ message: error.message });
+    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -106,22 +108,22 @@ export const toggleBlockUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ message: "User not found" });
     }
 
     if (user.isAdmin) {
-      return res.status(403).json({ message: "Cannot block admin" });
+      return res.status(STATUS_CODES.FORBIDDEN).json({ message: "Cannot block admin" });
     }
 
     user.isBlocked = !user.isBlocked;
     await user.save();
 
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       message: user.isBlocked ? "User blocked ✅" : "User unblocked ✅",
       user,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
   }
 };
 

@@ -22,6 +22,7 @@ const AdminCustomers = () => {
   const [users, setUsers] = useState([]);
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [totalPages, setTotalPages] = useState(1);
 
 
@@ -40,6 +41,14 @@ const AdminCustomers = () => {
     setShowToast(true);
   };
 
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
+
  const fetchUsers = async () => {
   try {
     const res = await api.get(
@@ -48,7 +57,7 @@ const AdminCustomers = () => {
         params: {
           page: currentPage,
           limit: 5,
-          search,
+          search:debouncedSearch,
           status: filter, 
         },
         withCredentials: true,
@@ -66,7 +75,7 @@ const AdminCustomers = () => {
 
 useEffect(() => {
   fetchUsers();
-}, [currentPage, search, filter]);
+}, [currentPage, debouncedSearch, filter]);
 
 
   const openConfirmModal = (user) => {

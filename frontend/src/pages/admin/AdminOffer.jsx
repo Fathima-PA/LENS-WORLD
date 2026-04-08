@@ -15,6 +15,7 @@ const [editId, setEditId] = useState(null);
   const [products, setProducts] = useState([]);
 const [categories, setCategories] = useState([]);
 const [search, setSearch] = useState("");
+const [debouncedSearch, setDebouncedSearch] = useState("");
 const [currentPage, setCurrentPage] = useState(1);
 const [totalPages, setTotalPages] = useState(1);
 const [formData, setFormData] = useState({
@@ -36,6 +37,14 @@ useEffect(() => {
   fetchCategories();
 }, []);
 
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
 
 const showMessage = (msg, type = "success") => {
   setToastMsg(msg);
@@ -186,7 +195,7 @@ const fetchCategories = async () => {
         type: activeTab,
             page: currentPage,
           limit: 5,
-          search: search
+          search: debouncedSearch
           } }
     );
 
@@ -200,7 +209,7 @@ const fetchCategories = async () => {
 
   useEffect(() => {
     fetchOffers();
-  }, [activeTab, currentPage, search]);
+  }, [activeTab, currentPage, debouncedSearch]);
 
 
   const toggleOffer = async (id) => {

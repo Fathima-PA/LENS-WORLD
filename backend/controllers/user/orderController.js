@@ -144,6 +144,33 @@ user.walletHistory.push({
 
   await user.save();
 }
+ for (const item of cart.items) {
+
+  const updatedProduct = await Product.findOneAndUpdate(
+    {
+      _id: item.productId._id,
+      "variants._id": item.variantId,
+      "variants.stock": { $gte: item.quantity } // 🔥 condition
+    },
+    {
+      $inc: { "variants.$.stock": -item.quantity }
+    },
+    { new: true }
+  );
+
+  if (!updatedProduct) {
+    return res.status(400).json({
+      message: "Stock changed, please review cart"
+    });
+  }
+
+  await Category.findByIdAndUpdate(item.productId.category, {
+    $inc: {
+      stock: -item.quantity,
+      sold: item.quantity
+    }
+  });
+}
 
     const order=await Order.create({
       user:userId,
@@ -180,15 +207,7 @@ if(paymentMethod === "RAZORPAY"){
   });
 
 }
-    for(const item of cart.items){
-      const product=await Product.findById(item.productId._id);
-      const variant=product.variants.id(item.variantId);
-      variant.stock-=item.quantity;
-      await product.save();
-      await Category.findByIdAndUpdate(product.category, {
-    $inc: { stock: -item.quantity,sold: item.quantity }
-  });
-    }
+ 
     cart.items=[];
     await cart.save();
 
@@ -683,23 +702,25 @@ if (order.couponCode) {
 
   
 for (const item of order.items) {
-
   const product = await Product.findById(item.productId);
-  if (!product) continue;
 
-  const variant = product.variants.id(item.variantId);
-  if (!variant) {
-    console.log("Variant not found");
-    continue;
-  }
+ const updatedProduct = await Product.findOneAndUpdate(
+  {
+    _id: item.productId,
+    "variants._id": item.variantId,
+    "variants.stock": { $gte: item.quantity } // 🔥 atomic check
+  },
+  {
+    $inc: { "variants.$.stock": -item.quantity }
+  },
+  { new: true }
+);
 
-  if (variant.stock < item.quantity) {
-    console.log("Stock issue after payment");
-    continue; 
-  }
-
-  variant.stock -= item.quantity;
-  await product.save();
+if (!updatedProduct) {
+  return res.status(400).json({
+    message: "Stock not available after payment"
+  });
+}
 
   await Category.findByIdAndUpdate(product.category, {
   $inc: {
@@ -773,26 +794,49 @@ export const retryRazorpayPayment = async (req,res)=>{
     });
   }
 };
-
-export const markPaymentFailed = async (req,res)=>{
-  try{
-
+export const markPaymentFailed = async (req, res) => {
+  try {
     const { orderId } = req.body;
 
     const order = await Order.findById(orderId);
 
-    if(!order){
-      return res.status(404).json({message:"Order not found"});
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.paymentStatus === "Failed") {
+      return res.json({ success: true });
+    }
+
+    for (const item of order.items) {
+      await Product.findOneAndUpdate(
+        {
+          _id: item.productId,
+          "variants._id": item.variantId
+        },
+        {
+          $inc: { "variants.$.stock": item.quantity }
+        }
+      );
+
+      const product = await Product.findById(item.productId);
+
+      await Category.findByIdAndUpdate(product.category, {
+        $inc: {
+          stock: item.quantity,
+          sold: -item.quantity
+        }
+      });
     }
 
     order.paymentStatus = "Failed";
-
+    // order.status = "Cancelled"; 
     await order.save();
 
-    res.json({success:true});
+    res.json({ success: true });
 
-  }catch(err){
+  } catch (err) {
     console.error(err);
-    res.status(500).json({message:"Failed to update payment"});
+    res.status(500).json({ message: "Failed to update payment" });
   }
 };

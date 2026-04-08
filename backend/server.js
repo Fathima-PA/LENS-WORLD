@@ -1,10 +1,15 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
+import { initCloudinary } from "./config/cloudinary.js"; // 👈 import function
+
+// 👇 call AFTER dotenv
+initCloudinary();
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, ".env") });
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// dotenv.config({ path: path.join(__dirname, ".env") });
 
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/user/userRoutes.js";
@@ -20,7 +25,7 @@ import cookieParser from "cookie-parser";
 
 
 
-
+console.log("SERVER ENV:", process.env.CLOUDINARY_API_KEY);
 
 const app = express();
 const allowedOrigins = process.env.CORS_ORIGIN.split(",");

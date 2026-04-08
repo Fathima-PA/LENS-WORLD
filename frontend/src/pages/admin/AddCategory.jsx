@@ -43,7 +43,7 @@ const AddCategory = () => {
 
   const handleSubmit = async () => {
 
-     const nameRegex = /[a-zA-Z0-9]/;
+     const nameRegex = /^[a-zA-Z0-9 ]+$/;
 
 if (!nameRegex.test(name)) {
   setToastMsg("Category name must contain valid characters");
@@ -57,6 +57,19 @@ if (!nameRegex.test(name)) {
       setShowToast(true);
       return;
     }
+    if (name.length < 3) {
+    setToastMsg("Minimum 3 characters required");
+     setToastType("danger");
+      setShowToast(true);
+    return;
+  }
+
+  if (name.length > 10) {
+    setToastMsg("Maximum 10 characters allowed");
+     setToastType("danger");
+      setShowToast(true);
+    return;
+  }
 
     try {
       const formData = new FormData();

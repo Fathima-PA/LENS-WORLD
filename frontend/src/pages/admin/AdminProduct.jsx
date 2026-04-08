@@ -21,6 +21,7 @@ const AdminProducts = () => {
 
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -28,6 +29,14 @@ const AdminProducts = () => {
 const [toastMsg, setToastMsg] = useState("");
 const [toastType, setToastType] = useState("success");
 
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
 
 const showMessage = (msg, type = "success") => {
   setToastMsg(msg);
@@ -40,7 +49,7 @@ const showMessage = (msg, type = "success") => {
       const res = await api.get(
         "/api/admin/products",
         {
-          params: { search, filter, page, limit: 10 },
+          params: { search:debouncedSearch, filter, page, limit: 10 },
           withCredentials: true,
         }
       );
@@ -92,7 +101,7 @@ if (!result.isConfirmed) return;
 
   useEffect(() => {
     fetchProducts();
-  }, [search, filter, page]);
+  }, [debouncedSearch, filter, page]);
 
   return (
     <div style={{ background: "#f6f6f7", minHeight: "100vh" }}>

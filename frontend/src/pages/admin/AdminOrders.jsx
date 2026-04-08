@@ -20,6 +20,7 @@ const AdminOrders = () => {
 
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -30,7 +31,7 @@ const AdminOrders = () => {
       const res = await api.get(
         "/api/admin/orders",
         {
-          params: { search, status, page, limit: 8 },
+          params: { search:debouncedSearch, status, page, limit: 8 },
           withCredentials: true
         }
       );
@@ -43,9 +44,18 @@ const AdminOrders = () => {
     }
   };
 
+
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
+
   useEffect(() => {
     fetchOrders();
-  }, [search, status, page]);
+  }, [debouncedSearch, status, page]);
 
   
   const changeStatus = async (orderId, newStatus) => {

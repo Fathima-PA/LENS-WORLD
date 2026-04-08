@@ -20,12 +20,26 @@ import api from "../../api";
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const [showToast, setShowToast] = useState(false);
 const [toastMsg, setToastMsg] = useState("");
 const [toastType, setToastType] = useState("success");
+
+
+
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
+
+
 
 const showMessage = (msg, type = "success") => {
   setToastMsg(msg);
@@ -38,7 +52,7 @@ const showMessage = (msg, type = "success") => {
       const res = await api.get(
         "/api/admin/categories",
         {
-          params: { page: currentPage, limit: 5, search },
+          params: { page: currentPage, limit: 5, search:debouncedSearch },
           withCredentials: true,
         }
       );
@@ -95,11 +109,11 @@ if (!result.isConfirmed) return;
 const navigate = useNavigate();
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     fetchCategories();
-  }, [currentPage, search]);
+  }, [currentPage, debouncedSearch]);
 
   return (
     <div style={{ background: "#f6f6f7", minHeight: "100vh" }}>
