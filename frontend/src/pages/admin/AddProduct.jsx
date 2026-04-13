@@ -9,7 +9,6 @@ import {
   Modal,
 } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import "../../styles/adminCategories.css";
 import { getCroppedImage } from "../../data/cropImage";

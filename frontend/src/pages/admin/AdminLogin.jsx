@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { loadAdminThunk } from "../../features/adminAuth/adminAuthSlice";
 import { useNavigate } from "react-router-dom";

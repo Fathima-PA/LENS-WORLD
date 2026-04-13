@@ -19,10 +19,6 @@ const OrderDetails = () => {
   const [showItemCancelConfirm, setShowItemCancelConfirm] = useState(false);
 const [selectedCancelItemId, setSelectedCancelItemId] = useState(null);
 
-  useEffect(() => {
-    if (!id) return;
-    fetchOrder();
-  }, [id]);
 
 
   useEffect(() => {
@@ -42,6 +38,12 @@ const [selectedCancelItemId, setSelectedCancelItemId] = useState(null);
       console.log(err);
     }
   };
+
+  
+  useEffect(() => {
+    if (!id) return;
+    fetchOrder();
+  }, [id]);
 
   if (!order) return <div className="p-5">Loading...</div>;
 
@@ -96,7 +98,7 @@ const confirmCancelItem = async () => {
     setSelectedCancelItemId(null);
     fetchOrder();
   } catch (err) {
-    setErrorMsg("Item cancel failed");
+      setErrorMsg(err.response?.data?.message ||"Item cancel failed");
   }
 };
   const handleRetryPayment = async () => {
@@ -125,7 +127,7 @@ const confirmCancelItem = async () => {
           fetchOrder(); 
 
         } catch (err) {
-          setErrorMsg("Payment verification failed");
+           setErrorMsg(err.response?.data?.message ||"Payment verification failed");
         }
       },
 

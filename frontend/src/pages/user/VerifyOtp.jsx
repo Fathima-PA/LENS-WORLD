@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Toast, ToastContainer } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -116,7 +115,10 @@ const VerifyOtp = () => {
       setSecondsLeft(60);
       setCanResend(false);
     } catch (error) {
-      showMessage("Failed to resend OTP ", "danger");
+    showMessage(
+    error.response?.data?.message || "Failed to resend OTP ",
+    "danger"
+  );
     }
   };
 

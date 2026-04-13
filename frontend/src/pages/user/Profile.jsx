@@ -5,7 +5,6 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 import { useEffect } from "react";
-import api from "../../api";
 import ProfileSidebar from "../../components/user/ProfileSidebar";
 import AccountInfoCard from "../../components/user/AccountInfoCard";
 import AddressCard from "../../components/user/AddressCard";

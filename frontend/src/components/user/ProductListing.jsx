@@ -1,5 +1,4 @@
 import { useEffect, useState, } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
@@ -23,6 +22,16 @@ const ProductListing = () => {
    const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [selectedColor, setSelectedColor] = useState("");
+
+
+const allColors = [
+  ...new Set(
+    products.flatMap(p =>
+      p.variants?.map(v => v.color)
+    )
+  )
+];
 
   const showMessage = (msg, type = "success") => {
     setToastMsg(msg);
@@ -126,9 +135,23 @@ const ProductListing = () => {
     setSearch("");
     setSort("");
     setSelectedCategory("");
+    setSelectedColor("");
     setPriceRange("");
     setPage(1);
   };
+  const filteredProducts = products
+  .map(product => {
+    const filteredVariants = product.variants?.filter(v =>
+      !selectedColor || v.color === selectedColor
+    );
+
+    if (filteredVariants.length > 0) {
+      return { ...product, variants: filteredVariants };
+    }
+
+    return null;
+  })
+  .filter(Boolean);
 
   return (
     <div className="container-fluid bg-light min-vh-100 py-4">
@@ -145,7 +168,7 @@ const ProductListing = () => {
 )}
       <div className="d-flex justify-content-between align-items-center mb-3 px-3">
         <span className="fw-semibold">
-          {products.length} PRODUCTS FOUND
+          {filteredProducts.length} PRODUCTS FOUND
         </span>
 
      <div className="px-3 mb-4" style={{ minWidth: 500 }}>
@@ -196,7 +219,7 @@ const ProductListing = () => {
           </div>
         )}
 
-        {products.map((p) => {
+        {filteredProducts.map((p) => {
           const v = p.variants?.[0];
           if (!v) return null;
 
@@ -371,6 +394,40 @@ const ProductListing = () => {
               <label className="form-check-label">All</label>
             </div>
           </div>
+
+         <div className="mb-4">
+  <h6 className="fw-semibold">Color</h6>
+
+  <div className="d-flex flex-wrap gap-2 align-items-center">
+    {allColors.map(color => (
+      <div
+        key={color}
+        onClick={() => setSelectedColor(color)}
+        title={color}
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          backgroundColor: color,
+          cursor: "pointer",
+          border: selectedColor === color
+            ? "3px solid black"
+            : "1px solid #ccc"
+        }}
+      />
+    ))}
+
+    {/* All button */}
+    <button
+      className={`btn btn-sm ${
+        selectedColor === "" ? "btn-dark" : "btn-outline-dark"
+      }`}
+      onClick={() => setSelectedColor("")}
+    >
+      All
+    </button>
+  </div>
+</div>
 
           <button
             className="btn btn-outline-secondary w-100"

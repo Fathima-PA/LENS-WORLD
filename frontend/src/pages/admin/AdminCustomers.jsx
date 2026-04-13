@@ -14,7 +14,6 @@ import {
   Modal,
 } from "react-bootstrap";
 import api from "../../api";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 
 const AdminCustomers = () => {

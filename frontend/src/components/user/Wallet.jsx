@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
 import { Container, Card, Table } from "react-bootstrap";
-
+import { useNavigate } from "react-router-dom";
 const Wallet = () => {
 
   const [wallet,setWallet] = useState(0);
   const [history,setHistory] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
 
-  useEffect(()=>{
-    fetchWallet();
-  },[]);
+const showMessage = (msg) => {
+  setToastMsg(msg);
+  setShowToast(true);
+    setTimeout(() => setShowToast(false), 2000);
+};
+const navigate = useNavigate();
 
   const fetchWallet = async () => {
     try{
@@ -25,11 +30,36 @@ const Wallet = () => {
       navigate("/login");
       return;
     }
+    showMessage(
+      err.response?.data?.message || "Failed to fetch wallet",
+      "danger"
+    );
     }
   };
 
+    useEffect(()=>{
+    fetchWallet();
+  },[]);
+
   return (
     <Container className="py-5">
+      {showToast && (
+  <div
+    style={{
+      position: "fixed",
+      top: 20,
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "#333",
+      color: "#fff",
+      padding: "10px 20px",
+      borderRadius: "5px",
+      zIndex: 9999
+    }}
+  >
+    {toastMsg}
+  </div>
+)}
 
       <h3 className="mb-4">My Wallet</h3>
 

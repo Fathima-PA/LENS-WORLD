@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Table, Badge, Button } from "react-bootstrap";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import api from "../../api";
 const statusColor = {
@@ -18,9 +17,7 @@ const AdminOrderDetails = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
 
-  useEffect(() => {
-    fetchOrder();
-  }, []);
+ 
 
   const fetchOrder = async () => {
     const res = await api.get(
@@ -30,7 +27,9 @@ const AdminOrderDetails = () => {
     setOrder(res.data);
   };
 
-  
+   useEffect(() => {
+    fetchOrder();
+  }, []);
   
 
   

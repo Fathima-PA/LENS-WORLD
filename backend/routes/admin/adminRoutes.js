@@ -19,7 +19,7 @@ toggleProductStatus,
   getProductById,
    updateProductWithVariant
 } from "../../controllers/admin/adminProductController.js";
-import { addVariantToProduct} from "../../controllers/admin/adminVariantController.js"
+// import { addVariantToProduct} from "../../controllers/admin/adminVariantController.js"
 
 import{getAllOrders,updateOrderStatus,getOrderDetailsAdmin,
   approveReturn,
@@ -112,12 +112,12 @@ router.put(
 
 router.patch("/products/toggle/:id", toggleProductStatus);
 
-router.post(
-  "/products/:productId/variants",
-  protectAdmin,
-  upload.array("images", 3),
-  addVariantToProduct
-);
+// router.post(
+//   "/products/:productId/variants",
+//   protectAdmin,
+//   upload.array("images", 3),
+//   addVariantToProduct
+// );
 
 
 

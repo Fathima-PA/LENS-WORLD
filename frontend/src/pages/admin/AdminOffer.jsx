@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Container, Table, Button, Form, Badge, Modal, Pagination } from "react-bootstrap";
 import AdminSidebar from "../../components/admin/AdminSidebar";
-import axios from "axios";
 import CustomToast from "../../components/common/CustomToast";
 import api from "../../api";
 
@@ -32,10 +31,6 @@ const [toastMsg, setToastMsg] = useState("");
 const [toastType, setToastType] = useState("success");
 const [errors, setErrors] = useState({});
 
-useEffect(() => {
-  fetchProducts();
-  fetchCategories();
-}, []);
 
 
 useEffect(() => {
@@ -206,6 +201,12 @@ const fetchCategories = async () => {
     console.log(error);
   }
 };
+
+
+useEffect(() => {
+  fetchProducts();
+  fetchCategories();
+}, []);
 
   useEffect(() => {
     fetchOffers();

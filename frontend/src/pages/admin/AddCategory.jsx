@@ -1,7 +1,6 @@
 import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { Toast, ToastContainer } from "react-bootstrap";
 import api from "../../api";
@@ -100,6 +99,7 @@ if (!nameRegex.test(name)) {
       setToastMsg(error.response?.data?.message || "Something went wrong");
       setToastType("danger");
       setShowToast(true);
+       console.log(error);
     }
   };
 

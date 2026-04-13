@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
 import CustomToast from "../../components/common/CustomToast";
+import { useNavigate } from "react-router-dom";
+
 
 
 const Wishlist = () => {
@@ -14,7 +16,7 @@ const showMessage = (msg, type = "danger") => {
   setToastType(type);
   setShowToast(true);
 };
-
+const navigate = useNavigate();
 const fetchWishlist = async () => {
   try {
     const res = await api.get("/api/wishlist");

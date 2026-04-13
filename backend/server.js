@@ -24,8 +24,9 @@ import orderRoutes from "./routes/user/orderRoutes.js"
 import cookieParser from "cookie-parser";
 
 
+import logger from "./utils/logger.js"; 
 
-console.log("SERVER ENV:", process.env.CLOUDINARY_API_KEY);
+
 
 const app = express();
 const allowedOrigins = process.env.CORS_ORIGIN.split(",");
@@ -58,5 +59,6 @@ app.use("/api/order",orderRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  // console.log(`Server running on port ${PORT}`);
+  logger.info("Server started");
 });

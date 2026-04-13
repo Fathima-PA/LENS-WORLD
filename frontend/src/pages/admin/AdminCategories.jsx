@@ -9,7 +9,6 @@ import {
   Form,
   Card,
 } from "react-bootstrap";
-import axios from "axios";
 import "../../styles/adminCategories.css";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useNavigate } from "react-router-dom";

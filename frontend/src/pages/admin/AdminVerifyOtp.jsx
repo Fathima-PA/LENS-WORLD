@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Toast, ToastContainer } from "react-bootstrap";
 import api from "../../api";

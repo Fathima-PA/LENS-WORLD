@@ -8,7 +8,7 @@ const AddressCard = ({ setActiveTab }) => {
   const fetchAddresses = async () => {
     try {
       const res = await api.get("/api/address/my");
-      setAddresses(res.data || []);
+      setAddresses(res.data.addresses|| []);
     } catch (error) {
       alert(error.response?.data?.message || error.message);
     }

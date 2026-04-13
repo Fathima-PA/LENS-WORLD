@@ -1,292 +1,171 @@
-import User from "../../models/userModel.js";
-import { generateAccessToken, generateRefreshToken } from "../../utils/token.js";
-import { generateReferralCode } from "../../utils/generateReferralCode.js";
+import { registerUserService ,loginUserService,
+  updateProfileService,setPendingEmailService,
+  confirmEmailChangeService,changePasswordService,
+  updateProfilePhotoService } from "../../services/user/userService.js";
 
 //  REGISTER
+
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password, phone,referralCode } = req.body;
 
-    if (!username || !email || !password || !phone) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+    const result = await registerUserService(req.body);
 
-    const normalizedEmail = email.toLowerCase().trim();
-
-    const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-    const newReferralCode = generateReferralCode(username);
-
-    const user = await User.create({
-      username,
-      email: normalizedEmail,
-      password,
-      phone,
-      isVerified: true,
-      referralCode: newReferralCode 
-    });
-   
-     if (referralCode) {
-
-      const referrer = await User.findOne({ referralCode });
-
-      if (referrer) {
-
-        user.referredBy = referrer._id;
-
-        referrer.wallet += 100;
-
-        referrer.walletHistory.push({
-          type: "CREDIT",
-          amount: 100,
-          reason: "Referral Reward"
-        });
-       await referrer.save();
-
-
-        user.wallet += 50;
-
-        user.walletHistory.push({
-          type: "CREDIT",
-          amount: 50,
-          reason: "Signup Referral Bonus"
-        });
-
-      }
-
-    }
-
-       await user.save();
-
-    return res.status(201).json({
-      message: "Registration completed successfully",
-      user,
-    });
+    res.status(201).json(result);
 
   } catch (error) {
+
     console.error("REGISTER AFTER OTP ERROR:", error);
-    return res.status(500).json({ message: "Registration failed" });
+
+    res.status(error.statusCode || 500).json({
+      message: error.message || "Registration failed"
+    });
+
   }
 };
 
 
 //  LOGIN 
+
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
+    const result = await loginUserService(req.body);
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-    if (user.isAdmin) {
-  return res.status(403).json({
-    message: "Admin cannot login from user login. Please login from Admin panel.",
-  });
-}
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 15 * 60 * 1000,
+    });
 
-    if (user.isBlocked) {
-      return res.status(403).json({ message: "Your account is blocked" });
-    }
-
-    const isMatch = await user.matchPassword(password.trim());
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    if (!user.isVerified) {
-      return res
-        .status(403)
-        .json({ message: "Please verify your email first" });
-    }
-
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
-
-    user.refreshToken = refreshToken;
-    await user.save();
-   res.cookie("accessToken", accessToken, {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none", 
-  path: "/",  
-  maxAge: 15 * 60 * 1000,
-});
-
-res.cookie("refreshToken", refreshToken, {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none", 
-  path: "/",  
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
-
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.json({
-      message: "Login successful",
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        phone: user.phone,
-        profileImage: user.profileImage,
-      },
+      message: result.message,
+      user: result.user
     });
+
   } catch (error) {
-    console.error("LOGIN ERROR 👉", error);
-    res.status(500).json({ message: error.message });
+
+    console.error("LOGIN ERROR ", error);
+
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+
   }
 };
 
 //  UPDATE PROFILE
+
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone } = req.body;
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const result = await updateProfileService(
       req.user._id,
-      {
-        username: name,
-        phone: phone,
-      },
-      { new: true }
+      req.body
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    res.status(200).json(result);
 
-    res.status(200).json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+
   }
 };
 
 //  SAVE PENDING EMAIL
+
 export const setPendingEmail = async (req, res) => {
-  console.log("set pending email")
+  console.log("set pending email");
+
   try {
-    const { newEmail } = req.body;
 
-    if (!newEmail) {
-      return res.status(400).json({ message: "New email is required" });
-    }
+    const result = await setPendingEmailService(
+      req.user._id,
+      req.body
+    );
 
-    const normalizedEmail = newEmail.toLowerCase().trim();
+    res.json(result);
 
-    const emailExists = await User.findOne({ email: normalizedEmail });
-    if (emailExists) {
-      return res.status(400).json({ message: "Email already in use" });
-    }
-
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.pendingEmail = normalizedEmail;
-    await user.save();
-
-    res.json({ message: "Pending email saved successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+
   }
 };
 
 //  CONFIRM EMAIL CHANGE
+
+
 export const confirmEmailChange = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const result = await confirmEmailChangeService(req.user._id);
 
-    if (!user.pendingEmail) {
-      return res.status(400).json({ message: "No pending email found" });
-    }
+    res.json(result);
 
-    user.email = user.pendingEmail;
-    user.pendingEmail = undefined;
-
-    await user.save();
-
-    res.json({
-      message: "Email updated successfully",
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        isAdmin: user.isAdmin,
-        profileImage: user.profileImage,
-      },
-    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+
   }
 };
 
 //  CHANGE PASSWORD
+
 export const changePassword = async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: "Missing fields" });
-    }
+    const result = await changePasswordService(
+      req.user._id,
+      req.body
+    );
 
-    const user = await User.findById(req.user._id);
+    res.json(result);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const isMatch = await user.matchPassword(currentPassword.trim());
-    if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect" });
-    }
-
-    user.password = newPassword.trim();
-    await user.save();
-
-    res.json({ message: "Password changed successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+
   }
 };
 
 //  UPDATE PROFILE PHOTO
+
+
 export const updateProfilePhoto = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const result = await updateProfilePhotoService(
+      req.user._id,
+      req.file
+    );
 
-    const imageUrl = req.file?.path;
+    res.json(result);
 
-    if (!imageUrl) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    user.profileImage = imageUrl;
-    await user.save();
-
-    res.json({
-      message: "Profile photo updated successfully",
-      profileImage: user.profileImage,
-    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    res.status(error.statusCode || 500).json({
+      message: error.message
+    });
+
   }
 };
 // GET LOGGED IN USER 

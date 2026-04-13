@@ -10,7 +10,6 @@ import {
   Card,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import "../../styles/adminCategories.css";
 import Swal from "sweetalert2";

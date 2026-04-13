@@ -6,15 +6,13 @@ import { useNavigate } from "react-router-dom";
 const Home = () => {
 
   const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search, _setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 const navigate = useNavigate();
   /* ======================
      FETCH PRODUCTS
   ====================== */
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+
 
   const fetchProducts = async () => {
     try {
@@ -28,6 +26,9 @@ const navigate = useNavigate();
       setLoading(false);
     }
   };
+    useEffect(() => {
+    fetchProducts();
+  }, []);
 
   /* ======================
      FILTER PRODUCTS

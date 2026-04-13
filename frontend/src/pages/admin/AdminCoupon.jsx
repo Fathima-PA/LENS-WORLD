@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Container, Table, Button, Form, Modal, Pagination } from "react-bootstrap";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import CustomToast from "../../components/common/CustomToast";
 import api from "../../api";
@@ -202,6 +201,7 @@ const validateForm = () => {
 
     } catch (error) {
        showMessage("Something went wrong", "danger");
+        console.log(error);
     }
 
   };

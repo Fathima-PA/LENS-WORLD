@@ -37,7 +37,7 @@ const ManageAddress = ({ setActiveTab }) => {
   const fetchAddresses = async () => {
     try {
       const res = await api.get("/api/address/my");
-      setAddresses(res.data || []);
+      setAddresses(res.data.addresses || []);
     } catch (error) {
       showPopup(error.response?.data?.message || error.message, "danger");
     }

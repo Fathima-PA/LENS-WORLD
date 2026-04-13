@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import "react-inner-image-zoom/lib/styles.min.css";
 import InnerImageZoom from 'react-inner-image-zoom'
 import { toggleWishlist, getWishlist } from "../../services/user/wishlistService";
@@ -44,6 +43,7 @@ const ProductDetails = () => {
     } catch (error) {
       if (error.response?.status === 403) {
         showMessage("This product is currently unavailable or blocked", "danger");
+        console.log(error);
       }
       navigate("/product");
     }
@@ -63,6 +63,7 @@ const ProductDetails = () => {
       setRelated(res.data);
     } catch (error) {
       console.error("Failed to fetch related products");
+      console.log(error);
     }
   };
 
@@ -105,6 +106,7 @@ const ProductDetails = () => {
       );
 
     } catch {
+      
       showMessage("Please login first", "warning");
     }
   };
@@ -118,7 +120,9 @@ const ProductDetails = () => {
       try {
         const data = await getWishlist();
         setWishlist(data.map(i => i.productId));
-      } catch {}
+      } catch (error){
+        console.log(error);
+      }
     };
     loadWishlist();
   }, []);

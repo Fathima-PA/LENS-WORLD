@@ -13,6 +13,18 @@ const OrderHistory = () => {
     const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+
+
+  const [showToast, setShowToast] = useState(false);
+const [toastMsg, setToastMsg] = useState("");
+
+const showMessage = (msg) => {
+  setToastMsg(msg);
+  setShowToast(true);
+  setTimeout(() => {
+    setShowToast(false);
+  }, 2000); 
+};
   // FETCH ORDERS
   const fetchOrders = async () => {
     try {
@@ -31,7 +43,7 @@ const OrderHistory = () => {
         setTotalPages(res.data.totalPages); 
 
     } catch (err) {
-      if (error.response?.status === 401) {
+      if (err.response?.status === 401) {
       showMessage("Please login again");
       navigate("/login");
       return;
@@ -57,7 +69,26 @@ const OrderHistory = () => {
 
 
   return (
+
+    
     <div className="container py-5">
+      {showToast && (
+  <div
+    style={{
+      position: "fixed",
+      top: 20,
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "#333",
+      color: "#fff",
+      padding: "10px 20px",
+      borderRadius: "5px",
+      zIndex: 9999
+    }}
+  >
+    {toastMsg}
+  </div>
+)}
 
       <h4 className="mb-4">ORDER HISTORY</h4>
 

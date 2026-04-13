@@ -27,11 +27,7 @@ const [toastMsg, setToastMsg] = useState("");
 const [toastType, setToastType] = useState("success");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchAddresses();
-    fetchCart();
-     fetchCoupons();
-  }, []);
+
 
 
 const showToastMessage = (msg, type = "success") => {
@@ -81,6 +77,13 @@ const showToastMessage = (msg, type = "success") => {
   }
 
 };
+
+
+  useEffect(() => {
+    fetchAddresses();
+    fetchCart();
+     fetchCoupons();
+  }, []);
   const handleAddressAdded = (newAddress) => {
     setShowAddForm(false);
     setAddresses(prev => [...prev, newAddress]);

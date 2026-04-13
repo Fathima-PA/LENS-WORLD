@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../../../services/user/authService";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../../firebase";
-import axios from "axios";
 import api from "../../../api";
 const initialState = {
   user: null,

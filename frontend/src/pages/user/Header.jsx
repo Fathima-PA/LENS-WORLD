@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutThunk,reset } from "../../features/userAuth/auth/authSlice";
-import axios from "axios";
 import { adminLogout } from "../../features/adminAuth/adminAuthSlice";
 import api from "../../api"
 

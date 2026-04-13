@@ -11,7 +11,6 @@ import {
   Badge
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import api from "../../api";
 const AdminOrders = () => {
@@ -70,6 +69,7 @@ const AdminOrders = () => {
 
     } catch (err) {
       alert("Failed to update status");
+       console.log(err);
     }
   };
 

@@ -7,7 +7,6 @@ const initCloudinary = () => {
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
-  console.log("CLOUDINARY ENV:", process.env.CLOUDINARY_API_KEY);
 };
 
 export { cloudinary, initCloudinary };

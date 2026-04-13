@@ -1,62 +1,29 @@
-import User from "../../models/userModel.js";
-import jwt from "jsonwebtoken";
-import { paginate } from "../../utils/paginate.js";
-import { buildQuery } from "../../utils/buildQuery.js";
+import { adminLoginService,getUsersService,toggleBlockUserService} from "../../services/admin/adminAuthService.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
-
 
 export const adminLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Email and password are required" });
-    }
-
-    const admin = await User.findOne({
-      email: email.toLowerCase().trim(),
-      isAdmin: true,
-    });
-
-    if (!admin) {
-      return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: "Admin not found" });
-    }
-
-    if (admin.isBlocked) {
-      return res.status(STATUS_CODES.FORBIDDEN).json({ message: "Your account is blocked" });
-    }
-
-    const isMatch = await admin.matchPassword(password.trim());
-
-    if (!isMatch) {
-      return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: "Invalid password" });
-    }
-
-    const adminToken = jwt.sign(
-      { id: admin._id, isAdmin: admin.isAdmin },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const { adminToken, admin } = await adminLoginService(req.body);
 
     res.cookie("adminToken", adminToken, {
       httpOnly: true,
-    secure: true,      // ✅ MUST (for HTTPS tunnel)
-  sameSite: "none", 
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     return res.json({
-      message: "Admin login successful ✅",
-      admin: {
-        _id: admin._id,
-        username: admin.username,
-        email: admin.email,
-        isAdmin: admin.isAdmin,
-      },
+      message: "Admin login successful ",
+      admin,
     });
+
   } catch (error) {
-    console.log("ADMIN LOGIN ERROR 👉", error);
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
+    console.log("ADMIN LOGIN ERROR ", error);
+
+    res.status(error.status || STATUS_CODES.SERVER_ERROR).json({
+      message: error.message || "Server error"
+    });
   }
 };
 
@@ -65,65 +32,47 @@ export const adminLogout = (req, res) => {
    res.clearCookie("adminToken");
 
 
-  res.json({ message: "Admin logged out ✅" });
+  res.json({ message: "Admin logged out " });
 };
 
-
-//  GET USERS 
+// GET USERS
 export const getUsers = async (req, res) => {
   try {
+
     const { page = 1, limit = 5, search = "", status = "all" } = req.query;
 
-    const query = buildQuery({
-      search,
-      searchFields: ["username", "email", "phone"],
-      filters: {
-        isBlocked:
-          status === "active"
-            ? false
-            : status === "blocked"
-            ? true
-            : undefined,
-      },
-      baseQuery: { isAdmin: false },
-    });
-
-    const result = await paginate({
-      model: User,
-      query,
+    const result = await getUsersService({
       page,
       limit,
+      search,
+      status,
     });
 
     res.json(result);
+
   } catch (error) {
-    console.error("GET USERS ERROR 👉", error);
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
+    console.error("GET USERS ERROR ", error);
+
+    res.status(STATUS_CODES.SERVER_ERROR).json({
+      message: error.message || "Server error"
+    });
   }
 };
 
-
 export const toggleBlockUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
 
-    if (!user) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ message: "User not found" });
-    }
-
-    if (user.isAdmin) {
-      return res.status(STATUS_CODES.FORBIDDEN).json({ message: "Cannot block admin" });
-    }
-
-    user.isBlocked = !user.isBlocked;
-    await user.save();
+    const user = await toggleBlockUserService(req.params.id);
 
     res.status(STATUS_CODES.OK).json({
-      message: user.isBlocked ? "User blocked ✅" : "User unblocked ✅",
+      message: user.isBlocked ? "User blocked " : "User unblocked ",
       user,
     });
+
   } catch (error) {
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
+    res.status(error.status || STATUS_CODES.SERVER_ERROR).json({
+      message: error.message || "Server error"
+    });
   }
 };
 

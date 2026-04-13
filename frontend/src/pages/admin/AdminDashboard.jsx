@@ -3,7 +3,6 @@ import { Container, Row, Col, Card, ProgressBar } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import api from "../../api";
 import { Bar } from "react-chartjs-2";
 import {
