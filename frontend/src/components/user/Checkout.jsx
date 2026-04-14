@@ -39,7 +39,7 @@ const showToastMessage = (msg, type = "success") => {
   try {
     const res = await api.get("/api/address/my");
 
-    const data = res.data || [];
+    const data = res.data.addresses || [];
     setAddresses(data);
 
     if (data.length > 0) {
