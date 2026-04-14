@@ -31,7 +31,7 @@ export const getProducts = async (req, res) => {
 
     const result = await getProductsService(req.query);
 
-    res.status(STATUS_CODES.OK).json(result);
+    res.json(result);
 
   } catch (error) {
     res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
@@ -69,10 +69,7 @@ export const getProductById = async (req, res) => {
       return res.status(STATUS_CODES.NOT_FOUND).json({ message: result.message });
     }
 
-     res.status(STATUS_CODES.OK).json({
-      success: true,
-      product: result.product
-    });
+    res.json(result.product);
 
   } catch (error) {
     res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
@@ -93,10 +90,9 @@ export const updateProductWithVariant = async (req, res) => {
       return res.status(STATUS_CODES.BAD_REQUEST).json({ message: result.message });
     }
 
-     res.status(STATUS_CODES.OK).json({
-      success: true,
+    res.json({
       message: result.message,
-      product: result.product
+      product: result.product,
     });
 
   } catch (error) {

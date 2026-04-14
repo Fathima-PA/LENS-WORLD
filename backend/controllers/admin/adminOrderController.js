@@ -1,17 +1,15 @@
 import { getAllOrdersService, updateOrderStatusService,getOrderDetailsAdminService,approveReturnService,rejectReturnService } from "../../services/admin/orderService.js";
-import { STATUS_CODES } from "../../utils/statusCodes.js";
-
 
 export const getAllOrders = async (req, res) => {
   try {
 
     const result = await getAllOrdersService(req.query);
 
-    res.status(STATUS_CODES.OK).json(result);
+    res.json(result);
 
   } catch (err) {
     console.log(err);
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: "Failed to fetch orders" });
+    res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
 
@@ -22,15 +20,10 @@ export const updateOrderStatus = async (req, res) => {
 
     const order = await updateOrderStatusService(req.params.id, status);
 
-   if (!order.success) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json(order);
-    }
-
-    res.status(STATUS_CODES.OK).json(order);
-
+    res.json(order);
 
   } catch (err) {
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: "Status update failed" });
+    res.status(500).json({ message: "Status update failed" });
   }
 };
 
@@ -41,14 +34,13 @@ export const getOrderDetailsAdmin = async (req, res) => {
     const result = await getOrderDetailsAdminService(req.params.id);
 
     if (!result.success) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ message: result.message });
+      return res.status(404).json({ message: result.message });
     }
 
-     res.status(STATUS_CODES.OK).json(result.order);
-
+    res.json(result.order);
 
   } catch (err) {
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: "Failed to fetch order" });
+    res.status(500).json({ message: "Failed to fetch order" });
   }
 };
 
@@ -63,17 +55,14 @@ export const approveReturn = async (req, res) => {
     const result = await approveReturnService(req.params.id, itemId);
 
     if (!result.success) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: result.message });
+      return res.status(400).json({ message: result.message });
     }
 
-    res.status(STATUS_CODES.OK).json({
-      success: true,
-      message: result.message
-    });
+    res.json({ message: result.message });
 
   } catch (err) {
     console.error(err);
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: "Error approving return" });
+    res.status(500).json({ message: "Error approving return" });
   }
 };
 
@@ -87,17 +76,13 @@ export const rejectReturn = async (req, res) => {
     const result = await rejectReturnService(req.params.id, itemId);
 
     if (!result.success) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: result.message });
+      return res.status(400).json({ message: result.message });
     }
 
-   res.status(STATUS_CODES.OK).json({
-      success: true,
-      message: result.message
-    });
-
+    res.json({ message: result.message });
 
   } catch {
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: "Error rejecting return" });
+    res.status(500).json({ message: "Error rejecting return" });
   }
 };
 
