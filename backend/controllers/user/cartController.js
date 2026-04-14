@@ -3,7 +3,6 @@ import { addToCartService ,getCartService,
   removeCartItemService,updateCartQuantityService,
   validateCheckoutService } from "../../services/user/cartService.js";
 
-  import { STATUS_CODES } from "../../utils/statusCodes.js";
 // ADD TO CART
 
 
@@ -21,7 +20,7 @@ export const addToCart = async (req, res) => {
 
     console.error(err);
 
-    res.status(err.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(err.statusCode || 500).json({
       message: err.message || "Add to cart failed"
     });
   }
@@ -36,7 +35,7 @@ export const getCart = async (req, res) => {
       await getCartService(req.user._id);
 
     if (removed) {
-      return res.status(STATUS_CODES.OK).json({
+      return res.status(200).json({
         warning: "Some items were removed because they no longer exist",
         items
       });
@@ -48,7 +47,7 @@ export const getCart = async (req, res) => {
 
     console.error(err);
 
-    res.status(STATUS_CODES.SERVER_ERROR).json({
+    res.status(500).json({
       message: "Fetch cart failed"
     });
   }
@@ -68,7 +67,7 @@ export const removeCartItem = async (req, res) => {
 
   } catch (err) {
 
-    res.status(err.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(err.statusCode || 500).json({
       message: err.message || "Remove failed"
     });
 
@@ -89,7 +88,7 @@ export const updateCartQuantity = async (req, res) => {
 
   } catch (err) {
 
-    res.status(err.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(err.statusCode || 500).json({
       message: err.message || "Update failed"
     });
 
@@ -108,7 +107,7 @@ export const validateCheckout = async (req, res) => {
 
   } catch (err) {
 
-    res.status(err.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(err.statusCode || 500).json({
       message: err.message || "Checkout failed"
     });
 

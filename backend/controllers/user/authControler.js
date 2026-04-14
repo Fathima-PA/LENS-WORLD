@@ -54,23 +54,13 @@ export const sendOtp = async (req, res) => {
 
     const result = await sendOtpService(req.body, req.user);
 
-    if (!result.success) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        success: false,
-        message: result.message
-      });
-    }
-
-    res.status(STATUS_CODES.OK).json({
-      success: true,
-      message: result.message
-    });
+    res.json(result);
 
   } catch (error) {
 
     console.error("SEND OTP ERROR:", error);
 
-    res.status(error.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(error.statusCode || 500).json({
       message: error.message || "Failed to send OTP"
     });
   }
@@ -83,24 +73,13 @@ export const verifyOtp = async (req, res) => {
 
     const result = await verifyOtpService(req.body, req.user);
 
-    if (!result.success) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        success: false,
-        message: result.message
-      });
-    }
-
-    res.status(STATUS_CODES.OK).json({
-      success: true,
-      message: result.message,
-      data: result.data 
-    });
+    res.json(result);
 
   } catch (error) {
 
     console.error("VERIFY OTP ERROR:", error);
 
-    res.status(error.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(error.statusCode || 500).json({
       message: error.message || "OTP verification failed"
     });
   }
@@ -112,23 +91,13 @@ export const resetPassword = async (req, res) => {
 
     const result = await resetPasswordService(req.body);
 
-    if (!result.success) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        success: false,
-        message: result.message
-      });
-    }
-
-    res.status(STATUS_CODES.OK).json({
-      success: true,
-      message: result.message
-    });
+    res.json(result);
 
   } catch (error) {
 
     console.error("RESET PASSWORD ERROR:", error);
 
-    res.status(error.statusCode || STATUS_CODES.SERVER_ERROR).json({
+    res.status(error.statusCode || 500).json({
       message: error.message || "Reset password failed"
     });
   }
@@ -154,7 +123,7 @@ export const refreshAccessToken = async (req, res) => {
 
     console.log("✅ New access token generated");
 
-    return res.status(STATUS_CODES.OK).json({
+    return res.status(200).json({
       message: "Access token refreshed",
       accessToken: newAccessToken,
     });
@@ -163,7 +132,7 @@ export const refreshAccessToken = async (req, res) => {
 
     console.log("❌ Refresh failed:", error.message);
 
-    res.status(error.statusCode || STATUS_CODES.UNAUTHORIZED).json({
+    res.status(error.statusCode || 401).json({
       message: error.message || "Refresh token expired"
     });
   }
@@ -177,6 +146,6 @@ export const logoutUser = async (req, res) => {
 
     res.json({ message: "Logged out successfully" });
   } catch (error) {
-    res.status(STATUS_CODES.SERVER_ERROR).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
