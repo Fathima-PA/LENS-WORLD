@@ -129,7 +129,7 @@ const showMessage = (msg) => {
             <div key={order.orderId} className="row align-items-center py-3 px-2 border-bottom small">
 
               <div className="col-3">
-                #{order.orderId.slice(-6).toUpperCase()}
+                #{order.orderId}
               </div>
 
             <div className="col-2">

@@ -1,6 +1,7 @@
 import Category from "../../models/CategoryModel.js";
 import { buildQuery } from "../../utils/buildQuery.js";
 import { paginate } from "../../utils/paginate.js";
+import { STATUS_CODES } from "../../utils/statusCodes.js";
 
 export const getCategoriesService = async ({ page, limit, search }) => {
   const query = buildQuery({

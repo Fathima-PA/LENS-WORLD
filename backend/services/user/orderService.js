@@ -7,7 +7,7 @@ import User from "../../models/userModel.js";
 import Coupon from "../../models/couponModel.js";
 import Category from "../../models/CategoryModel.js";
 import crypto from "crypto";
-
+ import mongoose from "mongoose";
 export const placeOrderCODService = async (userId, data) => {
 
   const { addressId, paymentMethod, couponCode } = data;
@@ -681,9 +681,11 @@ export const verifyRazorpayPaymentService = async (data) => {
     return { success: true };
   }
 
+  // ✅ MARK PAID
   order.paymentStatus = "Paid";
   order.paymentId = razorpay_payment_id;
 
+  // ✅ COUPON
   if (order.couponCode) {
     const coupon = await Coupon.findOne({ code: order.couponCode });
 
@@ -695,37 +697,7 @@ export const verifyRazorpayPaymentService = async (data) => {
 
   await order.save();
 
-  for (const item of order.items) {
-
-    const product = await Product.findById(item.productId);
-
-    const updatedProduct = await Product.findOneAndUpdate(
-      {
-        _id: item.productId,
-        "variants._id": item.variantId,
-        "variants.stock": { $gte: item.quantity }
-      },
-      {
-        $inc: { "variants.$.stock": -item.quantity }
-      },
-      { new: true }
-    );
-
-    if (!updatedProduct) {
-      throw Object.assign(
-        new Error("Stock not available after payment"),
-        { statusCode: 400 }
-      );
-    }
-
-    await Category.findByIdAndUpdate(product.category, {
-      $inc: {
-        stock: -item.quantity,
-        sold: item.quantity
-      }
-    });
-  }
-
+  // ✅ CLEAR CART
   await Cart.updateOne(
     { userId: order.user },
     { $set: { items: [] } }
@@ -736,7 +708,6 @@ export const verifyRazorpayPaymentService = async (data) => {
     message: "Payment successful"
   };
 };
-
 
 
 

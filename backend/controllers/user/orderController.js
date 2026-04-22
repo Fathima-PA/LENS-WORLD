@@ -212,13 +212,28 @@ export const verifyRazorpayPayment = async (req, res) => {
   }
 };
 
-export const getWallet = async (req,res)=>{
+// export const getWallet = async (req,res)=>{
 
- const user = await User.findById(req.user._id)
-   .select("wallet walletHistory");
+//  const user = await User.findById(req.user._id)
+//    .select("wallet walletHistory");
 
- res.json(user);
+//  res.json(user);
 
+// };
+export const getWallet = async (req, res) => {
+
+  const user = await User.findById(req.user._id)
+    .select("wallet walletHistory");
+
+
+  const sortedHistory = user.walletHistory.sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
+
+  res.json({
+    wallet: user.wallet,
+    walletHistory: sortedHistory
+  });
 };
 
 

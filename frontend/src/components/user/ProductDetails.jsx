@@ -131,6 +131,46 @@ const ProductDetails = () => {
 
   return (
     <div className="container py-5">
+      <div className="mb-3 text-muted small">
+
+  <span
+    style={{ cursor: "pointer" }}
+    onClick={() => navigate("/")}
+  >
+    Home
+  </span>
+
+  {" / "}
+
+  <span
+    style={{ cursor: "pointer" }}
+    onClick={() => navigate("/product")}
+  >
+    Products
+  </span>
+
+  {" / "}
+
+  {product?.category && (
+    <>
+      <span
+        style={{ cursor: "pointer" }}
+        onClick={() =>
+          navigate(`/product?category=${product.category._id}`)
+        }
+      >
+        {product.category.name}
+      </span>
+
+      {" / "}
+    </>
+  )}
+
+  <span className="fw-semibold text-dark">
+    {product?.name}
+  </span>
+
+</div>
       {showToast && (
         <div
           className={`position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-${toastType} shadow`}

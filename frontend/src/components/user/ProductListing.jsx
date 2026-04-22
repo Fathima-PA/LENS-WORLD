@@ -288,6 +288,41 @@ const allColors = [
         })}
       </div>
 
+<div className="d-flex justify-content-center mt-4 gap-2 flex-wrap">
+
+  {/* PREVIOUS */}
+  <button
+    className="btn btn-outline-dark btn-sm"
+    disabled={page === 1}
+    onClick={() => setPage(prev => prev - 1)}
+  >
+    Prev
+  </button>
+
+  {/* PAGE NUMBERS */}
+  {[...Array(totalPages)].map((_, i) => (
+    <button
+      key={i}
+      className={`btn btn-sm ${
+        page === i + 1 ? "btn-dark" : "btn-outline-dark"
+      }`}
+      onClick={() => setPage(i + 1)}
+    >
+      {i + 1}
+    </button>
+  ))}
+
+  {/* NEXT */}
+  <button
+    className="btn btn-outline-dark btn-sm"
+    disabled={page === totalPages}
+    onClick={() => setPage(prev => prev + 1)}
+  >
+    Next
+  </button>
+
+</div>
+
       {/* FILTER DRAWER */}
       {showFilter && (
         <div

@@ -241,7 +241,7 @@ const showRetry =
       {/* ORDER SUMMARY TOP */}
       <div className="border rounded p-3 mb-4 d-flex justify-content-between">
         <div>
-          <h5>#{order._id.slice(-8)}</h5>
+          <h5>#{order._id}</h5>
           <div className="text-muted small">
             {order.items.length} Products ·{" "}
             {new Date(order.createdAt).toLocaleString()}
